@@ -6,6 +6,7 @@ import "@aragon/os/contracts/lib/token/ERC20.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 
+
 contract ExternalTokenWrapper is AragonApp {
     using SafeERC20 for ERC20;
 
