@@ -8,9 +8,9 @@ export function useWrapAction(onDone) {
   const { api } = useAragonApi()
 
   return useCallback(
-    (depositTokenAddress, depositAmount, requestAmount, reference, intentParams) => {
+    (amount, intentParams) => {
       try {
-        api.createTokenRequest(depositTokenAddress, depositAmount, requestAmount, reference, intentParams).toPromise()
+        api.wrap(amount, intentParams).toPromise()
 
         onDone()
       } catch (error) {
@@ -25,9 +25,9 @@ export function useUnwrapAction(onDone) {
   const { api } = useAragonApi()
 
   return useCallback(
-    requestId => {
+    (amount, intentParams) => {
       try {
-        api.finaliseTokenRequest(requestId).toPromise()
+        api.unwrap(amount, intentParams).toPromise()
 
         onDone()
       } catch (error) {
@@ -39,22 +39,18 @@ export function useUnwrapAction(onDone) {
 }
 
 export function useAppLogic() {
-  const { account, token, isSyncing, ready, requests, acceptedTokens = [] } = useAppState()
+  const { account, token, isSyncing, ready, acceptedTokens = [] } = useAppState()
   const [selectedRequest, selectRequest] = useSelectedRequest(requests)
   //const panelState = useSidePanel()
 
   const actions = {
-    request: useRequestAction(/*panelState.requestClose),
-    submit: useSubmitAction(/*panelState.requestClose),
-    withdraw: useWithdrawAction(/*panelState.requestClose),
+    wrap: useWrapAction(/*panelState.requestClose),
+    unwrap: useUnwrapAction(/*panelState.requestClose),
   }
 
   return {
     panelState,
-    isSyncing: isSyncing || !ready,
     selectedRequest,
-    selectRequest,
-    acceptedTokens,
     account,
     token,
     actions,

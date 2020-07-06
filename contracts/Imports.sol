@@ -14,6 +14,7 @@ import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/contract-test-helpers/contracts/TokenMock.sol";
 import "./lib/StandardToken.sol";
 
+
 contract Imports {
     // solium-disable-previous-line no-empty-blocks
 }
