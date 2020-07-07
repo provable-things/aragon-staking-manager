@@ -1,6 +1,8 @@
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
 const MOCK_TOKEN_BALANCE = '1000000000000000000000000'
 const MOCK_TOKEN_DECIMALS = 18
+const ONE_DAY = 86400
+const MAX_LOCKS = 20
 
 let vault, tokenManager, miniMeToken
 
@@ -65,7 +67,13 @@ module.exports = {
   },
 
   getInitParams: async ({ log }, { web3, artifacts }) => {
-    return [tokenManager.address, vault.address, token.address]
+    return [
+      tokenManager.address,
+      vault.address,
+      token.address,
+      ONE_DAY,
+      MAX_LOCKS,
+    ]
   },
 
   postUpdate: async ({ proxy, log }, { web3, artifacts }) => {},
