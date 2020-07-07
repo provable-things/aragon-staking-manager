@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
-import { Box, Button, Field, GU, Info, TextInput, textStyle } from '@aragon/ui'
+import { Button, Field, GU, Info, TextInput } from '@aragon/ui'
 import PropTypes from 'prop-types'
 
 const Wrapper = (_props) => {
@@ -29,17 +29,18 @@ const Wrapper = (_props) => {
             margin-top: ${3 * GU}px;
           `}
         >
-          <TextInput.Number
+          <TextInput
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             wide
             min={0}
+            type="number"
             step="any"
             required
           />
         </Field>
       </WrapperField>
-      <Button onClick={() => onClick()}>{action}</Button>
+      <Button onClick={() => onClick()} label={action} />
     </Fragment>
   )
 }

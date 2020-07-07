@@ -10,7 +10,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 const reducer = (state) => {
   if (state === null) {
-    return { depositToken: null, miniMeToken: null, isSyncing: true }
+    return {
+      depositTokenBalance: null,
+      depositToken: null,
+      miniMeTokenBalance: 0,
+      miniMeToken: null,
+      isSyncing: true,
+    }
   }
   return state
 }

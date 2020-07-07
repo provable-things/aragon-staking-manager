@@ -4,7 +4,12 @@ import { Row, Col } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 
 const Details = (_props) => {
-  const { depositToken, miniMeToken } = _props
+  const {
+    depositToken,
+    depositTokenBalance,
+    miniMeToken,
+    miniMeTokenBalance,
+  } = _props
 
   return (
     <Row>
@@ -13,13 +18,13 @@ const Details = (_props) => {
           <Row>
             <Col xs={6}>{`${depositToken.symbol} Balance`}</Col>
             <Col xs={6} className="text-right">
-              10
+              {depositTokenBalance}
             </Col>
           </Row>
           <Row className="mt-3">
             <Col xs={6}>{`${miniMeToken.symbol} Balance`}</Col>
             <Col xs={6} className="text-right">
-              10
+              {miniMeTokenBalance}
             </Col>
           </Row>
         </Box>
@@ -35,7 +40,9 @@ const Details = (_props) => {
 
 Details.propTypes = {
   depositToken: PropTypes.object,
+  depositTokenBalance: PropTypes.number,
   miniMeToken: PropTypes.object,
+  miniMeTokenBalance: PropTypes.number,
 }
 
 export default Details

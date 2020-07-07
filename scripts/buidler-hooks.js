@@ -1,5 +1,6 @@
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
-const MOCK_TOKEN_BALANCE = 100000
+const MOCK_TOKEN_BALANCE = '1000000000000000000000000'
+const MOCK_TOKEN_DECIMALS = 18
 
 let vault, tokenManager, miniMeToken
 
@@ -40,7 +41,12 @@ module.exports = {
     await miniMeToken.changeController(tokenManager.address)
     await tokenManager.initialize([miniMeToken.address, false, 0])
 
-    token = await ERC20.new('Deposit Token', 'DPT', 18, MOCK_TOKEN_BALANCE)
+    token = await ERC20.new(
+      'Deposit Token',
+      'DPT',
+      MOCK_TOKEN_DECIMALS,
+      MOCK_TOKEN_BALANCE
+    )
 
     log(`Vault: ${vault.address}`)
     log(`MiniMeToken: ${miniMeToken.address}`)
