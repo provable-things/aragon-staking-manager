@@ -23,8 +23,8 @@ app.store(
           return { ...nextState, isSyncing: true }
         case events.SYNC_STATUS_SYNCED:
           return { ...nextState, isSyncing: false }
-        case 'Wrap':
-          return handleWrap(nextState)
+        /*case 'Wrap':
+          return handleWrap(nextState)*/
         default:
           return state
       }

@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
-import { Button, Header, Main, Modal, SyncIndicator } from '@aragon/ui'
+import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import Wrapper from './components/Wrapper'
 import Details from './components/Details'
 import styled from 'styled-components'
@@ -11,7 +11,6 @@ const App = () => {
   const { api, appState } = useAragonApi()
   const { depositToken, miniMeToken, isSyncing } = appState
 
-  const [amount, setAmount] = useState('')
   const [opened, setOpened] = useState(false)
   const [action, setAction] = useState(null)
 
@@ -35,38 +34,35 @@ const App = () => {
             secondary={
               <React.Fragment>
                 <Button
-                  mode="strong"
-                  label={'Wrap'}
-                  onClick={() => {
-                    setOpened(true)
-                    setAction('wrap')
-                  }}
-                />
-                <Button
-                  style={{ marginLeft: '10px' }}
                   mode="normal"
                   label={'Unwrap'}
                   onClick={() => {
                     setOpened(true)
-                    setAction('unwrap')
+                    setAction('Unwrap')
+                  }}
+                />
+                <Button
+                  style={{ marginLeft: '10px' }}
+                  mode="strong"
+                  label={'Wrap'}
+                  onClick={() => {
+                    setOpened(true)
+                    setAction('Wrap')
                   }}
                 />
               </React.Fragment>
             }
           />
-          <Modal
-            visible={opened}
+          <SidePanel
+            title={`${action} your tokens`}
+            opened={opened}
             onClose={() => {
               setOpened(false)
               setAction(null)
             }}
           >
-            <Wrapper
-              amount={amount}
-              onChangeAmount={setAmount}
-              onClick={handleClick}
-            />
-          </Modal>
+            <Wrapper action={action} onClick={handleClick} />
+          </SidePanel>
 
           <Details depositToken={depositToken} miniMeToken={miniMeToken} />
         </Fragment>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, GU, textStyle } from '@aragon/ui'
 import { Row, Col } from 'react-bootstrap'
+import PropTypes from 'prop-types'
 
 const Details = (_props) => {
   const { depositToken, miniMeToken } = _props
@@ -30,6 +31,11 @@ const Details = (_props) => {
       </Col>
     </Row>
   )
+}
+
+Details.propTypes = {
+  depositToken: PropTypes.object,
+  miniMeToken: PropTypes.object,
 }
 
 export default Details
