@@ -1,7 +1,9 @@
 const { assert } = require('chai')
 const { assertRevert } = require('@aragon/contract-test-helpers/assertThrow')
 const { newDao, newApp } = require('./helpers/dao')
-const { setOpenPermission, setPermission } = require('./helpers/permissions')
+const { setPermission } = require('./helpers/permissions')
+const timeTravel = require('./helpers/time-travel')
+const { wrap, unwrap, getBalances } = require('./helpers/utils')
 
 const MiniMeToken = artifacts.require('MiniMeToken')
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
@@ -13,6 +15,7 @@ const { hash: nameHash } = require('eth-ens-namehash')
 
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
 const MOCK_TOKEN_BALANCE = 100000
+const ONE_DAY = 86400
 
 contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
   let miniMeToken,
@@ -88,13 +91,14 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
     depositToken = await MockErc20.new(appManager, MOCK_TOKEN_BALANCE)
   })
 
-  describe('initialize(address _tokenManager, address _vault, address _depositToken) fails', async () => {
+  describe('initialize(address _tokenManager, address _vault, address _depositToken, _uint256 lockTime) fails', async () => {
     it('Should revert when passed non-contract address as token manager', async () => {
       await assertRevert(
         lockableTokenWrapper.initialize(
           NOT_CONTRACT,
           vault.address,
-          ETH_ADDRESS
+          ETH_ADDRESS,
+          ONE_DAY * 6
         ),
         'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
@@ -105,7 +109,8 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         lockableTokenWrapper.initialize(
           tokenManager.address,
           NOT_CONTRACT,
-          ETH_ADDRESS
+          ETH_ADDRESS,
+          ONE_DAY * 6
         ),
         'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
@@ -116,19 +121,21 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         lockableTokenWrapper.initialize(
           tokenManager.address,
           vault.address,
-          NOT_CONTRACT
+          NOT_CONTRACT,
+          ONE_DAY * 6
         ),
         'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
     })
   })
 
-  describe('initialize(address _tokenManager, address _vault, address address _depositToken)', () => {
+  describe('initialize(address _tokenManager, address _vault, address address _depositToken, _uint256 lockTime)', () => {
     beforeEach(async () => {
       await lockableTokenWrapper.initialize(
         tokenManager.address,
         vault.address,
-        depositToken.address
+        depositToken.address,
+        ONE_DAY * 6
       )
     })
 
@@ -157,37 +164,21 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       it('Should create wrapped tokens in exchange for DepositToken', async () => {
         const amountToWrap = 100
 
-        const initialBalanceAppManager = parseInt(
-          await depositToken.balanceOf(appManager)
-        )
-
-        const initialBalanceVault = parseInt(
-          await vault.balance(depositToken.address)
-        )
-
-        await depositToken.approve(lockableTokenWrapper.address, amountToWrap, {
-          from: appManager,
-        })
-
-        await lockableTokenWrapper.wrap(amountToWrap, {
-          from: appManager,
-        })
-
-        const actualBalanceAppManager = parseInt(
-          await depositToken.balanceOf(appManager)
-        )
-
-        const actualBalanceVault = parseInt(
-          await vault.balance(depositToken.address)
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
         )
 
         assert.strictEqual(
-          actualBalanceAppManager,
-          initialBalanceAppManager - amountToWrap
+          actualBalances.balanceAppManager,
+          initBalances.balanceAppManager - amountToWrap
         )
         assert.strictEqual(
-          actualBalanceVault,
-          initialBalanceVault + actualBalanceVault
+          actualBalances.balanceVault,
+          initBalances.balanceVault + actualBalances.balanceVault
         )
       })
 
@@ -249,58 +240,95 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       it('Should burn WrappedToken(s) in exchange for DepositToken', async () => {
         const amountToUnwrap = 100
 
-        const initialBalanceAppManager = parseInt(
-          await depositToken.balanceOf(appManager)
-        )
-
-        const initialBalanceVault = parseInt(
-          await vault.balance(depositToken.address)
-        )
-
-        await depositToken.approve(
-          lockableTokenWrapper.address,
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
           amountToUnwrap,
-          {
-            from: appManager,
-          }
+          appManager
+        )
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await unwrap(lockableTokenWrapper, amountToUnwrap, appManager)
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
         )
 
-        await lockableTokenWrapper.wrap(amountToUnwrap, {
-          from: appManager,
-        })
-
-        await lockableTokenWrapper.unwrap(amountToUnwrap, {
-          from: appManager,
-        })
-
-        const actualBalanceAppManager = parseInt(
-          await depositToken.balanceOf(appManager)
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
         )
-
-        const actualBalanceVault = parseInt(
-          await vault.balance(depositToken.address)
+        assert.strictEqual(
+          actualBalances.balanceAppManager,
+          actualBalances.balanceAppManager
         )
-
-        assert.strictEqual(actualBalanceAppManager, initialBalanceAppManager)
-        assert.strictEqual(actualBalanceVault, initialBalanceVault)
       })
 
       it('Should not be able to unwrap more than you have', async () => {
         const amountToWrap = 100
 
-        await depositToken.approve(lockableTokenWrapper.address, amountToWrap, {
-          from: appManager,
-        })
-
-        await lockableTokenWrapper.wrap(amountToWrap, {
-          from: appManager,
-        })
-
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
         await assertRevert(
           lockableTokenWrapper.unwrap(amountToWrap * 2, {
             from: appManager,
           }),
           'EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
+        )
+      })
+
+      it('Should not be able to unwrap because it needs to wait the correct time', async () => {
+        const amountToWrap = 100
+
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+        await assertRevert(
+          lockableTokenWrapper.unwrap(amountToWrap, {
+            from: appManager,
+          }),
+          'EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+        )
+      })
+
+      it('Should be able to unwrap (partial ok 1)', async () => {
+        const amountToWrap = 100
+        const amountToUnwrap = 200
+
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await unwrap(lockableTokenWrapper, amountToUnwrap, appManager)
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
+        )
+
+        assert.strictEqual(
+          actualBalances.balanceAppManager,
+          initBalances.balanceAppManager
+        )
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
+        )
+      })
+
+      it('Should not be able to unwrap because it needs to wait the correct time (partial fail 1)', async () => {
+        const amountToWrap = 100
+        const amountToUnwrap = 200
+
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await wrap(depositToken, lockableTokenWrapper, amountToWrap, appManager)
+
+        // NOTE: trying to unwrap 200 but only 100 are unlockable so the tx must be reverted
+        await assertRevert(
+          lockableTokenWrapper.unwrap(amountToUnwrap, {
+            from: appManager,
+          }),
+          'EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
     })

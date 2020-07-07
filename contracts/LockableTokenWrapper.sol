@@ -137,27 +137,74 @@ contract LockableTokenWrapper is AragonApp {
         return lockTime;
     }
 
-    /**
-     * @dev lock.unlockableTime corresponds to the date after which tokens can be unlocked
-     */
-    function canUnwrap(address _unlocker, uint256 _amount)
-        internal
-        returns (bool)
-    {
-        Lock[] storage locks = addressesWrapLock[_unlocker];
-
+    function gett() external view returns (uint256) {
+        //return block.timestamp;
+        //return lockTime;
+        Lock[] storage locks = addressesWrapLock[msg.sender];
         uint256 total = 0;
-        for (uint64 i = 0; i < locks.length; i++) {
-            if (locks[i].unlockableTime > block.timestamp) {
-                sum.add(locks[i].amount);
+        uint256 result = 0;
 
-                // if there is remainder subtract from the last lock
-                if (_amount <= total) {
-                    // TODO
+        for (uint64 i = 0; i < locks.length; i++) {
+            if (block.timestamp >= locks[i].unlockableTime) {
+                total = total.add(locks[i].amount);
+
+                if (100 == total) {
+                    result = 1;
+                    break;
+                } else if (100 < total) {
+                    // there is remainder. subtract it from the last lock (not remove)
+                    //locks[i].amount = total.sub(_amount);
+                    result = 2;
+                    break;
                 }
             }
         }
 
-        return false;
+        return result;
+    }
+
+    /**
+     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related locks
+     * @dev lock.unlockableTime corresponds to the date after which tokens can be unlocked
+     * @param _unwrapper address who want to unwrap
+     * @param _amount amount
+     */
+    function canUnwrap(address _unwrapper, uint256 _amount)
+        internal
+        returns (bool)
+    {
+        Lock[] storage locks = addressesWrapLock[_unwrapper];
+
+        uint256 total = 0;
+        uint256[] memory lockToRemove = new uint256[](locks.length);
+        uint256 indexLockToRemove = 0;
+
+        bool result = false;
+        for (uint64 i = 0; i < locks.length; i++) {
+            if (block.timestamp >= locks[i].unlockableTime) {
+                total = total.add(locks[i].amount);
+
+                if (_amount == total) {
+                    lockToRemove[indexLockToRemove] = i;
+                    indexLockToRemove = indexLockToRemove.add(1);
+                    result = true;
+                    break;
+                } else if (_amount < total) {
+                    // there is remainder. update it from the last lock
+                    locks[i].amount = total.sub(_amount);
+                    result = true;
+                    break;
+                } else {
+                    lockToRemove[indexLockToRemove] = i;
+                    indexLockToRemove = indexLockToRemove.add(1);
+                }
+            }
+        }
+
+        for (uint64 j = 0; j < indexLockToRemove; j++) {
+            delete locks[lockToRemove[j]];
+        }
+
+        return result;
     }
 }
