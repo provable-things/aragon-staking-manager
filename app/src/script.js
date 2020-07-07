@@ -16,10 +16,6 @@ app.store(
 
     try {
       switch (event) {
-        /*case 'Increment':
-          return { ...nextState, count: await getDepositToken() }
-        case 'Decrement':
-          return { ...nextState, count: await getDepositToken() }*/
         case events.ACCOUNTS_TRIGGER:
           return handleAccountChange(nextState, returnValues)
         case events.SYNC_STATUS_SYNCING:
