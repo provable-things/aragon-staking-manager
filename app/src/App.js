@@ -9,7 +9,13 @@ import ERC20 from './abi/ERC20.json'
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  const { depositToken, miniMeToken, isSyncing } = appState
+  const {
+    depositToken,
+    depositTokenBalance,
+    miniMeToken,
+    miniMeTokenBalance,
+    isSyncing,
+  } = appState
 
   const [opened, setOpened] = useState(false)
   const [action, setAction] = useState(null)
@@ -64,7 +70,12 @@ const App = () => {
             <Wrapper action={action} onClick={handleClick} />
           </SidePanel>
 
-          <Details depositToken={depositToken} miniMeToken={miniMeToken} />
+          <Details
+            depositToken={depositToken}
+            depositTokenBalance={depositTokenBalance}
+            miniMeToken={miniMeToken}
+            miniMeTokenBalance={miniMeTokenBalance}
+          />
         </Fragment>
       )}
     </Main>

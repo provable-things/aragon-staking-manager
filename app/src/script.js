@@ -1,9 +1,9 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
-import { first } from 'rxjs/operators'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
+import { correctFormat } from './utils/format'
 
 const app = new Aragon()
 
@@ -52,10 +52,24 @@ function initializeState() {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
+      const accounts = await app.web3Eth('getAccounts').toPromise()
+      const miniMeTokenBalance = await getTokenBalance(
+        miniMeTokenAddress,
+        miniMeToken.decimals,
+        accounts[0]
+      )
+      const depositTokenBalance = await getTokenBalance(
+        depositTokenAddress,
+        miniMeToken.decimals,
+        accounts[0]
+      )
+
       return {
         ...cachedState,
         miniMeToken,
+        miniMeTokenBalance,
         depositToken,
+        depositTokenBalance,
       }
     } catch (err) {
       console.log(err)
@@ -75,4 +89,10 @@ const getTokenData = async (_tokenAddress) => {
     symbol,
     address: _tokenAddress,
   }
+}
+
+const getTokenBalance = async (_tokenAddress, _tokenDecimals, _address) => {
+  const token = app.external(_tokenAddress, ERC20Abi)
+  const balance = await token.balanceOf(_address).toPromise()
+  return correctFormat(balance, _tokenDecimals, '/')
 }
