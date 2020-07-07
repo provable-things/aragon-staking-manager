@@ -1,41 +1,30 @@
 import React, { Fragment, useState } from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import Wrapper from './components/Wrapper'
 import Details from './components/Details'
-import styled from 'styled-components'
-
-import ERC20 from './abi/ERC20.json'
 
 const App = () => {
-  const { api, appState } = useAragonApi()
   const {
     depositToken,
     depositTokenBalance,
     miniMeToken,
     miniMeTokenBalance,
     isSyncing,
-  } = appState
+    actions,
+    panelState,
+  } = useAppLogic()
 
-  const [opened, setOpened] = useState(false)
   const [action, setAction] = useState(null)
 
   const handleClick = ({ amount, action }) => {
-    console.log(amount, action)
-    //api.wrap(amount).toPromise()
-    /*if (action === 'Wrap') {
-      api
-        .wrap(amount, {
-          token: { address: depositToken.address, value: amount },
-        })
-        .toPromise()
+    if (action === 'Wrap') {
+      actions.wrap(amount, {
+        token: { address: depositToken.address, value: amount },
+      })
     } else if (action === 'Unwrap') {
-      api
-        .wrap(amount, {
-          token: { address: depositToken.address, value: amount },
-        })
-        .toPromise()
-    }*/
+      actions.wrap(amount)
+    }
   }
 
   return (
@@ -51,8 +40,8 @@ const App = () => {
                 <Button
                   mode="normal"
                   label={'Unwrap'}
-                  onClick={() => {
-                    setOpened(true)
+                  onClick={(_e) => {
+                    panelState.requestOpen(_e)
                     setAction('Unwrap')
                   }}
                 />
@@ -60,8 +49,8 @@ const App = () => {
                   style={{ marginLeft: '10px' }}
                   mode="strong"
                   label={'Wrap'}
-                  onClick={() => {
-                    setOpened(true)
+                  onClick={(_e) => {
+                    panelState.requestOpen(_e)
                     setAction('Wrap')
                   }}
                 />
@@ -70,11 +59,12 @@ const App = () => {
           />
           <SidePanel
             title={`${action} your tokens`}
-            opened={opened}
-            onClose={() => {
-              setOpened(false)
+            opened={panelState.visible}
+            onClose={(_e) => {
               setAction(null)
+              panelState.requestClose(_e)
             }}
+            onTransitionEnd={panelState.endTransition}
           >
             <Wrapper action={action} onClick={handleClick} />
           </SidePanel>

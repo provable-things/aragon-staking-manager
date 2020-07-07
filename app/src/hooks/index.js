@@ -1,59 +1,66 @@
-/*import { useCallback, useState, useMemo } from 'react'
-import { useAppState, useAragonApi, usePath } from '@aragon/api-react'
-import { useSidePanel } from './utils-hooks'
+import { useCallback } from 'react'
+import { useAragonApi, useAppState } from '@aragon/api-react'
+import { useSidePanel } from './side-panel'
 
-
-
-export function useWrapAction(onDone) {
+const useWrapAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
-    (amount, intentParams) => {
+    (_amount, _intentParams) => {
       try {
-        api.wrap(amount, intentParams).toPromise()
+        api.wrap(_amount, _intentParams).toPromise()
 
-        onDone()
+        _onDone()
       } catch (error) {
         console.error(error)
       }
     },
-    [api, onDone]
+    [api, _onDone]
   )
 }
 
-export function useUnwrapAction(onDone) {
+const useUnwrapAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
-    (amount, intentParams) => {
+    (_amount, _intentParams) => {
       try {
-        api.unwrap(amount, intentParams).toPromise()
+        api.unwrap(_amount, _onDone).toPromise()
 
-        onDone()
+        _onDone()
       } catch (error) {
         console.error(error)
       }
     },
-    [api, onDone]
+    [api, _onDone]
   )
 }
 
-export function useAppLogic() {
-  const { account, token, isSyncing, ready, acceptedTokens = [] } = useAppState()
-  const [selectedRequest, selectRequest] = useSelectedRequest(requests)
-  //const panelState = useSidePanel()
+const useAppLogic = () => {
+  const {
+    depositToken,
+    depositTokenBalance,
+    miniMeToken,
+    miniMeTokenBalance,
+    isSyncing,
+  } = useAppState()
+
+  const panelState = useSidePanel()
 
   const actions = {
-    wrap: useWrapAction(/*panelState.requestClose),
-    unwrap: useUnwrapAction(/*panelState.requestClose),
+    wrap: useWrapAction(panelState.requestClose),
+    unwrap: useUnwrapAction(panelState.requestClose),
   }
 
   return {
-    panelState,
-    selectedRequest,
-    account,
-    token,
     actions,
-    requests,
+    depositToken,
+    depositTokenBalance,
+    miniMeToken,
+    miniMeTokenBalance,
+    isSyncing,
+    panelState,
   }
-}*/
+}
+
+export { useWrapAction, useUnwrapAction, useAppLogic }
