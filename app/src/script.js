@@ -1,14 +1,15 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
-import Aragon, { events } from '@aragon/api'
+import Aragon, { events, a } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
 import { correctFormat } from './utils/format'
+import { useConnectedAccount } from '@aragon/api-react'
 
 const app = new Aragon()
 
 app.store(
-  async (state, { event }) => {
+  async (state, { event, returnValues }) => {
     const nextState = {
       ...state,
     }
@@ -19,6 +20,8 @@ app.store(
           return { ...nextState, count: await getDepositToken() }
         case 'Decrement':
           return { ...nextState, count: await getDepositToken() }*/
+        case events.ACCOUNTS_TRIGGER:
+          return handleAccountChange(nextState, returnValues)
         case events.SYNC_STATUS_SYNCING:
           return { ...nextState, isSyncing: true }
         case events.SYNC_STATUS_SYNCED:
@@ -52,28 +55,30 @@ function initializeState() {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
-      const accounts = await app.web3Eth('getAccounts').toPromise()
-      const miniMeTokenBalance = await getTokenBalance(
-        miniMeTokenAddress,
-        miniMeToken.decimals,
-        accounts[0]
-      )
-      const depositTokenBalance = await getTokenBalance(
-        depositTokenAddress,
-        miniMeToken.decimals,
-        accounts[0]
-      )
-
       return {
         ...cachedState,
         miniMeToken,
-        miniMeTokenBalance,
         depositToken,
-        depositTokenBalance,
       }
     } catch (err) {
       console.log(err)
     }
+  }
+}
+
+const handleAccountChange = async (_nextState, { account }) => {
+  const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
+    _nextState.miniMeToken.address,
+    _nextState.miniMeToken.decimals,
+    _nextState.depositToken.address,
+    _nextState.depositToken.decimals,
+    account
+  )
+
+  return {
+    ..._nextState,
+    miniMeTokenBalance,
+    depositTokenBalance,
   }
 }
 
@@ -88,6 +93,30 @@ const getTokenData = async (_tokenAddress) => {
     name,
     symbol,
     address: _tokenAddress,
+  }
+}
+
+const getTokenBalances = async (
+  _miniMeTokenAddress,
+  _miniMeTokenDecimals,
+  _depositTokenAddress,
+  _depositTokenDecimals,
+  _account
+) => {
+  const miniMeTokenBalance = await getTokenBalance(
+    _miniMeTokenAddress,
+    _miniMeTokenDecimals,
+    _account
+  )
+  const depositTokenBalance = await getTokenBalance(
+    _depositTokenAddress,
+    _depositTokenDecimals,
+    _account
+  )
+
+  return {
+    miniMeTokenBalance,
+    depositTokenBalance,
   }
 }
 

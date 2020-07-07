@@ -20,13 +20,22 @@ const App = () => {
   const [opened, setOpened] = useState(false)
   const [action, setAction] = useState(null)
 
-  const handleClick = () => {
+  const handleClick = ({ amount, action }) => {
+    console.log(amount, action)
     //api.wrap(amount).toPromise()
-    api
-      .wrap(amount, {
-        token: { address: depositToken.address, value: amount },
-      })
-      .toPromise()
+    /*if (action === 'Wrap') {
+      api
+        .wrap(amount, {
+          token: { address: depositToken.address, value: amount },
+        })
+        .toPromise()
+    } else if (action === 'Unwrap') {
+      api
+        .wrap(amount, {
+          token: { address: depositToken.address, value: amount },
+        })
+        .toPromise()
+    }*/
   }
 
   return (
