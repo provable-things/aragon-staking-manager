@@ -1,6 +1,7 @@
 const reducer = (_state) => {
   if (_state === null) {
     return {
+      account: null,
       depositTokenBalance: null,
       depositToken: null,
       miniMeTokenBalance: 0,
