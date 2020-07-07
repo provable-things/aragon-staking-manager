@@ -40,7 +40,11 @@ const Wrapper = (_props) => {
           />
         </Field>
       </WrapperField>
-      <Button onClick={() => onClick()} label={action} />
+      <Button
+        onClick={() => onClick({ amount, action })}
+        label={action}
+        disabled={amount.length === 0}
+      />
     </Fragment>
   )
 }
