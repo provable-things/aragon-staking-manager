@@ -47,7 +47,7 @@ contract LockableTokenWrapper is AragonApp {
     event Wrap(address sender, uint256 amount);
     event Unwrap(address sender, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
-    event MaxLockChanged(uint256 maxLocks);
+    event MaxLocksChanged(uint256 maxLocks);
 
     /**
      * @notice Initialize LockableTokenWrapper app contract
@@ -154,7 +154,7 @@ contract LockableTokenWrapper is AragonApp {
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
         maxLocks = _maxLocks;
-        emit MaxLockChanged(maxLocks);
+        emit MaxLocksChanged(maxLocks);
     }
 
     /**
