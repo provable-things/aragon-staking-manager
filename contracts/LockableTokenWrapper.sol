@@ -12,20 +12,23 @@ contract LockableTokenWrapper is AragonApp {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
-    // bytes32 public constant CHANGE_LOCK_TIME = keccak256("CHANGE_LOCK_TIME");
     // prettier-ignore
-    bytes32 public constant CHANGE_LOCK_TIME = 0x0de662b08a8e500dc68984655a8d4ef796f9c697661693a04531c26d3f7bfb99;
+    bytes32 public constant CHANGE_LOCK_TIME_ROLE = keccak256("CHANGE_LOCK_TIME_ROLE");
+    // prettier-ignore
+    bytes32 public constant CHANGE_MAX_LOCKS_ROLE = keccak256("CHANGE_MAX_LOCKS_ROLE");
 
     // prettier-ignore
-    string private constant ERROR_ADDRESS_NOT_CONTRACT = "EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT";
+    string private constant ERROR_ADDRESS_NOT_CONTRACT = "LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT";
     // prettier-ignore
-    string private constant ERROR_TOKEN_WRAP_REVERTED = "EXTERNAL_TOKEN_WRAPPER_WRAP_REVERTED";
+    string private constant ERROR_TOKEN_WRAP_REVERTED = "LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_WRAP_TOKENS = "EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_WRAP_TOKENS";
+    string private constant ERROR_INSUFFICENT_WRAP_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_WRAP_TOKENS";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_UNWRAP_TOKENS = "EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS";
+    string private constant ERROR_INSUFFICENT_UNWRAP_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS";
     // prettier-ignore
-    string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
+    string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
+    // prettier-ignore
+    string private constant ERROR_MAXIMUN_LOCKS_REACHED = "LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED";
 
     struct Lock {
         uint256 unlockableTime;
@@ -37,12 +40,14 @@ contract LockableTokenWrapper is AragonApp {
 
     address public depositToken;
     uint256 public lockTime;
+    uint256 public maxLocks;
 
     mapping(address => Lock[]) public addressesWrapLock;
 
     event Wrap(address sender, uint256 amount);
     event Unwrap(address sender, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
+    event MaxLockChanged(uint256 maxLocks);
 
     /**
      * @notice Initialize LockableTokenWrapper app contract
@@ -55,7 +60,8 @@ contract LockableTokenWrapper is AragonApp {
         address _tokenManager,
         address _vault,
         address _depositToken,
-        uint256 _lockTime
+        uint256 _lockTime,
+        uint256 _maxLocks
     ) external onlyInit {
         require(isContract(_tokenManager), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_depositToken), ERROR_ADDRESS_NOT_CONTRACT);
@@ -65,6 +71,7 @@ contract LockableTokenWrapper is AragonApp {
         vault = Vault(_vault);
         depositToken = _depositToken;
         lockTime = _lockTime;
+        maxLocks = _maxLocks;
 
         initialized();
     }
@@ -80,7 +87,10 @@ contract LockableTokenWrapper is AragonApp {
             ERROR_INSUFFICENT_WRAP_TOKENS
         );
 
-        // TODO check impossible to do more than 20 wrap
+        require(
+            addressesWrapLock[msg.sender].length < maxLocks,
+            ERROR_MAXIMUN_LOCKS_REACHED
+        );
 
         require(
             ERC20(depositToken).safeTransferFrom(
@@ -129,38 +139,22 @@ contract LockableTokenWrapper is AragonApp {
      */
     function changeLockTime(uint256 _lockTime)
         external
-        auth(CHANGE_LOCK_TIME)
-        returns (uint256)
+        auth(CHANGE_LOCK_TIME_ROLE)
     {
         lockTime = _lockTime;
         emit LockTimeChanged(lockTime);
-        return lockTime;
     }
 
-    function gett() external view returns (uint256) {
-        //return block.timestamp;
-        //return lockTime;
-        Lock[] storage locks = addressesWrapLock[msg.sender];
-        uint256 total = 0;
-        uint256 result = 0;
-
-        for (uint64 i = 0; i < locks.length; i++) {
-            if (block.timestamp >= locks[i].unlockableTime) {
-                total = total.add(locks[i].amount);
-
-                if (100 == total) {
-                    result = 1;
-                    break;
-                } else if (100 < total) {
-                    // there is remainder. subtract it from the last lock (not remove)
-                    //locks[i].amount = total.sub(_amount);
-                    result = 2;
-                    break;
-                }
-            }
-        }
-
-        return result;
+    /**
+     * @notice Change max locks
+     * @param _maxLocks Maximun number of locks allowed for an address
+     */
+    function changeMaxLocks(uint256 _maxLocks)
+        external
+        auth(CHANGE_MAX_LOCKS_ROLE)
+    {
+        maxLocks = _maxLocks;
+        emit MaxLockChanged(maxLocks);
     }
 
     /**
@@ -190,7 +184,7 @@ contract LockableTokenWrapper is AragonApp {
                     result = true;
                     break;
                 } else if (_amount < total) {
-                    // there is remainder. update it from the last lock
+                    // remainder. update it from the last lock
                     locks[i].amount = total.sub(_amount);
                     result = true;
                     break;
