@@ -25,7 +25,7 @@ const useUnwrapAction = (_onDone) => {
   return useCallback(
     (_amount, _intentParams) => {
       try {
-        api.unwrap(_amount, _onDone).toPromise()
+        api.unwrap(_amount, _intentParams).toPromise()
 
         _onDone()
       } catch (error) {

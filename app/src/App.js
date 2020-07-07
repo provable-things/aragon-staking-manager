@@ -3,6 +3,7 @@ import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import Wrapper from './components/Wrapper'
 import Details from './components/Details'
+import { correctFormat, parseAmount } from './utils/format'
 
 const App = () => {
   const {
@@ -19,11 +20,17 @@ const App = () => {
 
   const handleClick = ({ amount, action }) => {
     if (action === 'Wrap') {
-      actions.wrap(amount, {
-        token: { address: depositToken.address, value: amount },
+      const formattedAmount = correctFormat(
+        parseAmount(depositToken.decimals, amount),
+        depositToken.decimals,
+        '*'
+      ).toString()
+
+      actions.wrap(formattedAmount, {
+        token: { address: depositToken.address, value: formattedAmount },
       })
     } else if (action === 'Unwrap') {
-      actions.wrap(amount)
+      actions.unwrap(parseAmount(miniMeToken.decimals, amount))
     }
   }
 

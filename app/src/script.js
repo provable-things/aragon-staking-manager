@@ -4,7 +4,6 @@ import Aragon, { events, a } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
 import { correctFormat } from './utils/format'
-import { useConnectedAccount } from '@aragon/api-react'
 
 const app = new Aragon()
 
@@ -22,8 +21,8 @@ app.store(
           return { ...nextState, isSyncing: true }
         case events.SYNC_STATUS_SYNCED:
           return { ...nextState, isSyncing: false }
-        /*case 'Wrap':
-          return handleWrap(nextState)*/
+        case 'Wrap':
+          return handleWrap(nextState)
         default:
           return state
       }
@@ -62,6 +61,22 @@ function initializeState() {
   }
 }
 
+const handleWrap = async (_nextState) => {
+  const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
+    _nextState.miniMeToken.address,
+    _nextState.miniMeToken.decimals,
+    _nextState.depositToken.address,
+    _nextState.depositToken.decimals,
+    _nextState.account
+  )
+
+  return {
+    ..._nextState,
+    miniMeTokenBalance,
+    depositTokenBalance,
+  }
+}
+
 const handleAccountChange = async (_nextState, { account }) => {
   const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
     _nextState.miniMeToken.address,
@@ -75,6 +90,7 @@ const handleAccountChange = async (_nextState, { account }) => {
     ..._nextState,
     miniMeTokenBalance,
     depositTokenBalance,
+    account,
   }
 }
 
