@@ -16,22 +16,29 @@ const { hash: nameHash } = require('eth-ens-namehash')
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
 const MOCK_TOKEN_BALANCE = 100000
 const ONE_DAY = 86400
+const MAX_LOCKS = 20
 
 contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
   let miniMeToken,
-    externalTokenWrapperBase,
+    lockableTokenWrapperBase,
     lockableTokenWrapper,
     tokenManager,
     tokenManagerBase,
     depositToken,
     vaultBase,
     vault
-  let MINT_ROLE, BURN_ROLE, TRANSFER_ROLE
+  let MINT_ROLE,
+    BURN_ROLE,
+    TRANSFER_ROLE,
+    CHANGE_LOCK_TIME_ROLE,
+    CHANGE_MAX_LOCKS_ROLE
 
   const NOT_CONTRACT = appManager
 
   before('deploy base apps', async () => {
-    externalTokenWrapperBase = await LockableTokenWrapper.new()
+    lockableTokenWrapperBase = await LockableTokenWrapper.new()
+    CHANGE_LOCK_TIME_ROLE = await lockableTokenWrapperBase.CHANGE_LOCK_TIME_ROLE()
+    CHANGE_MAX_LOCKS_ROLE = await lockableTokenWrapperBase.CHANGE_MAX_LOCKS_ROLE()
 
     tokenManagerBase = await TokenManager.new()
     MINT_ROLE = await tokenManagerBase.MINT_ROLE()
@@ -61,7 +68,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       await newApp(
         dao,
         nameHash('token-deposit.aragonpm.test'),
-        externalTokenWrapperBase.address,
+        lockableTokenWrapperBase.address,
         appManager
       )
     )
@@ -91,16 +98,17 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
     depositToken = await MockErc20.new(appManager, MOCK_TOKEN_BALANCE)
   })
 
-  describe('initialize(address _tokenManager, address _vault, address _depositToken, _uint256 lockTime) fails', async () => {
+  describe('initialize(address _tokenManager, address _vault, address _depositToken, _uint256 lockTime _uint256 maxLocks) fails', async () => {
     it('Should revert when passed non-contract address as token manager', async () => {
       await assertRevert(
         lockableTokenWrapper.initialize(
           NOT_CONTRACT,
           vault.address,
           ETH_ADDRESS,
-          ONE_DAY * 6
+          ONE_DAY * 6,
+          MAX_LOCKS
         ),
-        'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
     })
 
@@ -110,9 +118,10 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           tokenManager.address,
           NOT_CONTRACT,
           ETH_ADDRESS,
-          ONE_DAY * 6
+          ONE_DAY * 6,
+          MAX_LOCKS
         ),
-        'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
     })
 
@@ -122,20 +131,22 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           tokenManager.address,
           vault.address,
           NOT_CONTRACT,
-          ONE_DAY * 6
+          ONE_DAY * 6,
+          MAX_LOCKS
         ),
-        'EXTERNAL_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
       )
     })
   })
 
-  describe('initialize(address _tokenManager, address _vault, address address _depositToken, _uint256 lockTime)', () => {
+  describe('initialize(address _tokenManager, address _vault, address address _depositToken, _uint256 lockTime, _uint256 maxLocks)', () => {
     beforeEach(async () => {
       await lockableTokenWrapper.initialize(
         tokenManager.address,
         vault.address,
         depositToken.address,
-        ONE_DAY * 6
+        ONE_DAY * 6,
+        MAX_LOCKS
       )
     })
 
@@ -147,6 +158,56 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       assert.strictEqual(actualTokenManager, tokenManager.address)
       assert.strictEqual(actualVault, vault.address)
       assert.strictEqual(actualDepositToken, depositToken.address)
+    })
+
+    it('Should set able to set maxLocks and lockTime', async () => {
+      await setPermission(
+        acl,
+        appManager,
+        lockableTokenWrapper.address,
+        CHANGE_LOCK_TIME_ROLE,
+        appManager
+      )
+
+      await setPermission(
+        acl,
+        appManager,
+        lockableTokenWrapper.address,
+        CHANGE_MAX_LOCKS_ROLE,
+        appManager
+      )
+
+      await lockableTokenWrapper.changeLockTime(ONE_DAY * 7, {
+        from: appManager,
+      })
+
+      await lockableTokenWrapper.changeMaxLocks(MAX_LOCKS + 1, {
+        from: appManager,
+      })
+
+      const maxLocks = parseInt(await lockableTokenWrapper.maxLocks())
+      const lockTime = parseInt(await lockableTokenWrapper.lockTime())
+
+      assert.strictEqual(maxLocks, MAX_LOCKS + 1)
+      assert.strictEqual(lockTime, ONE_DAY * 7)
+    })
+
+    it('Should not ne able to set maxLocks because of no permission', async () => {
+      await assertRevert(
+        lockableTokenWrapper.changeMaxLocks(MAX_LOCKS + 1, {
+          from: appManager,
+        }),
+        'APP_AUTH_FAILED'
+      )
+    })
+
+    it('Should not ne able to set lockTime because of no permission', async () => {
+      await assertRevert(
+        lockableTokenWrapper.changeLockTime(ONE_DAY * 7, {
+          from: appManager,
+        }),
+        'APP_AUTH_FAILED'
+      )
     })
 
     describe('wrap(uint256 _amount)', async () => {
@@ -187,7 +248,18 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper.wrap(100, {
             from: appManager,
           }),
-          'EXTERNAL_TOKEN_WRAPPER_WRAP_REVERTED'
+          'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
+        )
+      })
+
+      it('Should not be able to perform more wrap than allowed (maxLocks)', async () => {
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await wrap(depositToken, lockableTokenWrapper, 1, appManager)
+        }
+
+        await assertRevert(
+          wrap(depositToken, lockableTokenWrapper, 1, appManager),
+          'LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED'
         )
       })
 
@@ -205,7 +277,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper.wrap(amountToWrap, {
             from: appManager,
           }),
-          'EXTERNAL_TOKEN_WRAPPER_WRAP_REVERTED'
+          'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
         )
       })
     })
@@ -273,7 +345,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper.unwrap(amountToWrap * 2, {
             from: appManager,
           }),
-          'EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
+          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
         )
       })
 
@@ -285,7 +357,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper.unwrap(amountToWrap, {
             from: appManager,
           }),
-          'EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+          'LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -328,7 +400,53 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper.unwrap(amountToUnwrap, {
             from: appManager,
           }),
-          'EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+          'LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+        )
+      })
+
+      it('Should be able to unwrap (partial ok 2)', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await wrap(depositToken, lockableTokenWrapper, 20, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await wrap(depositToken, lockableTokenWrapper, 20, appManager)
+        // NOTE: unwrap 15 of first 20 wrapped tokens
+        await unwrap(lockableTokenWrapper, 15, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 20, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
+        )
+
+        assert.strictEqual(
+          actualBalances.balanceAppManager,
+          initBalances.balanceAppManager
+        )
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
+        )
+      })
+
+      it('Should not be able to unwrap more than what you have wrapped (partial fail 2)', async () => {
+        await wrap(depositToken, lockableTokenWrapper, 20, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await wrap(depositToken, lockableTokenWrapper, 20, appManager)
+        await unwrap(lockableTokenWrapper, 15, appManager)
+        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await unwrap(lockableTokenWrapper, 20, appManager)
+        await assertRevert(
+          lockableTokenWrapper.unwrap(10, {
+            from: appManager,
+          }),
+          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
         )
       })
     })
