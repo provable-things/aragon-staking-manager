@@ -23,9 +23,9 @@ const useUnwrapAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
-    (_amount, _intentParams) => {
+    (_amount) => {
       try {
-        api.unwrap(_amount, _intentParams).toPromise()
+        api.unwrap(_amount).toPromise()
 
         _onDone()
       } catch (error) {

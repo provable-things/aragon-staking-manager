@@ -30,7 +30,13 @@ const App = () => {
         token: { address: depositToken.address, value: formattedAmount },
       })
     } else if (action === 'Unwrap') {
-      actions.unwrap(parseAmount(miniMeToken.decimals, amount))
+      const formattedAmount = correctFormat(
+        parseAmount(miniMeToken.decimals, amount),
+        miniMeToken.decimals,
+        '*'
+      ).toString()
+
+      actions.unwrap(formattedAmount)
     }
   }
 

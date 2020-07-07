@@ -7,6 +7,8 @@ import { correctFormat } from './utils/format'
 
 const app = new Aragon()
 
+// TODO: check that tokens (miniMe and deposit) have the same decimals
+
 app.store(
   async (state, { event, returnValues }) => {
     const nextState = {
@@ -22,7 +24,9 @@ app.store(
         case events.SYNC_STATUS_SYNCED:
           return { ...nextState, isSyncing: false }
         case 'Wrap':
-          return handleWrap(nextState)
+          return handleEvent(nextState)
+        case 'Unwrap':
+          return handleEvent(nextState)
         default:
           return state
       }
@@ -61,7 +65,7 @@ function initializeState() {
   }
 }
 
-const handleWrap = async (_nextState) => {
+const handleEvent = async (_nextState) => {
   const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
     _nextState.miniMeToken.address,
     _nextState.miniMeToken.decimals,
