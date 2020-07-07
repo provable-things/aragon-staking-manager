@@ -55,6 +55,7 @@ contract LockableTokenWrapper is AragonApp {
      * @param _vault Vault address
      * @param _depositToken Accepted token address
      * @param _lockTime number of seconds after which it's possible to unwrap tokens related to a wrap
+     * @param _maxLocks number of possible locks for a given address before doing an unwrap
      */
     function initialize(
         address _tokenManager,
