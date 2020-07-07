@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, GU, textStyle } from '@aragon/ui'
+import { Box, GU, useTheme } from '@aragon/ui'
 import { Row, Col } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 
@@ -9,7 +9,10 @@ const Details = (_props) => {
     depositTokenBalance,
     miniMeToken,
     miniMeTokenBalance,
+    lockTime,
   } = _props
+
+  const theme = useTheme()
 
   return (
     <Row>
@@ -31,7 +34,35 @@ const Details = (_props) => {
       </Col>
       <Col xs={12} lg={3} className="mt-3 mt-lg-0">
         <Box heading={'INFO'}>
-          {`Deposit your ${depositToken.symbol} and get the corresponding amount of ${miniMeToken.symbol}`}
+          Deposit your
+          <span
+            css={`
+              color: ${theme.info};
+              font-weight: bold;
+            `}
+          >
+            {` ${depositToken.symbol} `}
+          </span>
+          and get the corresponding amount of
+          <span
+            css={`
+              color: ${theme.info};
+              font-weight: bold;
+            `}
+          >
+            {` ${miniMeToken.symbol}`}.
+          </span>
+          <br />
+          After depositing, it will be possible to withdraw them only after
+          <span
+            css={`
+              color: ${theme.info};
+              font-size: 18px;
+              font-weight: bold;
+            `}
+          >
+            {` ${lockTime / 86400} days`}
+          </span>
         </Box>
       </Col>
     </Row>
@@ -43,6 +74,7 @@ Details.propTypes = {
   depositTokenBalance: PropTypes.number,
   miniMeToken: PropTypes.object,
   miniMeTokenBalance: PropTypes.number,
+  lockTime: PropTypes.string,
 }
 
 export default Details

@@ -14,6 +14,7 @@ const App = () => {
     isSyncing,
     actions,
     panelState,
+    lockTime,
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
@@ -79,7 +80,11 @@ const App = () => {
             }}
             onTransitionEnd={panelState.endTransition}
           >
-            <Wrapper action={action} onClick={handleClick} />
+            <Wrapper
+              action={action}
+              lockTime={lockTime}
+              onClick={handleClick}
+            />
           </SidePanel>
 
           <Details
@@ -87,6 +92,7 @@ const App = () => {
             depositTokenBalance={depositTokenBalance}
             miniMeToken={miniMeToken}
             miniMeTokenBalance={miniMeTokenBalance}
+            lockTime={lockTime}
           />
         </Fragment>
       )}

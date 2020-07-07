@@ -54,10 +54,13 @@ function initializeState() {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
+      const lockTime = await app.call('lockTime').toPromise()
+
       return {
         ...cachedState,
         miniMeToken,
         depositToken,
+        lockTime,
       }
     } catch (err) {
       console.log(err)
