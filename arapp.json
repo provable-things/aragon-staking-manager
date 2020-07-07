@@ -1,5 +1,16 @@
 {
-  "roles": [],
+  "roles": [
+    {
+      "name": "Change lock time",
+      "id": "CHANGE_LOCK_TIME_ROLE",
+      "params": []
+    },
+    {
+      "name": "Change max locks for a given address",
+      "id": "CHANGE_MAX_LOCKS_ROLE",
+      "params": []
+    }
+  ],
   "environments": {
     "default": {
       "appName": "lockable-token-wrapper-app.aragonpm.eth",
