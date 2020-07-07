@@ -1,5 +1,5 @@
 {
-  "name": "external-token-wrapper",
+  "name": "lockable-token-wrapper",
   "author": "Alessandro Manfredi <alle.manfredi@gmail.com>",
   "description": "An Aragon app for getting miniMeToken(s) in exchange for given ERC20 token(s)",
   "details_url": "/meta/details.md",

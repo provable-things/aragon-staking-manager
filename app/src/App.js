@@ -47,7 +47,7 @@ const App = () => {
       ) : (
         <Fragment>
           <Header
-            primary="External Token Wrapper"
+            primary="Lockable Token Wrapper"
             secondary={
               <React.Fragment>
                 <Button
