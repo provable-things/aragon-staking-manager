@@ -92,12 +92,4 @@ contract ExternalTokenWrapper is AragonApp {
         emit Unwrap(msg.sender, _amount);
         return _amount;
     }
-
-    /**
-     * @dev Disable recovery escape hatch, as it could be used
-     *      maliciously to transfer funds away from TokenRequest
-     */
-    function allowRecoverability(address token) public view returns (bool) {
-        return false;
-    }
 }
