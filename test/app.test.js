@@ -7,17 +7,17 @@ const MiniMeToken = artifacts.require('MiniMeToken')
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
 const MockErc20 = artifacts.require('TokenMock')
 const TokenManager = artifacts.require('TokenManager')
-const ExternalTokenWrapper = artifacts.require('ExternalTokenWrapper')
+const LockableTokenWrapper = artifacts.require('LockableTokenWrapper')
 const Vault = artifacts.require('Vault')
 const { hash: nameHash } = require('eth-ens-namehash')
 
 const ETH_ADDRESS = '0x0000000000000000000000000000000000000000'
 const MOCK_TOKEN_BALANCE = 100000
 
-contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
+contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
   let miniMeToken,
     externalTokenWrapperBase,
-    externalTokenWrapper,
+    lockableTokenWrapper,
     tokenManager,
     tokenManagerBase,
     depositToken,
@@ -28,7 +28,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
   const NOT_CONTRACT = appManager
 
   before('deploy base apps', async () => {
-    externalTokenWrapperBase = await ExternalTokenWrapper.new()
+    externalTokenWrapperBase = await LockableTokenWrapper.new()
 
     tokenManagerBase = await TokenManager.new()
     MINT_ROLE = await tokenManagerBase.MINT_ROLE()
@@ -54,7 +54,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
       true
     )
 
-    externalTokenWrapper = await ExternalTokenWrapper.at(
+    lockableTokenWrapper = await LockableTokenWrapper.at(
       await newApp(
         dao,
         nameHash('token-deposit.aragonpm.test'),
@@ -91,7 +91,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
   describe('initialize(address _tokenManager, address _vault, address _depositToken) fails', async () => {
     it('Should revert when passed non-contract address as token manager', async () => {
       await assertRevert(
-        externalTokenWrapper.initialize(
+        lockableTokenWrapper.initialize(
           NOT_CONTRACT,
           vault.address,
           ETH_ADDRESS
@@ -102,7 +102,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
     it('Should revert when passed non-contract address as vault', async () => {
       await assertRevert(
-        externalTokenWrapper.initialize(
+        lockableTokenWrapper.initialize(
           tokenManager.address,
           NOT_CONTRACT,
           ETH_ADDRESS
@@ -113,7 +113,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
     it('Should revert when passed non-contract address as deposit token', async () => {
       await assertRevert(
-        externalTokenWrapper.initialize(
+        lockableTokenWrapper.initialize(
           tokenManager.address,
           vault.address,
           NOT_CONTRACT
@@ -125,7 +125,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
   describe('initialize(address _tokenManager, address _vault, address address _depositToken)', () => {
     beforeEach(async () => {
-      await externalTokenWrapper.initialize(
+      await lockableTokenWrapper.initialize(
         tokenManager.address,
         vault.address,
         depositToken.address
@@ -133,9 +133,9 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
     })
 
     it('Should set correct variables', async () => {
-      const actualTokenManager = await externalTokenWrapper.tokenManager()
-      const actualVault = await externalTokenWrapper.vault()
-      const actualDepositToken = await externalTokenWrapper.depositToken()
+      const actualTokenManager = await lockableTokenWrapper.tokenManager()
+      const actualVault = await lockableTokenWrapper.vault()
+      const actualDepositToken = await lockableTokenWrapper.depositToken()
 
       assert.strictEqual(actualTokenManager, tokenManager.address)
       assert.strictEqual(actualVault, vault.address)
@@ -147,7 +147,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
         // NOTE nedeed MINT_ROLE assigned to token manager in order to call .mint within .wrap
         await setPermission(
           acl,
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           tokenManager.address,
           MINT_ROLE,
           appManager
@@ -165,11 +165,11 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
           await vault.balance(depositToken.address)
         )
 
-        await depositToken.approve(externalTokenWrapper.address, amountToWrap, {
+        await depositToken.approve(lockableTokenWrapper.address, amountToWrap, {
           from: appManager,
         })
 
-        await externalTokenWrapper.wrap(amountToWrap, {
+        await lockableTokenWrapper.wrap(amountToWrap, {
           from: appManager,
         })
 
@@ -193,7 +193,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
       it('Should not be able to wrap without token approve', async () => {
         await assertRevert(
-          externalTokenWrapper.wrap(100, {
+          lockableTokenWrapper.wrap(100, {
             from: appManager,
           }),
           'EXTERNAL_TOKEN_WRAPPER_WRAP_REVERTED'
@@ -203,7 +203,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
       it('Should not be able to wrap more than you have approved', async () => {
         const amountToWrap = 100
         await depositToken.approve(
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           amountToWrap / 2,
           {
             from: appManager,
@@ -211,7 +211,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         await assertRevert(
-          externalTokenWrapper.wrap(amountToWrap, {
+          lockableTokenWrapper.wrap(amountToWrap, {
             from: appManager,
           }),
           'EXTERNAL_TOKEN_WRAPPER_WRAP_REVERTED'
@@ -223,7 +223,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
       beforeEach(async () => {
         await setPermission(
           acl,
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           tokenManager.address,
           MINT_ROLE,
           appManager
@@ -231,7 +231,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
         await setPermission(
           acl,
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           tokenManager.address,
           BURN_ROLE,
           appManager
@@ -239,7 +239,7 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
 
         await setPermission(
           acl,
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           vault.address,
           TRANSFER_ROLE,
           appManager
@@ -258,18 +258,18 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         await depositToken.approve(
-          externalTokenWrapper.address,
+          lockableTokenWrapper.address,
           amountToUnwrap,
           {
             from: appManager,
           }
         )
 
-        await externalTokenWrapper.wrap(amountToUnwrap, {
+        await lockableTokenWrapper.wrap(amountToUnwrap, {
           from: appManager,
         })
 
-        await externalTokenWrapper.unwrap(amountToUnwrap, {
+        await lockableTokenWrapper.unwrap(amountToUnwrap, {
           from: appManager,
         })
 
@@ -288,16 +288,16 @@ contract('ExternalTokenWrapper', ([appManager, ...accounts]) => {
       it('Should not be able to unwrap more than you have', async () => {
         const amountToWrap = 100
 
-        await depositToken.approve(externalTokenWrapper.address, amountToWrap, {
+        await depositToken.approve(lockableTokenWrapper.address, amountToWrap, {
           from: appManager,
         })
 
-        await externalTokenWrapper.wrap(amountToWrap, {
+        await lockableTokenWrapper.wrap(amountToWrap, {
           from: appManager,
         })
 
         await assertRevert(
-          externalTokenWrapper.unwrap(amountToWrap * 2, {
+          lockableTokenWrapper.unwrap(amountToWrap * 2, {
             from: appManager,
           }),
           'EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'

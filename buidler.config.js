@@ -28,7 +28,7 @@ module.exports = {
     clientServePort: 3000,
     appSrcPath: 'app/',
     appBuildOutputPath: 'dist/',
-    appName: 'external-token-wrapper',
+    appName: 'lockable-token-wrapper',
     hooks, // Path to script hooks
   },
 }
