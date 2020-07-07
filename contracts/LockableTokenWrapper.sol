@@ -5,10 +5,12 @@ import "@aragon/os/contracts/common/SafeERC20.sol";
 import "@aragon/os/contracts/lib/token/ERC20.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
 
 
 contract LockableTokenWrapper is AragonApp {
     using SafeERC20 for ERC20;
+    using SafeMath for uint256;
 
     // bytes32 public constant CHANGE_LOCK_TIME = keccak256("CHANGE_LOCK_TIME");
     // prettier-ignore
@@ -22,9 +24,11 @@ contract LockableTokenWrapper is AragonApp {
     string private constant ERROR_INSUFFICENT_WRAP_TOKENS = "EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_WRAP_TOKENS";
     // prettier-ignore
     string private constant ERROR_INSUFFICENT_UNWRAP_TOKENS = "EXTERNAL_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS";
+    // prettier-ignore
+    string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "EXTERNAL_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
 
     struct Lock {
-        uint256 timestamp;
+        uint256 unlockableTime;
         uint256 amount;
     }
 
@@ -45,12 +49,13 @@ contract LockableTokenWrapper is AragonApp {
      * @param _tokenManager TokenManager address
      * @param _vault Vault address
      * @param _depositToken Accepted token address
+     * @param _lockTime number of seconds after which it's possible to unwrap tokens related to a wrap
      */
     function initialize(
         address _tokenManager,
         address _vault,
-        address _depositToken
-        /*uint256 _lockTime*/
+        address _depositToken,
+        uint256 _lockTime
     ) external onlyInit {
         require(isContract(_tokenManager), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_depositToken), ERROR_ADDRESS_NOT_CONTRACT);
@@ -59,7 +64,7 @@ contract LockableTokenWrapper is AragonApp {
         tokenManager = TokenManager(_tokenManager);
         vault = Vault(_vault);
         depositToken = _depositToken;
-        //lockTime = _lockTime;
+        lockTime = _lockTime;
 
         initialized();
     }
@@ -75,6 +80,8 @@ contract LockableTokenWrapper is AragonApp {
             ERROR_INSUFFICENT_WRAP_TOKENS
         );
 
+        // TODO check impossible to do more than 20 wrap
+
         require(
             ERC20(depositToken).safeTransferFrom(
                 msg.sender,
@@ -85,7 +92,9 @@ contract LockableTokenWrapper is AragonApp {
         );
 
         tokenManager.mint(msg.sender, _amount);
-        addressesWrapLock[msg.sender].push(Lock(block.timestamp, _amount));
+
+        uint256 unlockableTime = block.timestamp.add(lockTime);
+        addressesWrapLock[msg.sender].push(Lock(unlockableTime, _amount));
 
         emit Wrap(msg.sender, _amount);
         return _amount;
@@ -102,7 +111,10 @@ contract LockableTokenWrapper is AragonApp {
             ERROR_INSUFFICENT_UNWRAP_TOKENS
         );
 
-        Lock[] storage locks = addressesWrapLock[msg.sender];
+        require(
+            canUnwrap(msg.sender, _amount),
+            ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
+        );
 
         tokenManager.burn(msg.sender, _amount);
         vault.transfer(depositToken, msg.sender, _amount);
@@ -112,11 +124,11 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-    * @notice Change lock time
-    * @param _lockTime Lock time
-    */
+     * @notice Change lock time
+     * @param _lockTime Lock time
+     */
     function changeLockTime(uint256 _lockTime)
-        public
+        external
         auth(CHANGE_LOCK_TIME)
         returns (uint256)
     {
@@ -125,7 +137,27 @@ contract LockableTokenWrapper is AragonApp {
         return lockTime;
     }
 
-    /*function calculateFreeTokens(Lock[] loks) returns (uint256) {
-        
-    }*/
+    /**
+     * @dev lock.unlockableTime corresponds to the date after which tokens can be unlocked
+     */
+    function canUnwrap(address _unlocker, uint256 _amount)
+        internal
+        returns (bool)
+    {
+        Lock[] storage locks = addressesWrapLock[_unlocker];
+
+        uint256 total = 0;
+        for (uint64 i = 0; i < locks.length; i++) {
+            if (locks[i].unlockableTime > block.timestamp) {
+                sum.add(locks[i].amount);
+
+                // if there is remainder subtract from the last lock
+                if (_amount <= total) {
+                    // TODO
+                }
+            }
+        }
+
+        return false;
+    }
 }
