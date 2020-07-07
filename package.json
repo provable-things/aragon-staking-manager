@@ -11,8 +11,8 @@
     "publish:major": "buidler publish major",
     "publish:minor": "buidler publish minor",
     "publish:patch": "buidler publish patch",
-    "lint": "solium --dir ./contracts --fix",
-    "format": "prettier --config ./.prettierrc --write  \"./app/src/**/*.+(js|json)\" \"./(src|test|scripts|contracts)/**/*.+(js|json|sol)\""
+    "lint:contract": "prettier --config ./.prettierrc --write \"./contracts/**/*.+(sol)\" && solium --dir ./contracts --fix",
+    "format": "prettier --config ./.prettierrc --write  \"./app/src/**/*.+(js|json)\" \"./(src|test|scripts)/**/*.+(js|json)\""
   },
   "devDependencies": {
     "@aragon/apps-token-manager": "^2.1.0",
