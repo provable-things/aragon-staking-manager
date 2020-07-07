@@ -4,7 +4,7 @@ import { Button, Field, GU, Info, TextInput } from '@aragon/ui'
 import PropTypes from 'prop-types'
 
 const Wrapper = (_props) => {
-  const { action, onClick } = _props
+  const { action, onClick, lockTime } = _props
 
   const [amount, setAmount] = useState('')
 
@@ -19,7 +19,13 @@ const Wrapper = (_props) => {
       >
         {`This action will ${
           action === 'Wrap' ? 'create' : 'burn'
-        } tokens and transfer them to the transaction sender`}
+        } tokens and transfer them to the transaction sender.`}
+        <br />
+        {action === 'Wrap'
+          ? `Keep in mind that you cannot unwrap them before ${
+              lockTime / 86400
+            } days`
+          : ''}
       </Info>
       <WrapperField>
         <Field
@@ -58,6 +64,7 @@ const WrapperField = styled.div`
 Wrapper.propTypes = {
   action: PropTypes.string,
   onClick: PropTypes.func,
+  lockTime: PropTypes.string,
 }
 
 export default Wrapper

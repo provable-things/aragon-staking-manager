@@ -71,7 +71,7 @@ module.exports = {
       tokenManager.address,
       vault.address,
       token.address,
-      ONE_DAY,
+      ONE_DAY * 6,
       MAX_LOCKS,
     ]
   },

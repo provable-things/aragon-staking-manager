@@ -7,6 +7,7 @@ const reducer = (_state) => {
       miniMeTokenBalance: 0,
       miniMeToken: null,
       isSyncing: true,
+      lockTime: 0,
     }
   }
   return _state
