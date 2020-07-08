@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 import { Button, Field, GU, Info, TextInput } from '@aragon/ui'
 import PropTypes from 'prop-types'
+import { parseSeconds } from '../utils/format'
 
 const Wrapper = (_props) => {
   const { action, onClick, lockTime } = _props
@@ -22,9 +23,9 @@ const Wrapper = (_props) => {
         } tokens and transfer them to the transaction sender.`}
         <br />
         {action === 'Wrap'
-          ? `Keep in mind that you cannot unwrap them before ${
-              lockTime / 86400
-            } days`
+          ? `Keep in mind that you cannot unwrap them before ${parseSeconds(
+              lockTime
+            )}.`
           : ''}
       </Info>
       <WrapperField>

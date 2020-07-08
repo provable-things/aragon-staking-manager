@@ -1,8 +1,10 @@
 import React, { Fragment, useState } from 'react'
 import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
+import { Row, Col } from 'react-bootstrap'
 import Wrapper from './components/Wrapper'
 import Details from './components/Details'
+import Info from './components/Info'
 import { correctFormat, parseAmount } from './utils/format'
 
 const App = () => {
@@ -87,13 +89,23 @@ const App = () => {
             />
           </SidePanel>
 
-          <Details
-            depositToken={depositToken}
-            depositTokenBalance={depositTokenBalance}
-            miniMeToken={miniMeToken}
-            miniMeTokenBalance={miniMeTokenBalance}
-            lockTime={lockTime}
-          />
+          <Row>
+            <Col xs={12} lg={9}>
+              <Details
+                depositToken={depositToken}
+                depositTokenBalance={depositTokenBalance}
+                miniMeToken={miniMeToken}
+                miniMeTokenBalance={miniMeTokenBalance}
+              />
+            </Col>
+            <Col xs={12} lg={3} className="mt-3 mt-lg-0">
+              <Info
+                depositToken={depositToken}
+                miniMeToken={miniMeToken}
+                lockTime={lockTime}
+              />
+            </Col>
+          </Row>
         </Fragment>
       )}
     </Main>
