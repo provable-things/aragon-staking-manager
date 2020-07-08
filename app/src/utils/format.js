@@ -17,7 +17,7 @@ const parseSeconds = (_seconds) => {
     return `${Math.round(_seconds / (60 * 60))} hours`
   } else if (_seconds >= 60) {
     return `${Math.round(_seconds / 60)} minutes`
-  } else return `${_seconds} seconds`
+  } else return `${Math.round(_seconds)} seconds`
 }
 
 const strip = (_number) => _number.toFixed(3)

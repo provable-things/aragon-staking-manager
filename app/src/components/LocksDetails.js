@@ -47,7 +47,7 @@ const LocksDetails = (_props) => {
               color: ${theme.info};
             `}
           >
-            {`UNLOCKABLE ${depositToken.symbol} `}
+            {`UNLOCKED ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
         <TokenBalance>

@@ -40,7 +40,7 @@ const LockedWraps = (_props) => {
             </TableCell>
             <TableCell>
               {lockDate + lockTime < now ? (
-                <Tag mode="new">Unlockable</Tag>
+                <Tag mode="new">Unlocked</Tag>
               ) : (
                 <Text
                   css={`
