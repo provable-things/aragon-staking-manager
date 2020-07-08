@@ -1,15 +1,32 @@
-const getTotalAmountOfUnlockableTokens = (_locks, _lockTime) =>
-  _locks.reduce((_value, _lock) => {
-    if (_value instanceof Object) {
-      return isUnlockable(_value, _lockTime) ? _value.amount : 0
-    } else {
-      return isUnlockable(_lock, _lockTime) ? _lock.amount : 0
+const getTotalAmountOfUnlockableTokens = (_locks, _lockTime) => {
+  if (!_locks || _locks.length === 0) return 0
+
+  let unlockable = 0
+  _locks.forEach((_lock) => {
+    if (isUnlockable(_lock, _lockTime)) {
+      unlockable += _lock.amount
     }
   })
 
-const isUnlockable = (_lock, _lockTime) => {
-  const now = new Date().getTime() / 1000
-  return _lock.unlockableTime < now
+  return unlockable
 }
 
-export { getTotalAmountOfUnlockableTokens }
+const getTotalAmountOfLockableTokens = (_locks, _lockTime) => {
+  if (!_locks || _locks.length === 0) return 0
+
+  let locked = 0
+  _locks.forEach((_lock) => {
+    if (!isUnlockable(_lock, _lockTime)) {
+      locked += _lock.amount
+    }
+  })
+
+  return locked
+}
+
+const isUnlockable = (_lock, _lockTime) => {
+  const now = new Date().getTime() / 1000
+  return _lock.lockDate + _lockTime < now
+}
+
+export { getTotalAmountOfUnlockableTokens, getTotalAmountOfLockableTokens }

@@ -32,7 +32,7 @@ contract LockableTokenWrapper is AragonApp {
     string private constant ERROR_MAXIMUN_LOCKS_REACHED = "LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED";
 
     struct Lock {
-        uint256 unlockableTime;
+        uint256 lockDate;
         uint256 amount;
     }
 
@@ -105,8 +105,7 @@ contract LockableTokenWrapper is AragonApp {
 
         tokenManager.mint(msg.sender, _amount);
 
-        uint256 unlockableTime = block.timestamp.add(lockTime);
-        addressWrapLocks[msg.sender].push(Lock(unlockableTime, _amount));
+        addressWrapLocks[msg.sender].push(Lock(block.timestamp, _amount));
 
         emit Wrap(msg.sender, _amount);
         return _amount;
@@ -169,7 +168,7 @@ contract LockableTokenWrapper is AragonApp {
 
     /**
      * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related lockedWraps
-     * @dev lock.unlockableTime corresponds to the date after which tokens can be unlocked
+     * @dev lock.lockTime corresponds to the date after which tokens can be unlocked
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
      */
@@ -185,7 +184,7 @@ contract LockableTokenWrapper is AragonApp {
 
         bool result = false;
         for (uint64 i = 0; i < lockedWraps.length; i++) {
-            if (block.timestamp >= lockedWraps[i].unlockableTime) {
+            if (block.timestamp >= lockedWraps[i].lockDate.add(lockTime)) {
                 total = total.add(lockedWraps[i].amount);
 
                 if (_amount == total) {

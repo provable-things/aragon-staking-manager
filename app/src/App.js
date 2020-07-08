@@ -5,6 +5,7 @@ import { Row, Col } from 'react-bootstrap'
 import Wrapper from './components/Wrapper'
 import LockedWraps from './components/LockedWraps'
 import Info from './components/Info'
+import LocksDetails from './components/LocksDetails'
 import { correctFormat, parseAmount } from './utils/format'
 
 const App = () => {
@@ -40,7 +41,7 @@ const App = () => {
         '*'
       ).toString()
 
-      unwrap(_amount)
+      unwrap(formattedAmount)
     }
   }
 
@@ -93,21 +94,32 @@ const App = () => {
           </SidePanel>
 
           <Row>
-            <Col xs={12} lg={8}>
+            <Col xs={12} lg={4}>
+              <Row>
+                <Col xs={12}>
+                  <Info
+                    depositToken={depositToken}
+                    depositTokenBalance={depositTokenBalance}
+                    miniMeToken={miniMeToken}
+                    miniMeTokenBalance={miniMeTokenBalance}
+                    lockTime={lockTime}
+                  />
+                </Col>
+                <Col xs={12} className="mt-3">
+                  <LocksDetails
+                    depositToken={depositToken}
+                    lockedWraps={lockedWraps}
+                    lockTime={lockTime}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={12} lg={8} className="mt-3 mt-lg-0">
               <LockedWraps
                 depositToken={depositToken}
                 lockedWraps={lockedWraps}
-                onUnwrap={unwrap}
-              />
-            </Col>
-            <Col xs={12} lg={4} className="mt-3 mt-lg-0">
-              <Info
-                depositToken={depositToken}
-                depositTokenBalance={depositTokenBalance}
-                miniMeToken={miniMeToken}
-                miniMeTokenBalance={miniMeTokenBalance}
                 lockTime={lockTime}
-                lockedWraps={lockedWraps}
+                onUnwrap={unwrap}
               />
             </Col>
           </Row>

@@ -67,13 +67,7 @@ module.exports = {
   },
 
   getInitParams: async ({ log }, { web3, artifacts }) => {
-    return [
-      tokenManager.address,
-      vault.address,
-      token.address,
-      ONE_DAY * 6,
-      MAX_LOCKS,
-    ]
+    return [tokenManager.address, vault.address, token.address, 180, MAX_LOCKS]
   },
 
   postUpdate: async ({ proxy, log }, { web3, artifacts }) => {},

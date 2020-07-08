@@ -2,7 +2,7 @@ const reducer = (_state) => {
   if (_state === null) {
     return {
       account: null,
-      depositTokenBalance: null,
+      depositTokenBalance: 0,
       depositToken: null,
       miniMeTokenBalance: 0,
       miniMeToken: null,

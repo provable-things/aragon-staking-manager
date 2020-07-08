@@ -54,7 +54,7 @@ function initializeState() {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
-      const lockTime = await app.call('lockTime').toPromise()
+      const lockTime = parseInt(await app.call('lockTime').toPromise())
 
       return {
         ...cachedState,
@@ -111,8 +111,8 @@ const getLockedWraps = async (_tokenAddress) => {
   const lockedWraps = await app.call('getWrapLocks', _tokenAddress).toPromise()
   return lockedWraps.map((_lock) => {
     return {
-      amount: _lock.amount,
-      unlockableTime: _lock.unlockableTime,
+      amount: parseInt(_lock.amount),
+      lockDate: parseInt(_lock.lockDate),
     }
   })
 }
