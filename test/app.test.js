@@ -32,7 +32,8 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
     BURN_ROLE,
     TRANSFER_ROLE,
     CHANGE_LOCK_TIME_ROLE,
-    CHANGE_MAX_LOCKS_ROLE
+    CHANGE_MAX_LOCKS_ROLE,
+    CHANGE_VAULT_ROLE
 
   const NOT_CONTRACT = appManager
 
@@ -40,6 +41,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
     lockableTokenWrapperBase = await LockableTokenWrapper.new()
     CHANGE_LOCK_TIME_ROLE = await lockableTokenWrapperBase.CHANGE_LOCK_TIME_ROLE()
     CHANGE_MAX_LOCKS_ROLE = await lockableTokenWrapperBase.CHANGE_MAX_LOCKS_ROLE()
+    CHANGE_VAULT_ROLE = await lockableTokenWrapperBase.CHANGE_VAULT_ROLE()
 
     tokenManagerBase = await TokenManager.new()
     MINT_ROLE = await tokenManagerBase.MINT_ROLE()
@@ -161,7 +163,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
       assert.strictEqual(actualDepositToken, depositToken.address)
     })
 
-    it('Should set able to set maxLocks and minLockTime', async () => {
+    it('Should set able to set maxLocks and minLockTime and vault', async () => {
       await setPermission(
         acl,
         appManager,
@@ -178,11 +180,23 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
         appManager
       )
 
+      await setPermission(
+        acl,
+        appManager,
+        lockableTokenWrapper.address,
+        CHANGE_VAULT_ROLE,
+        appManager
+      )
+
       await lockableTokenWrapper.changeMinLockTime(ONE_DAY * 7, {
         from: appManager,
       })
 
       await lockableTokenWrapper.changeMaxLocks(MAX_LOCKS + 1, {
+        from: appManager,
+      })
+
+      await lockableTokenWrapper.changeVault(vault.address, {
         from: appManager,
       })
 
@@ -205,6 +219,15 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
     it('Should not ne able to set minLockTime because of no permission', async () => {
       await assertRevert(
         lockableTokenWrapper.changeMinLockTime(ONE_DAY * 7, {
+          from: appManager,
+        }),
+        'APP_AUTH_FAILED'
+      )
+    })
+
+    it('Should not ne able to set a new Vault because of no permission', async () => {
+      await assertRevert(
+        lockableTokenWrapper.changeVault(vault.address, {
           from: appManager,
         }),
         'APP_AUTH_FAILED'

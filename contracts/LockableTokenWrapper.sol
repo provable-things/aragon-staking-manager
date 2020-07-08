@@ -17,6 +17,8 @@ contract LockableTokenWrapper is AragonApp {
     bytes32 public constant CHANGE_LOCK_TIME_ROLE = keccak256("CHANGE_LOCK_TIME_ROLE");
     // prettier-ignore
     bytes32 public constant CHANGE_MAX_LOCKS_ROLE = keccak256("CHANGE_MAX_LOCKS_ROLE");
+    // prettier-ignore
+    bytes32 public constant CHANGE_VAULT_ROLE = keccak256("CHANGE_VAULT_ROLE");
 
     // prettier-ignore
     string private constant ERROR_ADDRESS_NOT_CONTRACT = "LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT";
@@ -57,6 +59,7 @@ contract LockableTokenWrapper is AragonApp {
     event Unwrap(address sender, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
     event MaxLocksChanged(uint256 maxLocks);
+    event VaultChanged(address _vault);
 
     /**
      * @notice Initialize LockableTokenWrapper app contract
@@ -174,6 +177,15 @@ contract LockableTokenWrapper is AragonApp {
     {
         maxLocks = _maxLocks;
         emit MaxLocksChanged(maxLocks);
+    }
+
+    /**
+     * @notice Change vault
+     * @param _vault new Vault address
+     */
+    function changeVault(address _vault) external auth(CHANGE_VAULT_ROLE) {
+        vault = Vault(_vault);
+        emit VaultChanged(_vault);
     }
 
     /**
