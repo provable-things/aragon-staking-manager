@@ -48,7 +48,12 @@ contract LockableTokenWrapper is AragonApp {
 
     mapping(address => Lock[]) public addressWrapLocks;
 
-    event Wrap(address sender, uint256 lockTime, uint256 amount);
+    event Wrap(
+        address sender,
+        uint256 lockTime,
+        uint256 amount,
+        address receiver
+    );
     event Unwrap(address sender, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
     event MaxLocksChanged(uint256 maxLocks);
@@ -85,18 +90,21 @@ contract LockableTokenWrapper is AragonApp {
      * @notice Wrap a given amount of `depositToken` into tokenManager's token
      * @dev This function requires the MINT_ROLE permission on the TokenManager specified
      * @param _amount Wrapped amount
+     * @param _lockTime lock time for this wrapping
+     * @param _receiver address who will receive back once unwrapped
      */
-    function wrap(uint256 _amount, uint256 _lockTime)
-        external
-        returns (uint256)
-    {
+    function wrap(
+        uint256 _amount,
+        uint256 _lockTime,
+        address _receiver
+    ) external returns (uint256) {
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
             ERROR_INSUFFICENT_WRAP_TOKENS
         );
 
         require(
-            addressWrapLocks[msg.sender].length < maxLocks,
+            addressWrapLocks[_receiver].length < maxLocks,
             ERROR_MAXIMUN_LOCKS_REACHED
         );
 
@@ -111,13 +119,13 @@ contract LockableTokenWrapper is AragonApp {
             ERROR_TOKEN_WRAP_REVERTED
         );
 
-        tokenManager.mint(msg.sender, _amount);
+        tokenManager.mint(_receiver, _amount);
 
-        addressWrapLocks[msg.sender].push(
+        addressWrapLocks[_receiver].push(
             Lock(block.timestamp, _lockTime, _amount)
         );
 
-        emit Wrap(msg.sender, _lockTime, _amount);
+        emit Wrap(msg.sender, _lockTime, _amount, _receiver);
         return _amount;
     }
 

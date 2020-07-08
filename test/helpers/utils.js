@@ -3,13 +3,14 @@ const wrap = async (
   _lockableTokenWrapper,
   _amountToWrap,
   _lockTime,
-  _appManager,
+  _receiver,
+  _appManager
 ) => {
   await _depositToken.approve(_lockableTokenWrapper.address, _amountToWrap, {
     from: _appManager,
   })
 
-  await _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, {
+  await _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, _receiver, {
     from: _appManager,
   })
 }
@@ -20,13 +21,13 @@ const unwrap = async (_lockableTokenWrapper, _amountToWrap, _appManager) => {
   })
 }
 
-const getBalances = async (_depositToken, _vault, _appManager) => {
-  const balanceAppManager = parseInt(await _depositToken.balanceOf(_appManager))
+const getBalances = async (_depositToken, _vault, _receiver) => {
+  const balanceReceiver = parseInt(await _depositToken.balanceOf(_receiver))
 
   const balanceVault = parseInt(await _vault.balance(_depositToken.address))
 
   return {
-    balanceAppManager,
+    balanceReceiver,
     balanceVault,
   }
 }
