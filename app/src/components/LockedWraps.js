@@ -1,6 +1,8 @@
 import React from 'react'
 import {
+  Box,
   Button,
+  GU,
   Table,
   TableHeader,
   TableRow,
@@ -8,17 +10,17 @@ import {
   Text,
   IconUnlock,
   Tag,
+  textStyle,
 } from '@aragon/ui'
 import { correctFormat, parseSeconds } from '../utils/format'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
 
 const LockedWraps = (_props) => {
-  const { depositToken, lockedWraps, onUnwrap } = _props
+  const { depositToken, lockedWraps, lockTime, onUnwrap } = _props
 
   const now = new Date().getTime() / 1000
 
-  return (
+  return lockedWraps && lockedWraps.length > 0 ? (
     <Table
       header={
         <TableRow>
@@ -26,7 +28,7 @@ const LockedWraps = (_props) => {
         </TableRow>
       }
     >
-      {lockedWraps ? lockedWraps.map(({ amount, unlockableTime }, _index) => {
+      {lockedWraps.map(({ amount, lockDate }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
@@ -37,7 +39,7 @@ const LockedWraps = (_props) => {
               </Text>
             </TableCell>
             <TableCell>
-              {unlockableTime < now ? (
+              {lockDate + lockTime < now ? (
                 <Tag mode="new">Unlockable</Tag>
               ) : (
                 <Text
@@ -45,15 +47,15 @@ const LockedWraps = (_props) => {
                     font-weight: bold;
                   `}
                 >
-                  {parseSeconds(unlockableTime - now)}
+                  {parseSeconds(lockDate + lockTime - now)}
                 </Text>
               )}
             </TableCell>
             <TableCell>
-              {unlockableTime < now ? (
+              {lockDate + lockTime < now ? (
                 <Button
                   onClick={() =>
-                    onUnwrap(correctFormat(amount, depositToken.decimals, '/'))
+                    onUnwrap(correctFormat(amount, depositToken.decimals, '*'))
                   }
                 >
                   <IconUnlock />
@@ -64,14 +66,28 @@ const LockedWraps = (_props) => {
             </TableCell>
           </TableRow>
         )
-      }) : null}
+      })}
     </Table>
+  ) : (
+    <Box
+      css={`
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: ${50 * GU}px;
+        ${textStyle('title3')};
+      `}
+    >
+      no data
+    </Box>
   )
 }
 
 LockedWraps.propTypes = {
   depositToken: PropTypes.object,
   lockedWraps: PropTypes.array,
+  lockTime: PropTypes.number,
   onUnwrap: PropTypes.func,
 }
 

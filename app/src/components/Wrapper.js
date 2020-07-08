@@ -65,7 +65,7 @@ const WrapperField = styled.div`
 Wrapper.propTypes = {
   action: PropTypes.string,
   onClick: PropTypes.func,
-  lockTime: PropTypes.string,
+  lockTime: PropTypes.number,
 }
 
 export default Wrapper

@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { parseSeconds, strip } from '../utils/format'
-import { getTotalAmountOfUnlockableTokens } from '../utils/unlockable'
 import { Box, useTheme } from '@aragon/ui'
 import styled from 'styled-components'
 
@@ -12,7 +11,6 @@ const Info = (_props) => {
     miniMeToken,
     miniMeTokenBalance,
     lockTime,
-    lockedWraps,
   } = _props
 
   const theme = useTheme()
@@ -29,7 +27,11 @@ const Info = (_props) => {
             {` ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>{strip(depositTokenBalance)}</TokenBalance>
+        <TokenBalance>
+          {depositTokenBalance || depositTokenBalance === 0
+            ? strip(depositTokenBalance)
+            : '-'}
+        </TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenName>
@@ -41,23 +43,12 @@ const Info = (_props) => {
             {` ${miniMeToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>{strip(miniMeTokenBalance)}</TokenBalance>
-      </TokenDetails>
-
-      <TokenUnlockableDetails>
-        <TokenName>
-          <TokenSymbol
-            css={`
-              color: ${theme.info};
-            `}
-          >
-            {`UNLOCKABLE ${depositToken.symbol} `}
-          </TokenSymbol>
-        </TokenName>{' '}
         <TokenBalance>
-          {strip(getTotalAmountOfUnlockableTokens(lockedWraps))}
+          {miniMeTokenBalance || miniMeTokenBalance === 0
+            ? strip(miniMeTokenBalance)
+            : '-'}
         </TokenBalance>
-      </TokenUnlockableDetails>
+      </TokenDetails>
 
       <LockDetails>
         Deposit your
@@ -108,12 +99,6 @@ const TokenBalance = styled.span`
   font-weight: bold;
 `
 
-const TokenUnlockableDetails = styled.div`
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-`
-
 const LockDetails = styled.div`
   margin-top: 20px;
 `
@@ -128,8 +113,7 @@ Info.propTypes = {
   depositTokenBalance: PropTypes.number,
   miniMeToken: PropTypes.object,
   miniMeTokenBalance: PropTypes.number,
-  lockTime: PropTypes.string,
-  lockedWraps: PropTypes.array,
+  lockTime: PropTypes.number,
 }
 
 export default Info
