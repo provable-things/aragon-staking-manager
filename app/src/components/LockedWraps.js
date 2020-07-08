@@ -1,15 +1,23 @@
 import React from 'react'
-import { Box, Table, TableHeader, TableRow, TableCell, Text } from '@aragon/ui'
+import {
+  Button,
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  Text,
+  IconUnlock,
+  Tag,
+} from '@aragon/ui'
 import { correctFormat, parseSeconds } from '../utils/format'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
 const LockedWraps = (_props) => {
   const {
     depositToken,
-    depositTokenBalance,
-    miniMeToken,
-    miniMeTokenBalance,
     lockedWraps,
+    onUnwrap,
   } = _props
 
   const now = new Date().getTime() / 1000
@@ -22,9 +30,9 @@ const LockedWraps = (_props) => {
         </TableRow>
       }
     >
-      {lockedWraps.map(({ amount, unlockableTime }) => {
+      {lockedWraps.map(({ amount, unlockableTime }, _index) => {
         return (
-          <TableRow>
+          <TableRow key={_index}>
             <TableCell>
               <Text>
                 {`${correctFormat(amount, depositToken.decimals, '/')} ${
@@ -34,7 +42,7 @@ const LockedWraps = (_props) => {
             </TableCell>
             <TableCell>
               {unlockableTime < now ? (
-                <Text>Unlockable</Text>
+                <Tag mode="new">Unlockable</Tag>
               ) : (
                 <Text
                   css={`
@@ -43,6 +51,19 @@ const LockedWraps = (_props) => {
                 >
                   {parseSeconds(unlockableTime - now)}
                 </Text>
+              )}
+            </TableCell>
+            <TableCell>
+              {unlockableTime < now ? (
+                <Button
+                  onClick={() =>
+                    onUnwrap(correctFormat(amount, depositToken.decimals, '/'))
+                  }
+                >
+                  <IconUnlock />
+                </Button>
+              ) : (
+                <Tag mode="identifier">Locked</Tag>
               )}
             </TableCell>
           </TableRow>
@@ -54,10 +75,8 @@ const LockedWraps = (_props) => {
 
 LockedWraps.propTypes = {
   depositToken: PropTypes.object,
-  depositTokenBalance: PropTypes.number,
-  miniMeToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.number,
   lockedWraps: PropTypes.array,
+  onUnwrap: PropTypes.func,
 }
 
 export default LockedWraps
