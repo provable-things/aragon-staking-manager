@@ -2,13 +2,14 @@ const wrap = async (
   _depositToken,
   _lockableTokenWrapper,
   _amountToWrap,
-  _appManager
+  _lockTime,
+  _appManager,
 ) => {
   await _depositToken.approve(_lockableTokenWrapper.address, _amountToWrap, {
     from: _appManager,
   })
 
-  await _lockableTokenWrapper.wrap(_amountToWrap, {
+  await _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, {
     from: _appManager,
   })
 }

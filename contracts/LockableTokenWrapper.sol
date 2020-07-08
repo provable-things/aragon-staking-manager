@@ -30,9 +30,12 @@ contract LockableTokenWrapper is AragonApp {
     string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
     string private constant ERROR_MAXIMUN_LOCKS_REACHED = "LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED";
+    // prettier-ignore
+    string private constant ERROR_LOCK_TIME_TOO_LOW = "LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW";
 
     struct Lock {
         uint256 lockDate;
+        uint256 lockTime;
         uint256 amount;
     }
 
@@ -40,12 +43,12 @@ contract LockableTokenWrapper is AragonApp {
     Vault public vault;
 
     address public depositToken;
-    uint256 public lockTime;
+    uint256 public minLockTime;
     uint256 public maxLocks;
 
     mapping(address => Lock[]) public addressWrapLocks;
 
-    event Wrap(address sender, uint256 amount);
+    event Wrap(address sender, uint256 lockTime, uint256 amount);
     event Unwrap(address sender, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
     event MaxLocksChanged(uint256 maxLocks);
@@ -55,14 +58,14 @@ contract LockableTokenWrapper is AragonApp {
      * @param _tokenManager TokenManager address
      * @param _vault Vault address
      * @param _depositToken Accepted token address
-     * @param _lockTime number of seconds after which it's possible to unwrap tokens related to a wrap
+     * @param _minLockTime number of seconds after which it's possible to unwrap tokens related to a wrap
      * @param _maxLocks number of possible lockedWraps for a given address before doing an unwrap
      */
     function initialize(
         address _tokenManager,
         address _vault,
         address _depositToken,
-        uint256 _lockTime,
+        uint256 _minLockTime,
         uint256 _maxLocks
     ) external onlyInit {
         require(isContract(_tokenManager), ERROR_ADDRESS_NOT_CONTRACT);
@@ -72,7 +75,7 @@ contract LockableTokenWrapper is AragonApp {
         tokenManager = TokenManager(_tokenManager);
         vault = Vault(_vault);
         depositToken = _depositToken;
-        lockTime = _lockTime;
+        minLockTime = _minLockTime;
         maxLocks = _maxLocks;
 
         initialized();
@@ -83,7 +86,10 @@ contract LockableTokenWrapper is AragonApp {
      * @dev This function requires the MINT_ROLE permission on the TokenManager specified
      * @param _amount Wrapped amount
      */
-    function wrap(uint256 _amount) external returns (uint256) {
+    function wrap(uint256 _amount, uint256 _lockTime)
+        external
+        returns (uint256)
+    {
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
             ERROR_INSUFFICENT_WRAP_TOKENS
@@ -93,6 +99,8 @@ contract LockableTokenWrapper is AragonApp {
             addressWrapLocks[msg.sender].length < maxLocks,
             ERROR_MAXIMUN_LOCKS_REACHED
         );
+
+        require(_lockTime > minLockTime, ERROR_LOCK_TIME_TOO_LOW);
 
         require(
             ERC20(depositToken).safeTransferFrom(
@@ -105,9 +113,11 @@ contract LockableTokenWrapper is AragonApp {
 
         tokenManager.mint(msg.sender, _amount);
 
-        addressWrapLocks[msg.sender].push(Lock(block.timestamp, _amount));
+        addressWrapLocks[msg.sender].push(
+            Lock(block.timestamp, _lockTime, _amount)
+        );
 
-        emit Wrap(msg.sender, _amount);
+        emit Wrap(msg.sender, _lockTime, _amount);
         return _amount;
     }
 
@@ -136,14 +146,14 @@ contract LockableTokenWrapper is AragonApp {
 
     /**
      * @notice Change lock time
-     * @param _lockTime Lock time
+     * @param _minLockTime Lock time
      */
-    function changeLockTime(uint256 _lockTime)
+    function changeMinLockTime(uint256 _minLockTime)
         external
         auth(CHANGE_LOCK_TIME_ROLE)
     {
-        lockTime = _lockTime;
-        emit LockTimeChanged(lockTime);
+        minLockTime = _minLockTime;
+        emit LockTimeChanged(minLockTime);
     }
 
     /**
@@ -159,9 +169,9 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-    * @notice Return all locked wraps for a given _address
-    * @param _address address
-    */
+     * @notice Return all locked wraps for a given _address
+     * @param _address address
+     */
     function getWrapLocks(address _address) external view returns (Lock[]) {
         return addressWrapLocks[_address];
     }
@@ -184,7 +194,10 @@ contract LockableTokenWrapper is AragonApp {
 
         bool result = false;
         for (uint64 i = 0; i < lockedWraps.length; i++) {
-            if (block.timestamp >= lockedWraps[i].lockDate.add(lockTime)) {
+            if (
+                block.timestamp >=
+                lockedWraps[i].lockDate.add(lockedWraps[i].lockTime)
+            ) {
                 total = total.add(lockedWraps[i].amount);
 
                 if (_amount == total) {
