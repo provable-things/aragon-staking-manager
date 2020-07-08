@@ -34,6 +34,8 @@ contract LockableTokenWrapper is AragonApp {
     string private constant ERROR_MAXIMUN_LOCKS_REACHED = "LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED";
     // prettier-ignore
     string private constant ERROR_LOCK_TIME_TOO_LOW = "LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW";
+    // prettier-ignore
+    string private constant ERROR_IMPOSSIBLE_TO_INSERT = "LOCKABLE_TOKEN_WRAPPER_IMPOSSIBLE_TO_INSERT";
 
     struct Lock {
         uint256 lockDate;
@@ -47,6 +49,8 @@ contract LockableTokenWrapper is AragonApp {
     address public depositToken;
     uint256 public minLockTime;
     uint256 public maxLocks;
+    uint256 private push;
+    uint256 private notPush;
 
     mapping(address => Lock[]) public addressWrapLocks;
 
@@ -85,6 +89,8 @@ contract LockableTokenWrapper is AragonApp {
         depositToken = _depositToken;
         minLockTime = _minLockTime;
         maxLocks = _maxLocks;
+        push = _maxLocks.add(1);
+        notPush = _maxLocks.add(2);
 
         initialized();
     }
@@ -106,10 +112,7 @@ contract LockableTokenWrapper is AragonApp {
             ERROR_INSUFFICENT_WRAP_TOKENS
         );
 
-        require(
-            addressWrapLocks[_receiver].length < maxLocks,
-            ERROR_MAXIMUN_LOCKS_REACHED
-        );
+        require(canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
 
         require(_lockTime > minLockTime, ERROR_LOCK_TIME_TOO_LOW);
 
@@ -124,9 +127,25 @@ contract LockableTokenWrapper is AragonApp {
 
         tokenManager.mint(_receiver, _amount);
 
-        addressWrapLocks[_receiver].push(
-            Lock(block.timestamp, _lockTime, _amount)
-        );
+        uint256 position = whereInsert(_receiver);
+        require(position < notPush, ERROR_IMPOSSIBLE_TO_INSERT);
+
+        // if there is at least an empty slot
+        if (position < push) {
+            addressWrapLocks[_receiver][position] = Lock(
+                block.timestamp,
+                _lockTime,
+                _amount
+            );
+        } else {
+            addressWrapLocks[_receiver].push(
+                Lock(
+                    block.timestamp,
+                    _lockTime,
+                    _amount
+                )
+            );
+        }
 
         emit Wrap(msg.sender, _lockTime, _amount, _receiver);
         return _amount;
@@ -176,6 +195,8 @@ contract LockableTokenWrapper is AragonApp {
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
         maxLocks = _maxLocks;
+        push = _maxLocks.add(1);
+        notPush = _maxLocks.add(2);
         emit MaxLocksChanged(maxLocks);
     }
 
@@ -184,6 +205,8 @@ contract LockableTokenWrapper is AragonApp {
      * @param _vault new Vault address
      */
     function changeVault(address _vault) external auth(CHANGE_VAULT_ROLE) {
+        require(isContract(_vault), ERROR_ADDRESS_NOT_CONTRACT);
+        
         vault = Vault(_vault);
         emit VaultChanged(_vault);
     }
@@ -213,10 +236,11 @@ contract LockableTokenWrapper is AragonApp {
         uint256 indexLockToRemove = 0;
 
         bool result = false;
-        for (uint64 i = 0; i < lockedWraps.length; i++) {
+        for (uint256 i = 0; i < lockedWraps.length; i++) {
             if (
                 block.timestamp >=
-                lockedWraps[i].lockDate.add(lockedWraps[i].lockTime)
+                lockedWraps[i].lockDate.add(lockedWraps[i].lockTime) &&
+                !isWrapLockEmpty(lockedWraps[i])
             ) {
                 total = total.add(lockedWraps[i].amount);
 
@@ -237,10 +261,47 @@ contract LockableTokenWrapper is AragonApp {
             }
         }
 
-        for (uint64 j = 0; j < indexLockToRemove; j++) {
+        for (uint256 j = 0; j < indexLockToRemove; j++) {
+            //lockedWraps[lockToRemove[j]].status = Status.Unwrapped;
             delete lockedWraps[lockToRemove[j]];
         }
 
         return result;
+    }
+
+    function canInsert(address _address) internal returns (bool) {
+        Lock[] storage lockedWraps = addressWrapLocks[_address];
+
+        for (uint256 i = 0; i < lockedWraps.length; i++) {
+            if (isWrapLockEmpty(lockedWraps[i])) {
+                return true;
+            }
+        }
+
+        if (lockedWraps.length < maxLocks) return true;
+
+        return false;
+    }
+
+    function whereInsert(address _address) internal returns (uint256) {
+        Lock[] storage lockedWraps = addressWrapLocks[_address];
+
+        for (uint256 i = 0; i < lockedWraps.length; i++) {
+            if (isWrapLockEmpty(lockedWraps[i])) {
+                return i;
+            }
+        }
+
+        if (lockedWraps.length < maxLocks) return push;
+
+        return notPush;
+    }
+
+    function isWrapLockEmpty(Lock memory _lock) internal returns (bool) {
+        if (_lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0) {
+            return true;
+        }
+
+        return false;
     }
 }

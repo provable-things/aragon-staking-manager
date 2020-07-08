@@ -207,7 +207,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
       assert.strictEqual(lockTime, ONE_DAY * 7)
     })
 
-    it('Should not ne able to set maxLocks because of no permission', async () => {
+    it('Should not be able to set maxLocks because of no permission', async () => {
       await assertRevert(
         lockableTokenWrapper.changeMaxLocks(MAX_LOCKS + 1, {
           from: appManager,
@@ -216,7 +216,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
       )
     })
 
-    it('Should not ne able to set minLockTime because of no permission', async () => {
+    it('Should not be able to set minLockTime because of no permission', async () => {
       await assertRevert(
         lockableTokenWrapper.changeMinLockTime(ONE_DAY * 7, {
           from: appManager,
@@ -225,7 +225,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
       )
     })
 
-    it('Should not ne able to set a new Vault because of no permission', async () => {
+    it('Should not be able to set a new Vault because of no permission', async () => {
       await assertRevert(
         lockableTokenWrapper.changeVault(vault.address, {
           from: appManager,
@@ -668,6 +668,40 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
           'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
         )
       })
+
+      it('Should be able to insert in an empyty slot', async () => {
+        const expectedLock = undefined
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await wrap(
+            depositToken,
+            lockableTokenWrapper,
+            10,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
+        }
+
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await unwrap(lockableTokenWrapper, 12, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          10,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
+
+        const locks = await lockableTokenWrapper.getWrapLocks(appManager)
+        const lock = locks.find(({lockDate, lockTime, amount}) => lockDate === '0' && lockTime === '0' && amount === '0')
+        
+        assert.strictEqual(
+          lock,
+          expectedLock
+        )
+      })
+      // TODO check failing cases
     })
   })
 })
