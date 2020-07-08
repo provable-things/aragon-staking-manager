@@ -24,6 +24,7 @@ const App = () => {
   const [action, setAction] = useState(null)
 
   const handleClick = ({ amount, action, lockTime, receiver }) => {
+    console.log(lockTime)
     if (action === 'Wrap') {
       const formattedAmount = correctFormat(
         parseAmount(depositToken.decimals, amount),
