@@ -67,7 +67,8 @@ const Info = (_props) => {
         >
           {` ${miniMeToken.symbol}`}.
         </TokenSymbol>{' '}
-        After depositing, it will be possible to withdraw them only after
+        After depositing, it will be possible to withdraw them only after at
+        least
         <Days
           css={`
             color: ${theme.info};

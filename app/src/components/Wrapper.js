@@ -1,15 +1,26 @@
 import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
-import { Button, Field, GU, Info, TextInput } from '@aragon/ui'
+import { Button, Field, GU, Info, TextInput, DropDown } from '@aragon/ui'
 import PropTypes from 'prop-types'
 import { parseSeconds } from '../utils/format'
+
+const formatSeconds = {
+  0: 3.154e7, // Years
+  1: 2.628e6, // Months
+  2: 86400, // Days
+  3: 3600, // Hours
+  4: 60, // Minutes
+}
+
+const LOCK_FORMAT_OPTIONS = ['Years', 'Months', 'Days', 'Hours', 'Minutes']
 
 const Wrapper = (_props) => {
   const { action, onClick, minLockTime } = _props
 
+  const [lockFormat, setLockFormat] = useState(0)
   const [amount, setAmount] = useState('')
   const [receiver, setReceiver] = useState('')
-  const [days, setDays] = useState('')
+  const [lockTime, setLockTime] = useState('')
 
   return (
     <Fragment>
@@ -68,33 +79,49 @@ const Wrapper = (_props) => {
               />
             </Field>
           </WrapperField>
-          <WrapperField>
+          <WrapperLockTimeSelection>
             <Field
-              label="Enter the number of days to lock tokens here:"
+              label="Select a lock time"
               required
               css={`
                 margin-top: ${1 * GU}px;
+                width: 50%;
               `}
             >
               <TextInput
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-                wide
+                value={lockTime}
+                onChange={(e) => setLockTime(e.target.value)}
                 min={0}
                 type="number"
                 step="any"
                 required
               />
             </Field>
-          </WrapperField>
+            <DropDown
+              width={'50%'}
+              selected={lockFormat}
+              onChange={setLockFormat}
+              items={LOCK_FORMAT_OPTIONS}
+            />
+          </WrapperLockTimeSelection>
         </Fragment>
       ) : null}
       <Button
         onClick={() =>
-          onClick({ amount, action, receiver, lockTime: days * 60 * 60 * 24 })
+          onClick({
+            amount,
+            action,
+            receiver,
+            lockTime: lockTime * formatSeconds[lockFormat],
+          })
         }
         label={action}
-        disabled={amount.length === 0}
+        disabled={
+          amount.length === 0 ||
+          receiver.length === 0 ||
+          lockTime === 0 ||
+          lockTime.length === 0
+        }
       />
     </Fragment>
   )
@@ -104,6 +131,10 @@ const WrapperField = styled.div`
   label {
     width: 100% !important;
   }
+`
+const WrapperLockTimeSelection = styled.div`
+  display: flex;
+  align-items: baseline;
 `
 
 Wrapper.propTypes = {
