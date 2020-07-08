@@ -451,6 +451,43 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
         )
       })
+
+      it('Should be able to unwrap with different lock times', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME * 3, appManager)
+        await unwrap(lockableTokenWrapper, 15, appManager)
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 5)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 20, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+        await unwrap(lockableTokenWrapper, 1, appManager)
+
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
+        )
+
+        assert.strictEqual(
+          actualBalances.balanceAppManager,
+          initBalances.balanceAppManager
+        )
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
+        )
+      })
+
+      it('Should not be able to wrap with a lock time less than the minimun one', async () => {
+        await assertRevert(
+          wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME / 2, appManager),
+          'LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW'
+        )
+      })
     })
   })
 })
