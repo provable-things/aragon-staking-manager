@@ -3,7 +3,7 @@ import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { Row, Col } from 'react-bootstrap'
 import Wrapper from './components/Wrapper'
-import Details from './components/Details'
+import LockedWraps from './components/LockedWraps'
 import Info from './components/Info'
 import { correctFormat, parseAmount } from './utils/format'
 
@@ -17,6 +17,7 @@ const App = () => {
     actions,
     panelState,
     lockTime,
+    lockedWraps,
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
@@ -91,11 +92,12 @@ const App = () => {
 
           <Row>
             <Col xs={12} lg={9}>
-              <Details
+              <LockedWraps
                 depositToken={depositToken}
                 depositTokenBalance={depositTokenBalance}
                 miniMeToken={miniMeToken}
                 miniMeTokenBalance={miniMeTokenBalance}
+                lockedWraps={lockedWraps}
               />
             </Col>
             <Col xs={12} lg={3} className="mt-3 mt-lg-0">

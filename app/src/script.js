@@ -77,7 +77,7 @@ const handleEvent = async (_nextState) => {
     _nextState.account
   )
 
-  const lockedWraps = await getLocks(_nextState.account)
+  const lockedWraps = await getLockedWraps(_nextState.account)
 
   return {
     ..._nextState,
@@ -96,7 +96,7 @@ const handleAccountChange = async (_nextState, { account }) => {
     account
   )
 
-  const lockedWraps = await getLocks(account)
+  const lockedWraps = await getLockedWraps(account)
 
   return {
     ..._nextState,
@@ -107,7 +107,7 @@ const handleAccountChange = async (_nextState, { account }) => {
   }
 }
 
-const getLocks = async (_tokenAddress) => {
+const getLockedWraps = async (_tokenAddress) => {
   const lockedWraps = await app.call('getWrapLocks', _tokenAddress).toPromise()
   return lockedWraps.map((_lock) => {
     return {

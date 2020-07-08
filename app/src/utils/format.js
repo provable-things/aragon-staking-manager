@@ -13,8 +13,10 @@ const parseSeconds = (_seconds) => {
     return '1 day'
   } else if (days > 1) {
     return `${days} days`
+  } else if (_seconds >= 60 * 60) {
+    return `${_seconds / (60 * 60)} hours`
   } else {
-    return `${days * 60} minutes`
+    return `${_seconds / 60} minutes`
   }
 }
 
