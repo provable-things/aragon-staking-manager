@@ -16,7 +16,7 @@ import { correctFormat, parseSeconds } from '../utils/format'
 import PropTypes from 'prop-types'
 
 const LockedWraps = (_props) => {
-  const { depositToken, lockedWraps, lockTime, onUnwrap } = _props
+  const { depositToken, lockedWraps, onUnwrap } = _props
 
   const now = new Date().getTime() / 1000
 
@@ -28,7 +28,7 @@ const LockedWraps = (_props) => {
         </TableRow>
       }
     >
-      {lockedWraps.map(({ amount, lockDate }, _index) => {
+      {lockedWraps.map(({ amount, lockDate, lockTime }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
@@ -87,7 +87,6 @@ const LockedWraps = (_props) => {
 LockedWraps.propTypes = {
   depositToken: PropTypes.object,
   lockedWraps: PropTypes.array,
-  lockTime: PropTypes.number,
   onUnwrap: PropTypes.func,
 }
 

@@ -5,9 +5,11 @@ import PropTypes from 'prop-types'
 import { parseSeconds } from '../utils/format'
 
 const Wrapper = (_props) => {
-  const { action, onClick, lockTime } = _props
+  const { action, onClick, minLockTime } = _props
 
   const [amount, setAmount] = useState('')
+  const [receiver, setReceiver] = useState('')
+  const [days, setDays] = useState('')
 
   return (
     <Fragment>
@@ -24,7 +26,7 @@ const Wrapper = (_props) => {
         <br />
         {action === 'Wrap'
           ? `Keep in mind that you cannot unwrap them before ${parseSeconds(
-              lockTime
+              minLockTime
             )}.`
           : ''}
       </Info>
@@ -47,8 +49,50 @@ const Wrapper = (_props) => {
           />
         </Field>
       </WrapperField>
+      {action === 'Wrap' ? (
+        <Fragment>
+          <WrapperField>
+            <Field
+              label="Enter the receiver here:"
+              required
+              css={`
+                margin-top: ${1 * GU}px;
+              `}
+            >
+              <TextInput
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                wide
+                type="test"
+                required
+              />
+            </Field>
+          </WrapperField>
+          <WrapperField>
+            <Field
+              label="Enter the number of days to lock tokens here:"
+              required
+              css={`
+                margin-top: ${1 * GU}px;
+              `}
+            >
+              <TextInput
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
+                wide
+                min={0}
+                type="number"
+                step="any"
+                required
+              />
+            </Field>
+          </WrapperField>
+        </Fragment>
+      ) : null}
       <Button
-        onClick={() => onClick({ amount, action })}
+        onClick={() =>
+          onClick({ amount, action, receiver, lockTime: days * 60 * 60 * 24 })
+        }
         label={action}
         disabled={amount.length === 0}
       />
@@ -65,7 +109,7 @@ const WrapperField = styled.div`
 Wrapper.propTypes = {
   action: PropTypes.string,
   onClick: PropTypes.func,
-  lockTime: PropTypes.number,
+  minLockTime: PropTypes.number,
 }
 
 export default Wrapper

@@ -6,9 +6,9 @@ const useWrapAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
-    (_amount, _intentParams) => {
+    (_amount, _lockTime, _receiver, _intentParams) => {
       try {
-        api.wrap(_amount, _intentParams).toPromise()
+        api.wrap(_amount, _lockTime, _receiver, _intentParams).toPromise()
 
         _onDone()
       } catch (error) {
@@ -43,7 +43,7 @@ const useAppLogic = () => {
     miniMeToken,
     miniMeTokenBalance,
     isSyncing,
-    lockTime,
+    minLockTime,
     lockedWraps,
   } = useAppState()
 
@@ -62,7 +62,7 @@ const useAppLogic = () => {
     miniMeTokenBalance,
     isSyncing,
     panelState,
-    lockTime,
+    minLockTime,
     lockedWraps,
   }
 }

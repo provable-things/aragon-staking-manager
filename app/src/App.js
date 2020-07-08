@@ -17,13 +17,13 @@ const App = () => {
     isSyncing,
     actions,
     panelState,
-    lockTime,
+    minLockTime,
     lockedWraps,
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
 
-  const handleClick = ({ amount, action }) => {
+  const handleClick = ({ amount, action, lockTime, receiver }) => {
     if (action === 'Wrap') {
       const formattedAmount = correctFormat(
         parseAmount(depositToken.decimals, amount),
@@ -31,7 +31,7 @@ const App = () => {
         '*'
       ).toString()
 
-      actions.wrap(formattedAmount, {
+      actions.wrap(formattedAmount, lockTime, receiver, {
         token: { address: depositToken.address, value: formattedAmount },
       })
     } else if (action === 'Unwrap') {
@@ -88,7 +88,7 @@ const App = () => {
           >
             <Wrapper
               action={action}
-              lockTime={lockTime}
+              minLockTime={minLockTime}
               onClick={handleClick}
             />
           </SidePanel>
@@ -102,14 +102,13 @@ const App = () => {
                     depositTokenBalance={depositTokenBalance}
                     miniMeToken={miniMeToken}
                     miniMeTokenBalance={miniMeTokenBalance}
-                    lockTime={lockTime}
+                    minLockTime={minLockTime}
                   />
                 </Col>
                 <Col xs={12} className="mt-3">
                   <LocksDetails
                     depositToken={depositToken}
                     lockedWraps={lockedWraps}
-                    lockTime={lockTime}
                   />
                 </Col>
               </Row>
@@ -118,7 +117,6 @@ const App = () => {
               <LockedWraps
                 depositToken={depositToken}
                 lockedWraps={lockedWraps}
-                lockTime={lockTime}
                 onUnwrap={unwrap}
               />
             </Col>

@@ -10,7 +10,7 @@ const Info = (_props) => {
     depositTokenBalance,
     miniMeToken,
     miniMeTokenBalance,
-    lockTime,
+    minLockTime,
   } = _props
 
   const theme = useTheme()
@@ -73,7 +73,7 @@ const Info = (_props) => {
             color: ${theme.info};
           `}
         >
-          {` ${parseSeconds(lockTime)}`}.
+          {` ${parseSeconds(minLockTime)}`}.
         </Days>
       </LockDetails>
     </Box>
@@ -113,7 +113,7 @@ Info.propTypes = {
   depositTokenBalance: PropTypes.number,
   miniMeToken: PropTypes.object,
   miniMeTokenBalance: PropTypes.number,
-  lockTime: PropTypes.number,
+  minLockTime: PropTypes.number,
 }
 
 export default Info
