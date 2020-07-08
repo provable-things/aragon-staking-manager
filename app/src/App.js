@@ -93,20 +93,21 @@ const App = () => {
           </SidePanel>
 
           <Row>
-            <Col xs={12} lg={9}>
+            <Col xs={12} lg={8}>
               <LockedWraps
                 depositToken={depositToken}
                 lockedWraps={lockedWraps}
                 onUnwrap={unwrap}
               />
             </Col>
-            <Col xs={12} lg={3} className="mt-3 mt-lg-0">
+            <Col xs={12} lg={4} className="mt-3 mt-lg-0">
               <Info
                 depositToken={depositToken}
                 depositTokenBalance={depositTokenBalance}
                 miniMeToken={miniMeToken}
                 miniMeTokenBalance={miniMeTokenBalance}
                 lockTime={lockTime}
+                lockedWraps={lockedWraps}
               />
             </Col>
           </Row>

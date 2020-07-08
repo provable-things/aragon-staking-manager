@@ -14,11 +14,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 const LockedWraps = (_props) => {
-  const {
-    depositToken,
-    lockedWraps,
-    onUnwrap,
-  } = _props
+  const { depositToken, lockedWraps, onUnwrap } = _props
 
   const now = new Date().getTime() / 1000
 
