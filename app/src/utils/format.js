@@ -20,4 +20,6 @@ const parseSeconds = (_seconds) => {
   }
 }
 
-export { correctFormat, parseAmount, parseSeconds }
+const strip = (_number) => _number.toFixed(3)
+
+export { correctFormat, parseAmount, parseSeconds, strip }

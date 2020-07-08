@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { parseSeconds } from '../utils/format'
+import { parseSeconds, strip } from '../utils/format'
+import { getTotalAmountOfUnlockableTokens } from '../utils/unlockable'
 import { Box, useTheme } from '@aragon/ui'
 import styled from 'styled-components'
 
@@ -11,6 +12,7 @@ const Info = (_props) => {
     miniMeToken,
     miniMeTokenBalance,
     lockTime,
+    lockedWraps,
   } = _props
 
   const theme = useTheme()
@@ -26,9 +28,8 @@ const Info = (_props) => {
           >
             {` ${depositToken.symbol} `}
           </TokenSymbol>
-          {' Balance'}
         </TokenName>{' '}
-        <TokenBalance>{depositTokenBalance}</TokenBalance>
+        <TokenBalance>{strip(depositTokenBalance)}</TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenName>
@@ -39,10 +40,24 @@ const Info = (_props) => {
           >
             {` ${miniMeToken.symbol} `}
           </TokenSymbol>
-          {' Balance'}
         </TokenName>{' '}
-        <TokenBalance>{miniMeTokenBalance}</TokenBalance>
+        <TokenBalance>{strip(miniMeTokenBalance)}</TokenBalance>
       </TokenDetails>
+
+      <TokenUnlockableDetails>
+        <TokenName>
+          <TokenSymbol
+            css={`
+              color: ${theme.info};
+            `}
+          >
+            {`UNLOCKABLE ${depositToken.symbol} `}
+          </TokenSymbol>
+        </TokenName>{' '}
+        <TokenBalance>
+          {strip(getTotalAmountOfUnlockableTokens(lockedWraps))}
+        </TokenBalance>
+      </TokenUnlockableDetails>
 
       <LockDetails>
         Deposit your
@@ -93,6 +108,12 @@ const TokenBalance = styled.span`
   font-weight: bold;
 `
 
+const TokenUnlockableDetails = styled.div`
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+`
+
 const LockDetails = styled.div`
   margin-top: 20px;
 `
@@ -108,6 +129,7 @@ Info.propTypes = {
   miniMeToken: PropTypes.object,
   miniMeTokenBalance: PropTypes.number,
   lockTime: PropTypes.string,
+  lockedWraps: PropTypes.array,
 }
 
 export default Info
