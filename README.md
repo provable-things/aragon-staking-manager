@@ -58,7 +58,7 @@ yarn test
         ✓ Should not be able to unwrap more than what you have wrapped (partial fail 2) (250ms)
         ✓ Should be able to unwrap with different lock times (561ms)
         ✓ Should be able to wrap for a non sender address and unwrap (131ms)
-        ✓ Should be able to wrap for a non sender address and unwrap to msg.sender (70ms)
+        ✓ Should not be able to wrap for a non sender address and unwrap to msg.sender (70ms)
 
 
   22 passing (16s)

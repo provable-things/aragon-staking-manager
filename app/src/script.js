@@ -54,13 +54,13 @@ function initializeState() {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
-      const lockTime = parseInt(await app.call('lockTime').toPromise())
+      const minLockTime = parseInt(await app.call('minLockTime').toPromise())
 
       return {
         ...cachedState,
         miniMeToken,
         depositToken,
-        lockTime,
+        minLockTime,
       }
     } catch (err) {
       console.log(err)
@@ -113,6 +113,7 @@ const getLockedWraps = async (_tokenAddress) => {
     return {
       amount: parseInt(_lock.amount),
       lockDate: parseInt(_lock.lockDate),
+      lockTime: parseInt(_lock.lockTime),
     }
   })
 }

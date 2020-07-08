@@ -10,12 +10,12 @@ import { correctFormat } from '../utils/format'
 import styled from 'styled-components'
 
 const LocksDetails = (_props) => {
-  const { depositToken, lockedWraps, lockTime } = _props
+  const { depositToken, lockedWraps } = _props
 
   const theme = useTheme()
 
-  const unlockables = getTotalAmountOfUnlockableTokens(lockedWraps, lockTime)
-  const locked = getTotalAmountOfLockableTokens(lockedWraps, lockTime)
+  const unlockables = getTotalAmountOfUnlockableTokens(lockedWraps)
+  const locked = getTotalAmountOfLockableTokens(lockedWraps)
 
   const perUnlockable = parseFloat(
     ((unlockables / (unlockables + locked)) * 100).toFixed(2)
@@ -96,7 +96,7 @@ const ChartWrapper = styled.div`
 LocksDetails.propTypes = {
   depositToken: PropTypes.object,
   lockedWraps: PropTypes.array,
-  lockTime: PropTypes.number,
+  minLockTime: PropTypes.number,
 }
 
 export default LocksDetails
