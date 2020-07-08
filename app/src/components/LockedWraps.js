@@ -26,7 +26,7 @@ const LockedWraps = (_props) => {
         </TableRow>
       }
     >
-      {lockedWraps.map(({ amount, unlockableTime }, _index) => {
+      {lockedWraps ? lockedWraps.map(({ amount, unlockableTime }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
@@ -64,7 +64,7 @@ const LockedWraps = (_props) => {
             </TableCell>
           </TableRow>
         )
-      })}
+      }) : null}
     </Table>
   )
 }
