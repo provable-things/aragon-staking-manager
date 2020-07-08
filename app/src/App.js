@@ -40,9 +40,11 @@ const App = () => {
         '*'
       ).toString()
 
-      actions.unwrap(formattedAmount)
+      unwrap(_amount)
     }
   }
+
+  const unwrap = (_amount) => actions.unwrap(_amount)
 
   return (
     <Main>
@@ -94,10 +96,8 @@ const App = () => {
             <Col xs={12} lg={9}>
               <LockedWraps
                 depositToken={depositToken}
-                depositTokenBalance={depositTokenBalance}
-                miniMeToken={miniMeToken}
-                miniMeTokenBalance={miniMeTokenBalance}
                 lockedWraps={lockedWraps}
+                onUnwrap={unwrap}
               />
             </Col>
             <Col xs={12} lg={3} className="mt-3 mt-lg-0">
