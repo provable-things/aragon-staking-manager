@@ -19,7 +19,7 @@ const ONE_DAY = 86400
 const MAX_LOCKS = 20
 const LOCK_TIME = ONE_DAY * 7
 
-contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
+contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
   let miniMeToken,
     lockableTokenWrapperBase,
     lockableTokenWrapper,
@@ -211,7 +211,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       )
     })
 
-    describe('wrap(uint256 _amount)', async () => {
+    describe('wrap(uint256 _amount, uint256 _lockTime, address _receiver)', async () => {
       beforeEach(async () => {
         // NOTE nedeed MINT_ROLE assigned to token manager in order to call .mint within .wrap
         await setPermission(
@@ -227,7 +227,14 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         const amountToWrap = 100
 
         const initBalances = await getBalances(depositToken, vault, appManager)
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         const actualBalances = await getBalances(
           depositToken,
           vault,
@@ -235,8 +242,8 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         assert.strictEqual(
-          actualBalances.balanceAppManager,
-          initBalances.balanceAppManager - amountToWrap
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver - amountToWrap
         )
         assert.strictEqual(
           actualBalances.balanceVault,
@@ -246,7 +253,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
 
       it('Should not be able to wrap without token approve', async () => {
         await assertRevert(
-          lockableTokenWrapper.wrap(100, LOCK_TIME, {
+          lockableTokenWrapper.wrap(100, LOCK_TIME, appManager, {
             from: appManager,
           }),
           'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
@@ -255,11 +262,25 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
 
       it('Should not be able to perform more wrap than allowed (maxLocks)', async () => {
         for (let i = 0; i < MAX_LOCKS; i++) {
-          await wrap(depositToken, lockableTokenWrapper, 1, LOCK_TIME, appManager)
+          await wrap(
+            depositToken,
+            lockableTokenWrapper,
+            1,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
         }
 
         await assertRevert(
-          wrap(depositToken, lockableTokenWrapper, 1, LOCK_TIME, appManager),
+          wrap(
+            depositToken,
+            lockableTokenWrapper,
+            1,
+            LOCK_TIME,
+            appManager,
+            appManager
+          ),
           'LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED'
         )
       })
@@ -275,10 +296,24 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         await assertRevert(
-          lockableTokenWrapper.wrap(amountToWrap, LOCK_TIME, {
+          lockableTokenWrapper.wrap(amountToWrap, LOCK_TIME, appManager, {
             from: appManager,
           }),
           'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
+        )
+      })
+
+      it('Should not be able to wrap with a lock time less than the minimun one', async () => {
+        await assertRevert(
+          wrap(
+            depositToken,
+            lockableTokenWrapper,
+            20,
+            LOCK_TIME / 2,
+            appManager,
+            appManager
+          ),
+          'LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW'
         )
       })
     })
@@ -319,6 +354,7 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           lockableTokenWrapper,
           amountToUnwrap,
           LOCK_TIME,
+          appManager,
           appManager
         )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
@@ -334,15 +370,22 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
           initBalances.balanceVault
         )
         assert.strictEqual(
-          actualBalances.balanceAppManager,
-          actualBalances.balanceAppManager
+          actualBalances.balanceReceiver,
+          actualBalances.balanceReceiver
         )
       })
 
       it('Should not be able to unwrap more than you have', async () => {
         const amountToWrap = 100
 
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await assertRevert(
           lockableTokenWrapper.unwrap(amountToWrap * 2, {
             from: appManager,
@@ -354,7 +397,14 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       it('Should not be able to unwrap because it needs to wait the correct time', async () => {
         const amountToWrap = 100
 
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await assertRevert(
           lockableTokenWrapper.unwrap(amountToWrap, {
             from: appManager,
@@ -368,9 +418,23 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         const amountToUnwrap = 200
 
         const initBalances = await getBalances(depositToken, vault, appManager)
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
         await unwrap(lockableTokenWrapper, amountToUnwrap, appManager)
         const actualBalances = await getBalances(
@@ -380,8 +444,8 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         assert.strictEqual(
-          actualBalances.balanceAppManager,
-          initBalances.balanceAppManager
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver
         )
         assert.strictEqual(
           actualBalances.balanceVault,
@@ -393,9 +457,23 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         const amountToWrap = 100
         const amountToUnwrap = 200
 
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
-        await wrap(depositToken, lockableTokenWrapper, amountToWrap, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToWrap,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
 
         // NOTE: trying to unwrap 200 but only 100 are unlockable so the tx must be reverted
         await assertRevert(
@@ -408,9 +486,23 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
 
       it('Should be able to unwrap (partial ok 2)', async () => {
         const initBalances = await getBalances(depositToken, vault, appManager)
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         // NOTE: unwrap 15 of first 20 wrapped tokens
         await unwrap(lockableTokenWrapper, 15, appManager)
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
@@ -428,8 +520,8 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         assert.strictEqual(
-          actualBalances.balanceAppManager,
-          initBalances.balanceAppManager
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver
         )
         assert.strictEqual(
           actualBalances.balanceVault,
@@ -438,9 +530,23 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
       })
 
       it('Should not be able to unwrap more than what you have wrapped (partial fail 2)', async () => {
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await unwrap(lockableTokenWrapper, 15, appManager)
         await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
         await unwrap(lockableTokenWrapper, 20, appManager)
@@ -454,9 +560,23 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
 
       it('Should be able to unwrap with different lock times', async () => {
         const initBalances = await getBalances(depositToken, vault, appManager)
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
-        await wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME * 3, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          20,
+          LOCK_TIME * 3,
+          appManager,
+          appManager
+        )
         await unwrap(lockableTokenWrapper, 15, appManager)
         await timeTravel(new Date().getSeconds() + LOCK_TIME * 5)
         await unwrap(lockableTokenWrapper, 1, appManager)
@@ -473,8 +593,8 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
 
         assert.strictEqual(
-          actualBalances.balanceAppManager,
-          initBalances.balanceAppManager
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver
         )
         assert.strictEqual(
           actualBalances.balanceVault,
@@ -482,10 +602,47 @@ contract('LockableTokenWrapper', ([appManager, ...accounts]) => {
         )
       })
 
-      it('Should not be able to wrap with a lock time less than the minimun one', async () => {
+      it('Should be able to wrap for a non sender address and unwrap', async () => {
+        const amountToUnwrap = 100
+        const initBalances = await getBalances(depositToken, vault, ACCOUNTS_1)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          amountToUnwrap,
+          LOCK_TIME,
+          ACCOUNTS_1,
+          appManager
+        )
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await unwrap(lockableTokenWrapper, amountToUnwrap, ACCOUNTS_1)
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          ACCOUNTS_1
+        )
+
+        assert.strictEqual(
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver + amountToUnwrap
+        )
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
+        )
+      })
+
+      it('Should be able to wrap for a non sender address and unwrap to msg.sender', async () => {
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          100,
+          LOCK_TIME,
+          ACCOUNTS_1,
+          appManager
+        )
         await assertRevert(
-          wrap(depositToken, lockableTokenWrapper, 20, LOCK_TIME / 2, appManager),
-          'LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW'
+          unwrap(lockableTokenWrapper, 100, appManager),
+          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS'
         )
       })
     })
