@@ -1,6 +1,6 @@
 import 'core-js/stable'
 import 'regenerator-runtime/runtime'
-import Aragon, { events, a } from '@aragon/api'
+import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
 import { correctFormat } from './utils/format'
@@ -77,10 +77,13 @@ const handleEvent = async (_nextState) => {
     _nextState.account
   )
 
+  const lockedWraps = await getLockedWraps(_nextState.account)
+
   return {
     ..._nextState,
     miniMeTokenBalance,
     depositTokenBalance,
+    lockedWraps,
   }
 }
 
@@ -93,12 +96,25 @@ const handleAccountChange = async (_nextState, { account }) => {
     account
   )
 
+  const lockedWraps = await getLockedWraps(account)
+
   return {
     ..._nextState,
     miniMeTokenBalance,
     depositTokenBalance,
     account,
+    lockedWraps,
   }
+}
+
+const getLockedWraps = async (_tokenAddress) => {
+  const lockedWraps = await app.call('getWrapLocks', _tokenAddress).toPromise()
+  return lockedWraps.map((_lock) => {
+    return {
+      amount: _lock.amount,
+      unlockableTime: _lock.unlockableTime,
+    }
+  })
 }
 
 const getTokenData = async (_tokenAddress) => {

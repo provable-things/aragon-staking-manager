@@ -8,6 +8,7 @@ const reducer = (_state) => {
       miniMeToken: null,
       isSyncing: true,
       lockTime: 0,
+      lockedWraps: [],
     }
   }
   return _state

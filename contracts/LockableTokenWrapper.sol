@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/os/contracts/common/SafeERC20.sol";
@@ -42,7 +43,7 @@ contract LockableTokenWrapper is AragonApp {
     uint256 public lockTime;
     uint256 public maxLocks;
 
-    mapping(address => Lock[]) public addressesWrapLock;
+    mapping(address => Lock[]) public addressWrapLocks;
 
     event Wrap(address sender, uint256 amount);
     event Unwrap(address sender, uint256 amount);
@@ -55,7 +56,7 @@ contract LockableTokenWrapper is AragonApp {
      * @param _vault Vault address
      * @param _depositToken Accepted token address
      * @param _lockTime number of seconds after which it's possible to unwrap tokens related to a wrap
-     * @param _maxLocks number of possible locks for a given address before doing an unwrap
+     * @param _maxLocks number of possible lockedWraps for a given address before doing an unwrap
      */
     function initialize(
         address _tokenManager,
@@ -89,7 +90,7 @@ contract LockableTokenWrapper is AragonApp {
         );
 
         require(
-            addressesWrapLock[msg.sender].length < maxLocks,
+            addressWrapLocks[msg.sender].length < maxLocks,
             ERROR_MAXIMUN_LOCKS_REACHED
         );
 
@@ -105,7 +106,7 @@ contract LockableTokenWrapper is AragonApp {
         tokenManager.mint(msg.sender, _amount);
 
         uint256 unlockableTime = block.timestamp.add(lockTime);
-        addressesWrapLock[msg.sender].push(Lock(unlockableTime, _amount));
+        addressWrapLocks[msg.sender].push(Lock(unlockableTime, _amount));
 
         emit Wrap(msg.sender, _amount);
         return _amount;
@@ -147,8 +148,8 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-     * @notice Change max locks
-     * @param _maxLocks Maximun number of locks allowed for an address
+     * @notice Change max lockedWraps
+     * @param _maxLocks Maximun number of lockedWraps allowed for an address
      */
     function changeMaxLocks(uint256 _maxLocks)
         external
@@ -159,7 +160,15 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related locks
+    * @notice Return all locked wraps for a given _address
+    * @param _address address
+    */
+    function getWrapLocks(address _address) external view returns (Lock[]) {
+        return addressWrapLocks[_address];
+    }
+
+    /**
+     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related lockedWraps
      * @dev lock.unlockableTime corresponds to the date after which tokens can be unlocked
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
@@ -168,16 +177,16 @@ contract LockableTokenWrapper is AragonApp {
         internal
         returns (bool)
     {
-        Lock[] storage locks = addressesWrapLock[_unwrapper];
+        Lock[] storage lockedWraps = addressWrapLocks[_unwrapper];
 
         uint256 total = 0;
-        uint256[] memory lockToRemove = new uint256[](locks.length);
+        uint256[] memory lockToRemove = new uint256[](lockedWraps.length);
         uint256 indexLockToRemove = 0;
 
         bool result = false;
-        for (uint64 i = 0; i < locks.length; i++) {
-            if (block.timestamp >= locks[i].unlockableTime) {
-                total = total.add(locks[i].amount);
+        for (uint64 i = 0; i < lockedWraps.length; i++) {
+            if (block.timestamp >= lockedWraps[i].unlockableTime) {
+                total = total.add(lockedWraps[i].amount);
 
                 if (_amount == total) {
                     lockToRemove[indexLockToRemove] = i;
@@ -186,7 +195,7 @@ contract LockableTokenWrapper is AragonApp {
                     break;
                 } else if (_amount < total) {
                     // remainder. update it from the last lock
-                    locks[i].amount = total.sub(_amount);
+                    lockedWraps[i].amount = total.sub(_amount);
                     result = true;
                     break;
                 } else {
@@ -197,7 +206,7 @@ contract LockableTokenWrapper is AragonApp {
         }
 
         for (uint64 j = 0; j < indexLockToRemove; j++) {
-            delete locks[lockToRemove[j]];
+            delete lockedWraps[lockToRemove[j]];
         }
 
         return result;
