@@ -44,6 +44,7 @@ const useAppLogic = () => {
     miniMeTokenBalance,
     isSyncing,
     lockTime,
+    lockedWraps,
   } = useAppState()
 
   const panelState = useSidePanel()
@@ -62,6 +63,7 @@ const useAppLogic = () => {
     isSyncing,
     panelState,
     lockTime,
+    lockedWraps,
   }
 }
 

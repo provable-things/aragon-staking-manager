@@ -11,22 +11,7 @@ const Details = (_props) => {
     miniMeTokenBalance,
   } = _props
 
-  return (
-    <Box heading={'DETAILS'}>
-      <Row>
-        <Col xs={6}>{`${depositToken.symbol} Balance`}</Col>
-        <Col xs={6} className="text-right">
-          {depositTokenBalance}
-        </Col>
-      </Row>
-      <Row className="mt-3">
-        <Col xs={6}>{`${miniMeToken.symbol} Balance`}</Col>
-        <Col xs={6} className="text-right">
-          {miniMeTokenBalance}
-        </Col>
-      </Row>
-    </Box>
-  )
+  return <Box heading={'DETAILS'}></Box>
 }
 
 Details.propTypes = {

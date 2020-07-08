@@ -101,7 +101,9 @@ const App = () => {
             <Col xs={12} lg={3} className="mt-3 mt-lg-0">
               <Info
                 depositToken={depositToken}
+                depositTokenBalance={depositTokenBalance}
                 miniMeToken={miniMeToken}
+                miniMeTokenBalance={miniMeTokenBalance}
                 lockTime={lockTime}
               />
             </Col>
