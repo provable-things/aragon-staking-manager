@@ -631,7 +631,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
       })
 
-      it('Should be able to wrap for a non sender address and unwrap to msg.sender', async () => {
+      it('Should not be able to wrap for a non sender address and unwrap to msg.sender', async () => {
         await wrap(
           depositToken,
           lockableTokenWrapper,
