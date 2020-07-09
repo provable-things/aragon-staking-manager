@@ -1,5 +1,5 @@
 {
-  "name": "lockable-token-wrapper-app",
+  "name": "lockable-token-wrapper",
   "version": "0.0.1",
   "description": "An Aragon app for getting miniMeToken(s) in exchange for given ERC20 token(s)",
   "scripts": {

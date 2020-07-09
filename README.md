@@ -1,4 +1,4 @@
-# :crystal_ball: lockable-token-wrapper-app
+# :crystal_ball: lockable-token-wrapper
 
 An Aragon app for getting miniMeToken(s) in exchange for given ERC20 token(s).
 
