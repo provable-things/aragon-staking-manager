@@ -785,6 +785,51 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
           initBalances.balanceReceiver - expectedBalance
         )
       })
+
+      it('Should be able to wrap MAX_LOCKS times and unwrap in two times', async () => {
+        const expectedBalance = 200
+
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await wrap(
+            depositToken,
+            lockableTokenWrapper,
+            expectedBalance / MAX_LOCKS,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
+        }
+
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+
+        await unwrap(
+          lockableTokenWrapper,
+          expectedBalance - 3,
+          appManager
+        )
+
+        await unwrap(
+          lockableTokenWrapper,
+          3,
+          appManager
+        )
+
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
+        )
+
+        assert.strictEqual(
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver
+        )
+        assert.strictEqual(
+          actualBalances.balanceVault,
+          initBalances.balanceVault
+        )
+      })
     })
   })
 })
