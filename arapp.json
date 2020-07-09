@@ -37,6 +37,5 @@
       "network": "mainnet"
     }
   },
-  "appName": "lockable-token-wrapper.aragonpm.eth",
   "path": "contracts/LockableTokenWrapper.sol"
 }
