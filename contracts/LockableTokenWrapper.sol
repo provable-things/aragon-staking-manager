@@ -216,7 +216,7 @@ contract LockableTokenWrapper is AragonApp {
      * @notice Check if there an address has reached the max limit of allowed Lock
      * @param _address address
      */
-    function canInsert(address _address) public returns (bool) {
+    function canInsert(address _address) public view returns (bool) {
         Lock[] storage lockedWraps = addressWrapLocks[_address];
 
         if (lockedWraps.length < maxLocks) return true;
@@ -284,7 +284,7 @@ contract LockableTokenWrapper is AragonApp {
               in which it's possible to insert a new Lock
     * @param _address address
     */
-    function whereInsert(address _address) internal returns (uint256) {
+    function whereInsert(address _address) internal view returns (uint256) {
         Lock[] storage lockedWraps = addressWrapLocks[_address];
 
         if (lockedWraps.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
