@@ -282,7 +282,7 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-    * @notice Returns the position in which it's possible to insert a new wrapping within addressWrapLocks.
+    * @notice Returns the position in which it's possible to insert a new Lock within addressWrapLocks.
               push it means that the array can grow, notPush it means error othewise returns the index
               in which it's possible to insert a new Lock
     * @param _address address

@@ -1,18 +1,16 @@
 import React from 'react'
 import {
-  Box,
   Button,
-  GU,
   Table,
   TableHeader,
   TableRow,
   TableCell,
   Text,
   IconUnlock,
-  Tag,
-  textStyle,
+  Tag
 } from '@aragon/ui'
 import { correctFormat, parseSeconds } from '../utils/format'
+import NoLockedWraps from './NoLockedWraps'
 import PropTypes from 'prop-types'
 
 const LockedWraps = (_props) => {
@@ -68,20 +66,7 @@ const LockedWraps = (_props) => {
         )
       })}
     </Table>
-  ) : (
-    <Box
-      css={`
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        height: ${50 * GU}px;
-        ${textStyle('title3')};
-      `}
-    >
-      no data
-    </Box>
-  )
+  ) : <NoLockedWraps/>
 }
 
 LockedWraps.propTypes = {
