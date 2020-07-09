@@ -37,6 +37,9 @@ contract LockableTokenWrapper is AragonApp {
     // prettier-ignore
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "LOCKABLE_TOKEN_WRAPPER_IMPOSSIBLE_TO_INSERT";
 
+    uint256 private constant PUSH_THREESHOLD = 1;
+    uint256 private constant NOT_PUSH_THREESHOLD = 2;
+
     struct Lock {
         uint256 lockDate;
         uint256 lockTime;
@@ -49,8 +52,6 @@ contract LockableTokenWrapper is AragonApp {
     address public depositToken;
     uint256 public minLockTime;
     uint256 public maxLocks;
-    uint256 private push;
-    uint256 private notPush;
 
     mapping(address => Lock[]) public addressWrapLocks;
 
@@ -60,10 +61,10 @@ contract LockableTokenWrapper is AragonApp {
         uint256 amount,
         address receiver
     );
-    event Unwrap(address sender, uint256 amount);
+    event Unwrap(address receiver, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
     event MaxLocksChanged(uint256 maxLocks);
-    event VaultChanged(address _vault);
+    event VaultChanged(address vault);
 
     /**
      * @notice Initialize LockableTokenWrapper app contract
@@ -89,8 +90,6 @@ contract LockableTokenWrapper is AragonApp {
         depositToken = _depositToken;
         minLockTime = _minLockTime;
         maxLocks = _maxLocks;
-        push = _maxLocks.add(1);
-        notPush = _maxLocks.add(2);
 
         initialized();
     }
@@ -114,7 +113,7 @@ contract LockableTokenWrapper is AragonApp {
 
         require(canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
 
-        require(_lockTime > minLockTime, ERROR_LOCK_TIME_TOO_LOW);
+        require(_lockTime >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
 
         require(
             ERC20(depositToken).safeTransferFrom(
@@ -128,10 +127,10 @@ contract LockableTokenWrapper is AragonApp {
         tokenManager.mint(_receiver, _amount);
 
         uint256 position = whereInsert(_receiver);
-        require(position < notPush, ERROR_IMPOSSIBLE_TO_INSERT);
+        require(position < maxLocks.add(NOT_PUSH_THREESHOLD), ERROR_IMPOSSIBLE_TO_INSERT);
 
         // if there is at least an empty slot
-        if (position < push) {
+        if (position < maxLocks.add(PUSH_THREESHOLD)) {
             addressWrapLocks[_receiver][position] = Lock(
                 block.timestamp,
                 _lockTime,
@@ -191,8 +190,6 @@ contract LockableTokenWrapper is AragonApp {
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
         maxLocks = _maxLocks;
-        push = _maxLocks.add(1);
-        notPush = _maxLocks.add(2);
         emit MaxLocksChanged(maxLocks);
     }
 
@@ -283,14 +280,14 @@ contract LockableTokenWrapper is AragonApp {
 
     /**
     * @notice Returns the position in which it's possible to insert a new Lock within addressWrapLocks.
-              push it means that the array can grow, notPush it means error othewise returns the index
+              .add(PUSH_THREESHOLD) it means that the array can grow, .add(NOT_PUSH_THREESHOLD) it means error othewise returns the index
               in which it's possible to insert a new Lock
     * @param _address address
     */
     function whereInsert(address _address) internal returns (uint256) {
         Lock[] storage lockedWraps = addressWrapLocks[_address];
 
-        if (lockedWraps.length < maxLocks) return push;
+        if (lockedWraps.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
 
         for (uint256 i = 0; i < lockedWraps.length; i++) {
             if (isWrapLockEmpty(lockedWraps[i])) {
@@ -298,7 +295,7 @@ contract LockableTokenWrapper is AragonApp {
             }
         }
 
-        return notPush;
+        return maxLocks.add(NOT_PUSH_THREESHOLD);
     }
 
     /**
