@@ -12,6 +12,7 @@ import {
 import { correctFormat } from '../utils/number-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
+import NoLockedWraps from './NoLockedWraps'
 
 const LockedWraps = (_props) => {
   const { depositToken, lockedWraps, onUnwrap, onOpenSidebar } = _props
