@@ -7,14 +7,14 @@ import {
   TableCell,
   Text,
   IconUnlock,
-  Tag
+  Tag,
 } from '@aragon/ui'
 import { correctFormat, parseSeconds } from '../utils/format'
 import NoLockedWraps from './NoLockedWraps'
 import PropTypes from 'prop-types'
 
 const LockedWraps = (_props) => {
-  const { depositToken, lockedWraps, onUnwrap } = _props
+  const { depositToken, lockedWraps, onUnwrap, onOpenSidebar } = _props
 
   const now = new Date().getTime() / 1000
 
@@ -66,7 +66,9 @@ const LockedWraps = (_props) => {
         )
       })}
     </Table>
-  ) : <NoLockedWraps/>
+  ) : (
+    <NoLockedWraps onOpenSidebar={onOpenSidebar} />
+  )
 }
 
 LockedWraps.propTypes = {

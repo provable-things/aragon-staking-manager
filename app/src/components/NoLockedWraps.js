@@ -1,10 +1,9 @@
 import React from 'react'
-import {
-  Box,
-  GU,
-  textStyle,
-} from '@aragon/ui'
-const NoLockedWraps = _props => {
+import { Box, Button, EmptyStateCard, GU, textStyle } from '@aragon/ui'
+import PropTypes from 'prop-types'
+
+const NoLockedWraps = (_props) => {
+  const { onOpenSidebar } = _props
 
   return (
     <Box
@@ -17,8 +16,16 @@ const NoLockedWraps = _props => {
         ${textStyle('title3')};
       `}
     >
-      no data
+      <EmptyStateCard
+        text="There is no wrapped tokens."
+        action={<Button onClick={onOpenSidebar}>Start</Button>}
+      />
     </Box>
   )
 }
+
+NoLockedWraps.propTypes = {
+  onOpenSidebar: PropTypes.func,
+}
+
 export default NoLockedWraps
