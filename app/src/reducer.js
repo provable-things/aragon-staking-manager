@@ -16,10 +16,10 @@ const reducer = (_state) => {
 
   return {
     ..._state,
-    lockedWraps: lockedWraps.filter(
+    lockedWraps: lockedWraps ? lockedWraps.filter(
       ({ amount, lockDate, lockTime }) =>
         amount !== 0 && lockDate !== 0 && lockTime !== 0
-    ),
+    ) : [],
   }
 }
 
