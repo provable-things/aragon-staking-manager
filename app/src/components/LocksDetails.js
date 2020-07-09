@@ -17,8 +17,6 @@ const LocksDetails = (_props) => {
   const unlocked = getTotalAmountOUnlockedTokens(lockedWraps)
   const locked = getTotalAmountOfLockedTokens(lockedWraps)
 
-  console.log(unlocked, locked)
-
   const perUnlocked = parseFloat(
     ((unlocked / (unlocked + locked)) * 100).toFixed(2)
   )
