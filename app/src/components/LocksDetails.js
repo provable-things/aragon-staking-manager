@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { strip } from '../utils/format'
 import {
@@ -10,7 +10,7 @@ import { correctFormat } from '../utils/format'
 import styled from 'styled-components'
 
 const LocksDetails = (_props) => {
-  const { depositToken, lockedWraps } = _props
+  const { depositToken, lockedWraps, onOpenSidebar } = _props
 
   const theme = useTheme()
 
@@ -97,6 +97,7 @@ LocksDetails.propTypes = {
   depositToken: PropTypes.object,
   lockedWraps: PropTypes.array,
   minLockTime: PropTypes.number,
+  onOpenSidebar: PropTypes.func,
 }
 
 export default LocksDetails

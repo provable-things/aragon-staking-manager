@@ -119,6 +119,10 @@ const App = () => {
                 depositToken={depositToken}
                 lockedWraps={lockedWraps}
                 onUnwrap={unwrap}
+                onOpenSidebar={(_e) => {
+                  panelState.requestOpen(_e)
+                  setAction('Wrap')
+                }}
               />
             </Col>
           </Row>
