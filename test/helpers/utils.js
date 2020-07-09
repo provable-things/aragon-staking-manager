@@ -10,16 +10,15 @@ const wrap = async (
     from: _appManager,
   })
 
-  await _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, _receiver, {
+  return _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, _receiver, {
     from: _appManager,
   })
 }
 
-const unwrap = async (_lockableTokenWrapper, _amountToWrap, _appManager) => {
-  await _lockableTokenWrapper.unwrap(_amountToWrap, {
+const unwrap = (_lockableTokenWrapper, _amountToWrap, _appManager) =>
+  _lockableTokenWrapper.unwrap(_amountToWrap, {
     from: _appManager,
   })
-}
 
 const getBalances = async (_depositToken, _vault, _receiver) => {
   const balanceReceiver = parseInt(await _depositToken.balanceOf(_receiver))
