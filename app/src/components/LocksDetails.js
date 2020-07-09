@@ -1,27 +1,29 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/format'
+import { strip } from '../utils/number-utils'
 import {
-  getTotalAmountOfUnlockableTokens,
-  getTotalAmountOfLockableTokens,
-} from '../utils/unlockable'
+  getTotalAmountOUnlockedTokens,
+  getTotalAmountOfLockedTokens,
+} from '../utils/locks-utils'
 import { Box, Distribution, useTheme } from '@aragon/ui'
-import { correctFormat } from '../utils/format'
+import { correctFormat } from '../utils/number-utils'
 import styled from 'styled-components'
 
 const LocksDetails = (_props) => {
-  const { depositToken, lockedWraps, onOpenSidebar } = _props
+  const { depositToken, lockedWraps } = _props
 
   const theme = useTheme()
 
-  const unlockables = getTotalAmountOfUnlockableTokens(lockedWraps)
-  const locked = getTotalAmountOfLockableTokens(lockedWraps)
+  const unlocked = getTotalAmountOUnlockedTokens(lockedWraps)
+  const locked = getTotalAmountOfLockedTokens(lockedWraps)
 
-  const perUnlockable = parseFloat(
-    ((unlockables / (unlockables + locked)) * 100).toFixed(2)
+  console.log(unlocked, locked)
+
+  const perUnlocked = parseFloat(
+    ((unlocked / (unlocked + locked)) * 100).toFixed(2)
   )
-  const perLockable = parseFloat(
-    ((locked / (unlockables + locked)) * 100).toFixed(2)
+  const perLocked = parseFloat(
+    ((locked / (unlocked + locked)) * 100).toFixed(2)
   )
 
   return (
@@ -51,17 +53,17 @@ const LocksDetails = (_props) => {
           </TokenSymbol>
         </TokenName>{' '}
         <TokenBalance>
-          {strip(correctFormat(unlockables, depositToken.decimals, '/'))}
+          {strip(correctFormat(unlocked, depositToken.decimals, '/'))}
         </TokenBalance>
       </TokenUnlockableDetails>
       <ChartWrapper>
         <Distribution
           heading="Distribution"
           items={[
-            { item: 'Lockable', percentage: perLockable ? perLockable : 0 },
+            { item: 'Locked', percentage: perLocked ? perLocked : 0 },
             {
-              item: 'Unlockable',
-              percentage: perUnlockable ? perUnlockable : 0,
+              item: 'Unlocked',
+              percentage: perUnlocked ? perUnlocked : 0,
             },
           ]}
         />
@@ -97,7 +99,6 @@ LocksDetails.propTypes = {
   depositToken: PropTypes.object,
   lockedWraps: PropTypes.array,
   minLockTime: PropTypes.number,
-  onOpenSidebar: PropTypes.func,
 }
 
 export default LocksDetails

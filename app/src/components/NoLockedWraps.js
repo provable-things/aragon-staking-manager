@@ -17,7 +17,7 @@ const NoLockedWraps = (_props) => {
       `}
     >
       <EmptyStateCard
-        text="There is no wrapped tokens."
+        text="There are no wrapped tokens."
         action={<Button onClick={onOpenSidebar}>Start</Button>}
       />
     </Box>

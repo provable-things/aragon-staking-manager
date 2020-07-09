@@ -6,7 +6,7 @@ import Wrapper from './components/Wrapper'
 import LockedWraps from './components/LockedWraps'
 import Info from './components/Info'
 import LocksDetails from './components/LocksDetails'
-import { correctFormat, parseAmount } from './utils/format'
+import { correctFormat, parseAmount } from './utils/number-utils'
 
 const App = () => {
   const {
@@ -24,29 +24,26 @@ const App = () => {
   const [action, setAction] = useState(null)
 
   const handleClick = ({ amount, action, lockTime, receiver }) => {
-    console.log(lockTime)
     if (action === 'Wrap') {
       const formattedAmount = correctFormat(
         parseAmount(depositToken.decimals, amount),
         depositToken.decimals,
         '*'
-      ).toString()
+      )
 
       actions.wrap(formattedAmount, lockTime, receiver, {
         token: { address: depositToken.address, value: formattedAmount },
       })
     } else if (action === 'Unwrap') {
-      const formattedAmount = correctFormat(
-        parseAmount(miniMeToken.decimals, amount),
-        miniMeToken.decimals,
-        '*'
-      ).toString()
-
-      unwrap(formattedAmount)
+      actions.unwrap(
+        correctFormat(
+          parseAmount(miniMeToken.decimals, amount),
+          miniMeToken.decimals,
+          '*'
+        )
+      )
     }
   }
-
-  const unwrap = (_amount) => actions.unwrap(_amount)
 
   return (
     <Main>
@@ -118,7 +115,7 @@ const App = () => {
               <LockedWraps
                 depositToken={depositToken}
                 lockedWraps={lockedWraps}
-                onUnwrap={unwrap}
+                onUnwrap={handleClick}
                 onOpenSidebar={(_e) => {
                   panelState.requestOpen(_e)
                   setAction('Wrap')
