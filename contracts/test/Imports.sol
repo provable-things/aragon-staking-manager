@@ -4,7 +4,7 @@ import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/contract-test-helpers/contracts/TokenMock.sol";
-import "./lib/StandardToken.sol";
+import "./StandardToken.sol";
 
 
 contract Imports {
