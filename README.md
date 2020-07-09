@@ -60,7 +60,7 @@ yarn test
         ✓ Should be able to unwrap with different lock times (557ms)
         ✓ Should be able to wrap for a non sender address and unwrap (146ms)
         ✓ Should not be able to wrap for a non sender address and unwrap to msg.sender (77ms)
-        ✓ Should be able to insert in an empyty slot (1371ms)
+        ✓ Should be able to insert in an empty slot (1371ms)
         ✓ Should be able to wrap MAX_LOCKS times, unwrap MAX_LOCKS * 2 times(unwrap with amount / 2) and wrapping other MAX_LOCKS times (4986ms)
 
 
