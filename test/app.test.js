@@ -669,7 +669,7 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
       })
 
-      it('Should be able to insert in an empyty slot', async () => {
+      it('Should be able to insert in an empty slot', async () => {
         const expectedLock = undefined
         for (let i = 0; i < MAX_LOCKS; i++) {
           await wrap(
@@ -683,7 +683,26 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
         }
 
         await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+
         await unwrap(lockableTokenWrapper, 12, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          10,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
+        await unwrap(lockableTokenWrapper, 12, appManager)
+        await unwrap(lockableTokenWrapper, 12, appManager)
+        await wrap(
+          depositToken,
+          lockableTokenWrapper,
+          10,
+          LOCK_TIME,
+          appManager,
+          appManager
+        )
         await wrap(
           depositToken,
           lockableTokenWrapper,
@@ -694,14 +713,78 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
 
         const locks = await lockableTokenWrapper.getWrapLocks(appManager)
-        const lock = locks.find(({lockDate, lockTime, amount}) => lockDate === '0' && lockTime === '0' && amount === '0')
-        
+        const lock = locks.find(
+          ({ lockDate, lockTime, amount }) =>
+            lockDate === '0' && lockTime === '0' && amount === '0'
+        )
+
+        assert.strictEqual(lock, expectedLock)
+      })
+
+      it('Should be able to wrap MAX_LOCKS times, unwrap MAX_LOCKS * 2 times(unwrap with amount / 2) and wrapping other MAX_LOCKS times', async () => {
+        const expectedBalance = 200
+        const expectedLock = undefined
+
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await wrap(
+            depositToken,
+            lockableTokenWrapper,
+            expectedBalance / MAX_LOCKS,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
+        }
+
+        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+
+        for (let i = 0; i < MAX_LOCKS * 2; i++) {
+          await unwrap(
+            lockableTokenWrapper,
+            expectedBalance / MAX_LOCKS / 2,
+            appManager
+          )
+        }
+
+        let locks = await lockableTokenWrapper.getWrapLocks(appManager)
+        let filtered = locks.filter(
+          ({ lockDate, lockTime, amount }) =>
+            lockDate === '0' && lockTime === '0' && amount === '0'
+        )
+
+        assert.strictEqual(locks.length, filtered.length)
+
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await wrap(
+            depositToken,
+            lockableTokenWrapper,
+            expectedBalance / MAX_LOCKS,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
+        }
+
+        locks = await lockableTokenWrapper.getWrapLocks(appManager)
+        const lock = locks.find(
+          ({ lockDate, lockTime, amount }) =>
+            lockDate === '0' && lockTime === '0' && amount === '0'
+        )
+
+        const actualBalances = await getBalances(
+          depositToken,
+          vault,
+          appManager
+        )
+
+        assert.strictEqual(lock, expectedLock)
+
         assert.strictEqual(
-          lock,
-          expectedLock
+          actualBalances.balanceReceiver,
+          initBalances.balanceReceiver - expectedBalance
         )
       })
-      // TODO check failing cases
     })
   })
 })

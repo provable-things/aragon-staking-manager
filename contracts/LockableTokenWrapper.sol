@@ -139,11 +139,7 @@ contract LockableTokenWrapper is AragonApp {
             );
         } else {
             addressWrapLocks[_receiver].push(
-                Lock(
-                    block.timestamp,
-                    _lockTime,
-                    _amount
-                )
+                Lock(block.timestamp, _lockTime, _amount)
             );
         }
 
@@ -163,7 +159,7 @@ contract LockableTokenWrapper is AragonApp {
         );
 
         require(
-            canUnwrap(msg.sender, _amount),
+            _unwrap(msg.sender, _amount),
             ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
         );
 
@@ -206,13 +202,13 @@ contract LockableTokenWrapper is AragonApp {
      */
     function changeVault(address _vault) external auth(CHANGE_VAULT_ROLE) {
         require(isContract(_vault), ERROR_ADDRESS_NOT_CONTRACT);
-        
+
         vault = Vault(_vault);
         emit VaultChanged(_vault);
     }
 
     /**
-     * @notice Return all locked wraps for a given _address
+     * @notice Return all Locks for a given _address
      * @param _address address
      */
     function getWrapLocks(address _address) external view returns (Lock[]) {
@@ -220,12 +216,29 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
+     * @notice Check if there an address has reached the max limit of allowed Lock
+     * @param _address address
+     */
+    function canInsert(address _address) public returns (bool) {
+        Lock[] storage lockedWraps = addressWrapLocks[_address];
+
+        if (lockedWraps.length < maxLocks) return true;
+
+        for (uint256 i = 0; i < lockedWraps.length; i++) {
+            if (isWrapLockEmpty(lockedWraps[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related lockedWraps
-     * @dev lock.lockTime corresponds to the date after which tokens can be unlocked
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
      */
-    function canUnwrap(address _unwrapper, uint256 _amount)
+    function _unwrap(address _unwrapper, uint256 _amount)
         internal
         returns (bool)
     {
@@ -262,29 +275,22 @@ contract LockableTokenWrapper is AragonApp {
         }
 
         for (uint256 j = 0; j < indexLockToRemove; j++) {
-            //lockedWraps[lockToRemove[j]].status = Status.Unwrapped;
             delete lockedWraps[lockToRemove[j]];
         }
 
         return result;
     }
 
-    function canInsert(address _address) internal returns (bool) {
-        Lock[] storage lockedWraps = addressWrapLocks[_address];
-
-        for (uint256 i = 0; i < lockedWraps.length; i++) {
-            if (isWrapLockEmpty(lockedWraps[i])) {
-                return true;
-            }
-        }
-
-        if (lockedWraps.length < maxLocks) return true;
-
-        return false;
-    }
-
+    /**
+    * @notice Returns the position in which it's possible to insert a new wrapping within addressWrapLocks.
+              push it means that the array can grow, notPush it means error othewise returns the index
+              in which it's possible to insert a new Lock
+    * @param _address address
+    */
     function whereInsert(address _address) internal returns (uint256) {
         Lock[] storage lockedWraps = addressWrapLocks[_address];
+
+        if (lockedWraps.length < maxLocks) return push;
 
         for (uint256 i = 0; i < lockedWraps.length; i++) {
             if (isWrapLockEmpty(lockedWraps[i])) {
@@ -292,12 +298,14 @@ contract LockableTokenWrapper is AragonApp {
             }
         }
 
-        if (lockedWraps.length < maxLocks) return push;
-
         return notPush;
     }
 
-    function isWrapLockEmpty(Lock memory _lock) internal returns (bool) {
+    /**
+     * @notice Check if a Lock is empty
+     * @param _lock lock
+     */
+    function isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
         if (_lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0) {
             return true;
         }
