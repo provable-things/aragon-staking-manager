@@ -803,17 +803,9 @@ contract('LockableTokenWrapper', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
         await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
 
-        await unwrap(
-          lockableTokenWrapper,
-          expectedBalance - 3,
-          appManager
-        )
+        await unwrap(lockableTokenWrapper, expectedBalance - 3, appManager)
 
-        await unwrap(
-          lockableTokenWrapper,
-          3,
-          appManager
-        )
+        await unwrap(lockableTokenWrapper, 3, appManager)
 
         const actualBalances = await getBalances(
           depositToken,

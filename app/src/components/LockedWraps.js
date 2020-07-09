@@ -9,8 +9,8 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { correctFormat, parseSeconds } from '../utils/format'
-import NoLockedWraps from './NoLockedWraps'
+import { correctFormat } from '../utils/number-utils'
+import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 
 const LockedWraps = (_props) => {
@@ -53,7 +53,10 @@ const LockedWraps = (_props) => {
               {lockDate + lockTime < now ? (
                 <Button
                   onClick={() =>
-                    onUnwrap(correctFormat(amount, depositToken.decimals, '*'))
+                    onUnwrap({
+                      action: 'Unwrap',
+                      amount: correctFormat(amount, depositToken.decimals, '/'),
+                    })
                   }
                 >
                   <IconUnlock />

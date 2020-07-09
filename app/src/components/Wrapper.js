@@ -2,7 +2,10 @@ import React, { Fragment, useState } from 'react'
 import styled from 'styled-components'
 import { Button, Field, GU, Info, TextInput, DropDown } from '@aragon/ui'
 import PropTypes from 'prop-types'
-import { parseSeconds } from '../utils/format'
+import { parseSeconds } from '../utils/time-utils'
+import Web3 from 'web3'
+
+const web3 = new Web3()
 
 const formatSeconds = {
   0: 3.154e7, // Years
@@ -21,6 +24,41 @@ const Wrapper = (_props) => {
   const [amount, setAmount] = useState('')
   const [receiver, setReceiver] = useState('')
   const [lockTime, setLockTime] = useState('')
+  const [error, setError] = useState(null)
+
+  const handleClick = () => {
+    setError(null)
+    if (action === 'Wrap') {
+      const secondsLockTime = lockTime * formatSeconds[lockFormat]
+
+      if (secondsLockTime < minLockTime) {
+        setError(
+          `Lock Time too low. Please insert a lock of at least ${parseSeconds(
+            minLockTime
+          )}.`
+        )
+        return
+      }
+
+      if (!web3.utils.isAddress(receiver)) {
+        setError('Invalid Ethereum address.')
+        return
+      }
+
+      onClick({
+        amount,
+        action,
+        receiver,
+        lockTime: secondsLockTime,
+      })
+      return
+    } else {
+      onClick({
+        amount,
+        action,
+      })
+    }
+  }
 
   return (
     <Fragment>
@@ -107,22 +145,28 @@ const Wrapper = (_props) => {
         </Fragment>
       ) : null}
       <Button
-        onClick={() =>
-          onClick({
-            amount,
-            action,
-            receiver,
-            lockTime: lockTime * formatSeconds[lockFormat],
-          })
-        }
+        onClick={handleClick}
         label={action}
         disabled={
-          amount.length === 0 ||
-          receiver.length === 0 ||
-          lockTime === 0 ||
-          lockTime.length === 0
+          action === 'Wrap'
+            ? amount.length === 0 ||
+              receiver.length === 0 ||
+              lockTime === 0 ||
+              lockTime.length === 0
+            : amount.length === 0
         }
       />
+      {action === 'Wrap' && error ? (
+        <Info
+          css={`
+            margin-top: ${2 * GU}px;
+          `}
+          mode="error"
+          title="Error"
+        >
+          {error}
+        </Info>
+      ) : null}
     </Fragment>
   )
 }

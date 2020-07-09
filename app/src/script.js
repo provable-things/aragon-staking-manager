@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
-import { correctFormat } from './utils/format'
+import { correctFormat } from './utils/number-utils'
 
 const app = new Aragon()
 
@@ -26,7 +26,7 @@ app.store(
         case 'Wrap':
           return handleEvent(nextState)
         case 'Unwrap':
-          return handleEvent(nextState)
+          return handleEvent(nextState, returnValues)
         default:
           return state
       }
@@ -68,7 +68,7 @@ function initializeState() {
   }
 }
 
-const handleEvent = async (_nextState) => {
+const handleEvent = async (_nextState, _returnValues) => {
   const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
     _nextState.miniMeToken.address,
     _nextState.miniMeToken.decimals,

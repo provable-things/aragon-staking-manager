@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { parseSeconds, strip } from '../utils/format'
+import { strip } from '../utils/number-utils'
+import { parseSeconds } from '../utils/time-utils'
 import { Box, useTheme } from '@aragon/ui'
 import styled from 'styled-components'
 
