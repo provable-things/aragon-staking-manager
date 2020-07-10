@@ -218,24 +218,6 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-     * @notice Check if there an address has reached the max limit of allowed Lock
-     * @param _address address
-     */
-    function canInsert(address _address) public view returns (bool) {
-        Lock[] storage lockedWraps = addressWrapLocks[_address];
-
-        if (lockedWraps.length < maxLocks) return true;
-
-        for (uint256 i = 0; i < lockedWraps.length; i++) {
-            if (isWrapLockEmpty(lockedWraps[i])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related lockedWraps
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
@@ -301,6 +283,24 @@ contract LockableTokenWrapper is AragonApp {
         }
 
         return maxLocks.add(NOT_PUSH_THREESHOLD);
+    }
+
+    /**
+     * @notice Check if there an address has reached the max limit of allowed Lock
+     * @param _address address
+     */
+    function canInsert(address _address) internal view returns (bool) {
+        Lock[] storage lockedWraps = addressWrapLocks[_address];
+
+        if (lockedWraps.length < maxLocks) return true;
+
+        for (uint256 i = 0; i < lockedWraps.length; i++) {
+            if (isWrapLockEmpty(lockedWraps[i])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
