@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react'
 import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { Row, Col } from 'react-bootstrap'
-import Wrapper from './components/Wrapper'
+import Staker from './components/Staker'
 import LockedWraps from './components/LockedWraps'
 import Info from './components/Info'
 import LocksDetails from './components/LocksDetails'
@@ -18,24 +18,25 @@ const App = () => {
     actions,
     panelState,
     minLockTime,
-    lockedWraps,
+    stakedLocks,
+    account
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
 
   const handleClick = ({ amount, action, lockTime, receiver }) => {
-    if (action === 'Wrap') {
+    if (action === 'Stake') {
       const formattedAmount = correctFormat(
         parseAmount(depositToken.decimals, amount),
         depositToken.decimals,
         '*'
       )
 
-      actions.wrap(formattedAmount, lockTime, receiver, {
+      actions.stake(formattedAmount, lockTime, receiver, {
         token: { address: depositToken.address, value: formattedAmount },
       })
-    } else if (action === 'Unwrap') {
-      actions.unwrap(
+    } else if (action === 'Unstake') {
+      actions.unstake(
         correctFormat(
           parseAmount(miniMeToken.decimals, amount),
           miniMeToken.decimals,
@@ -47,29 +48,29 @@ const App = () => {
 
   return (
     <Main>
-      {isSyncing || !depositToken || !miniMeToken ? (
+      {isSyncing || !depositToken || !miniMeToken || !account ? (
         <SyncIndicator />
       ) : (
         <Fragment>
           <Header
-            primary="Lockable Token Wrapper"
+            primary="Staking Manager"
             secondary={
               <React.Fragment>
                 <Button
                   mode="normal"
-                  label={'Unwrap'}
+                  label={'Unstake'}
                   onClick={(_e) => {
                     panelState.requestOpen(_e)
-                    setAction('Unwrap')
+                    setAction('Unstake')
                   }}
                 />
                 <Button
                   style={{ marginLeft: '10px' }}
                   mode="strong"
-                  label={'Wrap'}
+                  label={'Stake'}
                   onClick={(_e) => {
                     panelState.requestOpen(_e)
-                    setAction('Wrap')
+                    setAction('Stake')
                   }}
                 />
               </React.Fragment>
@@ -84,7 +85,7 @@ const App = () => {
             }}
             onTransitionEnd={panelState.endTransition}
           >
-            <Wrapper
+            <Staker
               action={action}
               minLockTime={minLockTime}
               onClick={handleClick}
@@ -106,7 +107,7 @@ const App = () => {
                 <Col xs={12} className="mt-3">
                   <LocksDetails
                     depositToken={depositToken}
-                    lockedWraps={lockedWraps}
+                    stakedLocks={stakedLocks}
                   />
                 </Col>
               </Row>
@@ -114,11 +115,11 @@ const App = () => {
             <Col xs={12} lg={8} className="mt-3 mt-lg-0">
               <LockedWraps
                 depositToken={depositToken}
-                lockedWraps={lockedWraps}
+                stakedLocks={stakedLocks}
                 onUnwrap={handleClick}
                 onOpenSidebar={(_e) => {
                   panelState.requestOpen(_e)
-                  setAction('Wrap')
+                  setAction('Stake')
                 }}
               />
             </Col>

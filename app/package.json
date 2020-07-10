@@ -1,5 +1,5 @@
 {
-  "name": "aragon-lockable-token-wrapper-frontend",
+  "name": "aragon-staking-manager-frontend",
   "version": "1.0.0",
   "main": "src/index.js",
   "dependencies": {

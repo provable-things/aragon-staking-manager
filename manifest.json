@@ -1,7 +1,7 @@
 {
-  "name": "Lockable Token Wrapper",
+  "name": "Staking Manager",
   "author": "Alessandro Manfredi <alle.manfredi@gmail.com>",
-  "description": "An Aragon app for getting miniMeToken(s) in exchange for given ERC20 token(s)",
+  "description": "lock your token for a customizable amount of time in exchange for given the Dao token(s)",
   "details_url": "/meta/details.md",
   "source_url": "https://<placeholder-repository-url>",
   "icons": [

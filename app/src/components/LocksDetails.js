@@ -10,12 +10,12 @@ import { correctFormat } from '../utils/number-utils'
 import styled from 'styled-components'
 
 const LocksDetails = (_props) => {
-  const { depositToken, lockedWraps } = _props
+  const { depositToken, stakedLocks } = _props
 
   const theme = useTheme()
 
-  const unlocked = getTotalAmountOUnlockedTokens(lockedWraps)
-  const locked = getTotalAmountOfLockedTokens(lockedWraps)
+  const unlocked = getTotalAmountOUnlockedTokens(stakedLocks)
+  const locked = getTotalAmountOfLockedTokens(stakedLocks)
 
   const perUnlocked = parseFloat(
     ((unlocked / (unlocked + locked)) * 100).toFixed(2)
@@ -95,7 +95,7 @@ const ChartWrapper = styled.div`
 
 LocksDetails.propTypes = {
   depositToken: PropTypes.object,
-  lockedWraps: PropTypes.array,
+  stakedLocks: PropTypes.array,
   minLockTime: PropTypes.number,
 }
 

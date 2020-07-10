@@ -1,4 +1,4 @@
-const wrap = async (
+const stake = async (
   _depositToken,
   _lockableTokenWrapper,
   _amountToWrap,
@@ -10,13 +10,13 @@ const wrap = async (
     from: _appManager,
   })
 
-  return _lockableTokenWrapper.wrap(_amountToWrap, _lockTime, _receiver, {
+  return _lockableTokenWrapper.stake(_amountToWrap, _lockTime, _receiver, {
     from: _appManager,
   })
 }
 
-const unwrap = (_lockableTokenWrapper, _amountToWrap, _appManager) =>
-  _lockableTokenWrapper.unwrap(_amountToWrap, {
+const unstake = (_lockableTokenWrapper, _amountToWrap, _appManager) =>
+  _lockableTokenWrapper.unstake(_amountToWrap, {
     from: _appManager,
   })
 
@@ -32,7 +32,7 @@ const getBalances = async (_depositToken, _vault, _receiver) => {
 }
 
 module.exports = {
-  wrap,
-  unwrap,
+  stake,
+  unstake,
   getBalances,
 }

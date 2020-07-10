@@ -28,7 +28,7 @@ module.exports = {
     clientServePort: 3000,
     appSrcPath: 'app/',
     appBuildOutputPath: 'dist/',
-    appName: 'lockable-token-wrapper',
+    appName: 'staking-manager',
     hooks, // Path to script hooks
   },
 }

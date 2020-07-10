@@ -8,7 +8,7 @@ const useWrapAction = (_onDone) => {
   return useCallback(
     (_amount, _lockTime, _receiver, _intentParams) => {
       try {
-        api.wrap(_amount, _lockTime, _receiver, _intentParams).toPromise()
+        api.stake(_amount, _lockTime, _receiver, _intentParams).toPromise()
 
         _onDone()
       } catch (error) {
@@ -25,7 +25,7 @@ const useUnwrapAction = (_onDone) => {
   return useCallback(
     (_amount) => {
       try {
-        api.unwrap(_amount).toPromise()
+        api.unstake(_amount).toPromise()
 
         _onDone()
       } catch (error) {
@@ -44,14 +44,15 @@ const useAppLogic = () => {
     miniMeTokenBalance,
     isSyncing,
     minLockTime,
-    lockedWraps,
+    stakedLocks,
+    account
   } = useAppState()
 
   const panelState = useSidePanel()
 
   const actions = {
-    wrap: useWrapAction(panelState.requestClose),
-    unwrap: useUnwrapAction(panelState.requestClose),
+    stake: useWrapAction(panelState.requestClose),
+    unstake: useUnwrapAction(panelState.requestClose),
   }
 
   return {
@@ -63,7 +64,8 @@ const useAppLogic = () => {
     isSyncing,
     panelState,
     minLockTime,
-    lockedWraps,
+    stakedLocks,
+    account
   }
 }
 
