@@ -1,6 +1,6 @@
 {
   "name": "staking-manager",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 token(s)) in exchange for given miniMeToken(s)",
   "scripts": {
     "postinstall": "yarn compile && yarn build-app",
