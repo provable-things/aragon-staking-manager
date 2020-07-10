@@ -6,3 +6,4 @@ dist
 ipfs.cmd
 package-lock.json
 .DS_Store
+.env
