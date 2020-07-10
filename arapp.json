@@ -23,7 +23,7 @@
     },
     "rinkeby": {
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
-      "appName": "staking-manager.aragonpm.eth",
+      "appName": "staking-manager.open.aragonpm.eth",
       "network": "rinkeby"
     },
     "staging": {
@@ -37,5 +37,6 @@
       "network": "mainnet"
     }
   },
+  "appName": "staking-manager",
   "path": "contracts/StakingManager.sol"
 }
