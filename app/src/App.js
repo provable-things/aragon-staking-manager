@@ -48,7 +48,7 @@ const App = () => {
 
   return (
     <Main>
-      {isSyncing || !depositToken || !miniMeToken || !account ? (
+      {isSyncing || !depositToken || !miniMeToken ? (
         <SyncIndicator />
       ) : (
         <Fragment>
