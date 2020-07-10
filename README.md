@@ -67,3 +67,30 @@ yarn test
 
   26 passing (27s)
 ```
+
+&nbsp;
+
+***
+
+&nbsp;
+
+## :rocket: How to publish
+
+Create an __`.env`__ file with the following format
+
+```
+PRIVATE_KEY=
+INFURA_KEY=
+```
+
+Run the local IPFS node:
+
+```
+aragon ipfs start
+```
+
+and then publish.
+
+```
+npx buidler publish "version or patch/minor/major" --network "rinkeby or mainnet"
+```
