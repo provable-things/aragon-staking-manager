@@ -1,7 +1,7 @@
 {
   "name": "Staking Manager",
   "author": "Alessandro Manfredi <alle.manfredi@gmail.com>",
-  "description": "lock your token for a customizable amount of time in exchange for given the Dao token(s)",
+  "description": "lock your token for a customizable amount of time in exchange for Dao's token(s)",
   "details_url": "/meta/details.md",
   "source_url": "https://<placeholder-repository-url>",
   "icons": [
