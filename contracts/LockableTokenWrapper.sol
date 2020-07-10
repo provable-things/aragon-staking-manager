@@ -7,11 +7,13 @@ import "@aragon/os/contracts/lib/token/ERC20.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 
 contract LockableTokenWrapper is AragonApp {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
+    using SafeMath64 for uint64;
 
     // prettier-ignore
     bytes32 public constant CHANGE_LOCK_TIME_ROLE = keccak256("CHANGE_LOCK_TIME_ROLE");
@@ -37,33 +39,33 @@ contract LockableTokenWrapper is AragonApp {
     // prettier-ignore
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "LOCKABLE_TOKEN_WRAPPER_IMPOSSIBLE_TO_INSERT";
 
-    uint256 private constant PUSH_THREESHOLD = 1;
-    uint256 private constant NOT_PUSH_THREESHOLD = 2;
+    uint64 private constant PUSH_THREESHOLD = 1;
+    uint64 private constant NOT_PUSH_THREESHOLD = 2;
 
     struct Lock {
-        uint256 lockDate;
-        uint256 lockTime;
+        uint64 lockTime;
         uint256 amount;
+        uint256 lockDate;
     }
 
     TokenManager public tokenManager;
     Vault public vault;
 
     address public depositToken;
-    uint256 public minLockTime;
-    uint256 public maxLocks;
+    uint64 public minLockTime;
+    uint64 public maxLocks;
 
     mapping(address => Lock[]) public addressWrapLocks;
 
     event Wrap(
         address sender,
-        uint256 lockTime,
+        address receiver,
         uint256 amount,
-        address receiver
+        uint64 lockTime
     );
     event Unwrap(address receiver, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
-    event MaxLocksChanged(uint256 maxLocks);
+    event MaxLocksChanged(uint64 maxLocks);
     event VaultChanged(address vault);
 
     /**
@@ -78,8 +80,8 @@ contract LockableTokenWrapper is AragonApp {
         address _tokenManager,
         address _vault,
         address _depositToken,
-        uint256 _minLockTime,
-        uint256 _maxLocks
+        uint64 _minLockTime,
+        uint64 _maxLocks
     ) external onlyInit {
         require(isContract(_tokenManager), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_depositToken), ERROR_ADDRESS_NOT_CONTRACT);
@@ -103,9 +105,9 @@ contract LockableTokenWrapper is AragonApp {
      */
     function wrap(
         uint256 _amount,
-        uint256 _lockTime,
+        uint64 _lockTime,
         address _receiver
-    ) external returns (uint256) {
+    ) external returns (bool) {
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
             ERROR_INSUFFICENT_WRAP_TOKENS
@@ -126,24 +128,27 @@ contract LockableTokenWrapper is AragonApp {
 
         tokenManager.mint(_receiver, _amount);
 
-        uint256 position = whereInsert(_receiver);
-        require(position < maxLocks.add(NOT_PUSH_THREESHOLD), ERROR_IMPOSSIBLE_TO_INSERT);
+        uint64 position = whereInsert(_receiver);
+        require(
+            position < maxLocks.add(NOT_PUSH_THREESHOLD),
+            ERROR_IMPOSSIBLE_TO_INSERT
+        );
 
         // if there is at least an empty slot
         if (position < maxLocks.add(PUSH_THREESHOLD)) {
             addressWrapLocks[_receiver][position] = Lock(
-                block.timestamp,
                 _lockTime,
-                _amount
+                _amount,
+                block.timestamp
             );
         } else {
             addressWrapLocks[_receiver].push(
-                Lock(block.timestamp, _lockTime, _amount)
+                Lock(_lockTime, _amount, block.timestamp)
             );
         }
 
-        emit Wrap(msg.sender, _lockTime, _amount, _receiver);
-        return _amount;
+        emit Wrap(msg.sender, _receiver, _amount, _lockTime);
+        return true;
     }
 
     /**
@@ -173,7 +178,7 @@ contract LockableTokenWrapper is AragonApp {
      * @notice Change lock time
      * @param _minLockTime Lock time
      */
-    function changeMinLockTime(uint256 _minLockTime)
+    function changeMinLockTime(uint64 _minLockTime)
         external
         auth(CHANGE_LOCK_TIME_ROLE)
     {
@@ -185,7 +190,7 @@ contract LockableTokenWrapper is AragonApp {
      * @notice Change max lockedWraps
      * @param _maxLocks Maximun number of lockedWraps allowed for an address
      */
-    function changeMaxLocks(uint256 _maxLocks)
+    function changeMaxLocks(uint64 _maxLocks)
         external
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
@@ -242,11 +247,11 @@ contract LockableTokenWrapper is AragonApp {
         Lock[] storage lockedWraps = addressWrapLocks[_unwrapper];
 
         uint256 total = 0;
-        uint256[] memory lockToRemove = new uint256[](lockedWraps.length);
-        uint256 indexLockToRemove = 0;
+        uint64[] memory lockToRemove = new uint64[](lockedWraps.length);
+        uint64 indexLockToRemove = 0;
 
         bool result = false;
-        for (uint256 i = 0; i < lockedWraps.length; i++) {
+        for (uint64 i = 0; i < lockedWraps.length; i++) {
             if (
                 block.timestamp >=
                 lockedWraps[i].lockDate.add(lockedWraps[i].lockTime) &&
@@ -271,7 +276,7 @@ contract LockableTokenWrapper is AragonApp {
             }
         }
 
-        for (uint256 j = 0; j < indexLockToRemove; j++) {
+        for (uint64 j = 0; j < indexLockToRemove; j++) {
             delete lockedWraps[lockToRemove[j]];
         }
 
@@ -284,12 +289,12 @@ contract LockableTokenWrapper is AragonApp {
               in which it's possible to insert a new Lock
     * @param _address address
     */
-    function whereInsert(address _address) internal view returns (uint256) {
+    function whereInsert(address _address) internal view returns (uint64) {
         Lock[] storage lockedWraps = addressWrapLocks[_address];
 
         if (lockedWraps.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
 
-        for (uint256 i = 0; i < lockedWraps.length; i++) {
+        for (uint64 i = 0; i < lockedWraps.length; i++) {
             if (isWrapLockEmpty(lockedWraps[i])) {
                 return i;
             }
