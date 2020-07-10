@@ -9,7 +9,7 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { correctFormat } from '../utils/number-utils'
+import { correctFormat, strip } from '../utils/number-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoLockedWraps from './NoLockedWraps'
@@ -32,7 +32,7 @@ const LockedWraps = (_props) => {
           <TableRow key={_index}>
             <TableCell>
               <Text>
-                {`${correctFormat(amount, depositToken.decimals, '/')} ${
+                {`${strip(correctFormat(amount, depositToken.decimals, '/'))} ${
                   depositToken.symbol
                 }`}
               </Text>
