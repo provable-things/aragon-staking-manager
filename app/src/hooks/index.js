@@ -45,7 +45,7 @@ const useAppLogic = () => {
     isSyncing,
     minLockTime,
     stakedLocks,
-    account
+    account,
   } = useAppState()
 
   const panelState = useSidePanel()
@@ -65,7 +65,7 @@ const useAppLogic = () => {
     panelState,
     minLockTime,
     stakedLocks,
-    account
+    account,
   }
 }
 

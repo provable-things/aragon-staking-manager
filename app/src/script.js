@@ -30,8 +30,8 @@ app.store(
         default:
           return state
       }
-    } catch (err) {
-      console.log(err)
+    } catch (_err) {
+      console.log(_err)
     }
   },
   {
@@ -62,73 +62,99 @@ function initializeState() {
         depositToken,
         minLockTime,
       }
-    } catch (err) {
-      console.log(err)
+    } catch (_err) {
+      console.log(_err)
     }
   }
 }
 
 const handleEvent = async (_nextState, _returnValues) => {
-  const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
-    _nextState.miniMeToken.address,
-    _nextState.miniMeToken.decimals,
-    _nextState.depositToken.address,
-    _nextState.depositToken.decimals,
-    _nextState.account
-  )
+  try {
+    const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
+      _nextState.miniMeToken.address,
+      _nextState.miniMeToken.decimals,
+      _nextState.depositToken.address,
+      _nextState.depositToken.decimals,
+      _nextState.account
+    )
 
-  const stakedLocks = await getStakedLocks(_nextState.account)
+    const stakedLocks = await getStakedLocks(_nextState.account)
 
-  return {
-    ..._nextState,
-    miniMeTokenBalance,
-    depositTokenBalance,
-    stakedLocks,
+    return {
+      ..._nextState,
+      miniMeTokenBalance,
+      depositTokenBalance,
+      stakedLocks,
+    }
+  } catch (_err) {
+    return _nextState
   }
 }
 
 const handleAccountChange = async (_nextState, { account }) => {
-  const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
-    _nextState.miniMeToken.address,
-    _nextState.miniMeToken.decimals,
-    _nextState.depositToken.address,
-    _nextState.depositToken.decimals,
-    account
-  )
+  try {
+    if (account) {
+      const {
+        miniMeTokenBalance,
+        depositTokenBalance,
+      } = await getTokenBalances(
+        _nextState.miniMeToken.address,
+        _nextState.miniMeToken.decimals,
+        _nextState.depositToken.address,
+        _nextState.depositToken.decimals,
+        account
+      )
 
-  const stakedLocks = await getStakedLocks(account)
+      const stakedLocks = await getStakedLocks(account)
 
-  return {
-    ..._nextState,
-    miniMeTokenBalance,
-    depositTokenBalance,
-    account,
-    stakedLocks,
+      return {
+        ..._nextState,
+        miniMeTokenBalance,
+        depositTokenBalance,
+        account,
+        stakedLocks,
+      }
+    }
+
+    return _nextState
+  } catch (_err) {
+    return _nextState
   }
 }
 
 const getStakedLocks = async (_tokenAddress) => {
-  const stakedLocks = await app.call('getStakedLocks', _tokenAddress).toPromise()
-  return stakedLocks.map((_lock) => {
-    return {
-      amount: parseInt(_lock.amount),
-      lockDate: parseInt(_lock.lockDate),
-      lockTime: parseInt(_lock.lockTime),
-    }
-  })
+  try {
+    const stakedLocks = await app
+      .call('getStakedLocks', _tokenAddress)
+      .toPromise()
+    return stakedLocks.map((_lock) => {
+      return {
+        amount: parseInt(_lock.amount),
+        lockDate: parseInt(_lock.lockDate),
+        lockTime: parseInt(_lock.lockTime),
+      }
+    })
+  } catch (_err) {
+    return []
+  }
 }
 
 const getTokenData = async (_tokenAddress) => {
-  const token = app.external(_tokenAddress, ERC20Abi)
-  const decimals = await token.decimals().toPromise()
-  const name = await token.name().toPromise()
-  const symbol = await token.symbol().toPromise()
+  try {
+    const token = app.external(_tokenAddress, ERC20Abi)
+    const decimals = await token.decimals().toPromise()
+    const name = await token.name().toPromise()
+    const symbol = await token.symbol().toPromise()
 
-  return {
-    decimals,
-    name,
-    symbol,
-    address: _tokenAddress,
+    return {
+      decimals,
+      name,
+      symbol,
+      address: _tokenAddress,
+    }
+  } catch (err) {
+    // TODO find a way to get a fallback
+    throw new Error(_err.message)
   }
 }
 
@@ -139,25 +165,33 @@ const getTokenBalances = async (
   _depositTokenDecimals,
   _account
 ) => {
-  const miniMeTokenBalance = await getTokenBalance(
-    _miniMeTokenAddress,
-    _miniMeTokenDecimals,
-    _account
-  )
-  const depositTokenBalance = await getTokenBalance(
-    _depositTokenAddress,
-    _depositTokenDecimals,
-    _account
-  )
+  try {
+    const miniMeTokenBalance = await getTokenBalance(
+      _miniMeTokenAddress,
+      _miniMeTokenDecimals,
+      _account
+    )
+    const depositTokenBalance = await getTokenBalance(
+      _depositTokenAddress,
+      _depositTokenDecimals,
+      _account
+    )
 
-  return {
-    miniMeTokenBalance,
-    depositTokenBalance,
+    return {
+      miniMeTokenBalance,
+      depositTokenBalance,
+    }
+  } catch (_err) {
+    throw new Error(_err.message)
   }
 }
 
 const getTokenBalance = async (_tokenAddress, _tokenDecimals, _address) => {
-  const token = app.external(_tokenAddress, ERC20Abi)
-  const balance = await token.balanceOf(_address).toPromise()
-  return correctFormat(balance, _tokenDecimals, '/')
+  try {
+    const token = app.external(_tokenAddress, ERC20Abi)
+    const balance = await token.balanceOf(_address).toPromise()
+    return correctFormat(balance, _tokenDecimals, '/')
+  } catch (_err) {
+    throw new Error(_err.message)
+  }
 }

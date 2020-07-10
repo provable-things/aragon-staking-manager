@@ -67,9 +67,9 @@ const Info = (_props) => {
           `}
         >
           {` ${miniMeToken.symbol}`}
-        </TokenSymbol>{'. '}
-        After staking, it will be possible to unstake them only after at
-        least
+        </TokenSymbol>
+        {'. '}
+        After staking, it will be possible to unstake them only after at least
         <Days
           css={`
             color: ${theme.info};

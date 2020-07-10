@@ -19,7 +19,7 @@ const App = () => {
     panelState,
     minLockTime,
     stakedLocks,
-    account
+    account,
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
