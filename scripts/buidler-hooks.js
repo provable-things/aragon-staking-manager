@@ -4,15 +4,22 @@ const MOCK_TOKEN_DECIMALS = 18
 const ONE_DAY = 86400
 const MAX_LOCKS = 20
 
-let vault, tokenManager, miniMeToken
+let vault, tokenManager, miniMeToken, voting, acl
+let appManager
 
 module.exports = {
-  preDao: async ({ log }, { web3, artifacts }) => {},
+  preDao: async ({ log }, { web3, artifacts }) => {
+    accounts = await web3.eth.getAccounts()
+    appManager = accounts[0]
+  },
 
   postDao: async (
     { dao, _experimentalAppInstaller, log },
     { web3, artifacts }
-  ) => {},
+  ) => {
+    const ACL = artifacts.require('@aragon/os/build/contracts/acl/ACL')
+    acl = await ACL.at(await dao.acl())
+  },
 
   preInit: async (
     { proxy, _experimentalAppInstaller, log },
@@ -21,8 +28,6 @@ module.exports = {
     const MiniMeToken = artifacts.require('MiniMeToken')
     const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
     const ERC20 = artifacts.require('StandardToken')
-
-    const accounts = await web3.eth.getAccounts()
 
     const miniMeTokenFactory = await MiniMeTokenFactory.new()
     miniMeToken = await MiniMeToken.new(
@@ -35,6 +40,9 @@ module.exports = {
       true
     )
 
+    voting = await _experimentalAppInstaller('voting', {
+      skipInitialize: true,
+    })
     vault = await _experimentalAppInstaller('vault')
     tokenManager = await _experimentalAppInstaller('token-manager', {
       skipInitialize: true,
@@ -42,6 +50,12 @@ module.exports = {
 
     await miniMeToken.changeController(tokenManager.address)
     await tokenManager.initialize([miniMeToken.address, false, 0])
+    await voting.initialize([
+      miniMeToken.address,
+      '510000000000000000', // 51%
+      '510000000000000000', // 51%
+      '604800', // 1 week
+    ])
 
     token = await ERC20.new(
       'Deposit Token',
@@ -54,13 +68,15 @@ module.exports = {
     log(`MiniMeToken: ${miniMeToken.address}`)
     log(`TokenManager: ${tokenManager.address}`)
     log(`ERC20: ${token.address}`)
-    log(`${accounts[0]} balance: ${await token.balanceOf(accounts[0])}`)
+    log(`${appManager} balance: ${await token.balanceOf(appManager)}`)
   },
 
-  postInit: async (
-    { proxy, _experimentalAppInstaller, log },
-    { web3, artifacts }
-  ) => {
+  postInit: async ({ proxy, log }, { web3, artifacts }) => {
+    // NOTE: anyone can vote
+    await voting.createPermission(
+      'CREATE_VOTES_ROLE',
+      '0xffffffffffffffffffffffffffffffffffffffff'
+    )
     await tokenManager.createPermission('MINT_ROLE', proxy.address)
     await tokenManager.createPermission('BURN_ROLE', proxy.address)
     await vault.createPermission('TRANSFER_ROLE', proxy.address)

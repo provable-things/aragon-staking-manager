@@ -8,16 +8,16 @@ const reducer = (_state) => {
       miniMeToken: null,
       isSyncing: true,
       minLockTime: 0,
-      lockedWraps: [],
+      stakedLocks: [],
     }
   }
 
-  const { lockedWraps } = _state
+  const { stakedLocks } = _state
 
   return {
     ..._state,
-    lockedWraps: lockedWraps
-      ? lockedWraps.filter(
+    stakedLocks: stakedLocks
+      ? stakedLocks.filter(
           ({ amount, lockDate, lockTime }) =>
             amount !== 0 && lockDate !== 0 && lockTime !== 0
         )

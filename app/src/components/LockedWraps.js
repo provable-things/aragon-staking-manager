@@ -15,11 +15,11 @@ import PropTypes from 'prop-types'
 import NoLockedWraps from './NoLockedWraps'
 
 const LockedWraps = (_props) => {
-  const { depositToken, lockedWraps, onUnwrap, onOpenSidebar } = _props
+  const { depositToken, stakedLocks, onUnwrap, onOpenSidebar } = _props
 
   const now = new Date().getTime() / 1000
 
-  return lockedWraps && lockedWraps.length > 0 ? (
+  return stakedLocks && stakedLocks.length > 0 ? (
     <Table
       header={
         <TableRow>
@@ -27,7 +27,7 @@ const LockedWraps = (_props) => {
         </TableRow>
       }
     >
-      {lockedWraps.map(({ amount, lockDate, lockTime }, _index) => {
+      {stakedLocks.map(({ amount, lockDate, lockTime }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
@@ -55,7 +55,7 @@ const LockedWraps = (_props) => {
                 <Button
                   onClick={() =>
                     onUnwrap({
-                      action: 'Unwrap',
+                      action: 'Unstake',
                       amount: correctFormat(amount, depositToken.decimals, '/'),
                     })
                   }
@@ -77,7 +77,7 @@ const LockedWraps = (_props) => {
 
 LockedWraps.propTypes = {
   depositToken: PropTypes.object,
-  lockedWraps: PropTypes.array,
+  stakedLocks: PropTypes.array,
   onUnwrap: PropTypes.func,
 }
 

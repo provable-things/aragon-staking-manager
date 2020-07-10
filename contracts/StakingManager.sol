@@ -10,7 +10,7 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 
-contract LockableTokenWrapper is AragonApp {
+contract StakingManager is AragonApp {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
     using SafeMath64 for uint64;
@@ -27,9 +27,9 @@ contract LockableTokenWrapper is AragonApp {
     // prettier-ignore
     string private constant ERROR_TOKEN_WRAP_REVERTED = "LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_WRAP_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_WRAP_TOKENS";
+    string private constant ERROR_INSUFFICENT_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_TOKENS";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_UNWRAP_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNWRAP_TOKENS";
+    string private constant ERROR_INSUFFICENT_UNLOCKED_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNLOCKED_TOKENS";
     // prettier-ignore
     string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
@@ -57,24 +57,24 @@ contract LockableTokenWrapper is AragonApp {
 
     mapping(address => Lock[]) public addressWrapLocks;
 
-    event Wrap(
+    event Staked(
         address sender,
         address receiver,
         uint256 amount,
         uint64 lockTime
     );
-    event Unwrap(address receiver, uint256 amount);
+    event Unstaked(address receiver, uint256 amount);
     event LockTimeChanged(uint256 lockTime);
     event MaxLocksChanged(uint64 maxLocks);
     event VaultChanged(address vault);
 
     /**
-     * @notice Initialize LockableTokenWrapper app contract
+     * @notice Initialize StakingManager app contract
      * @param _tokenManager TokenManager address
      * @param _vault Vault address
      * @param _depositToken Accepted token address
      * @param _minLockTime number of seconds after which it's possible to unwrap tokens related to a wrap
-     * @param _maxLocks number of possible lockedWraps for a given address before doing an unwrap
+     * @param _maxLocks number of possible stakedLocks for a given address before doing an unwrap
      */
     function initialize(
         address _tokenManager,
@@ -97,20 +97,20 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-     * @notice Wrap a given amount of `depositToken` into tokenManager's token
+     * @notice Stake a given amount of `depositToken` into tokenManager's token
      * @dev This function requires the MINT_ROLE permission on the TokenManager specified
      * @param _amount Wrapped amount
      * @param _lockTime lock time for this wrapping
      * @param _receiver address who will receive back once unwrapped
      */
-    function wrap(
+    function stake(
         uint256 _amount,
         uint64 _lockTime,
         address _receiver
     ) external returns (bool) {
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
-            ERROR_INSUFFICENT_WRAP_TOKENS
+            ERROR_INSUFFICENT_TOKENS
         );
 
         require(canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
@@ -147,19 +147,19 @@ contract LockableTokenWrapper is AragonApp {
             );
         }
 
-        emit Wrap(msg.sender, _receiver, _amount, _lockTime);
+        emit Staked(msg.sender, _receiver, _amount, _lockTime);
         return true;
     }
 
     /**
-     * @notice Unrap a given amount of tokenManager's token
+     * @notice Unstake a given amount of tokenManager's token
      * @dev This function requires the BURN_ROLE permissions on the TokenManager and TRANSFER_ROLE on the Vault specified
      * @param _amount Wrapped amount
      */
-    function unwrap(uint256 _amount) external returns (uint256) {
+    function unstake(uint256 _amount) external returns (uint256) {
         require(
             tokenManager.token().balanceOf(msg.sender) >= _amount,
-            ERROR_INSUFFICENT_UNWRAP_TOKENS
+            ERROR_INSUFFICENT_UNLOCKED_TOKENS
         );
 
         require(
@@ -170,7 +170,7 @@ contract LockableTokenWrapper is AragonApp {
         tokenManager.burn(msg.sender, _amount);
         vault.transfer(depositToken, msg.sender, _amount);
 
-        emit Unwrap(msg.sender, _amount);
+        emit Unstaked(msg.sender, _amount);
         return _amount;
     }
 
@@ -187,8 +187,8 @@ contract LockableTokenWrapper is AragonApp {
     }
 
     /**
-     * @notice Change max lockedWraps
-     * @param _maxLocks Maximun number of lockedWraps allowed for an address
+     * @notice Change max stakedLocks
+     * @param _maxLocks Maximun number of stakedLocks allowed for an address
      */
     function changeMaxLocks(uint64 _maxLocks)
         external
@@ -213,12 +213,12 @@ contract LockableTokenWrapper is AragonApp {
      * @notice Return all Locks for a given _address
      * @param _address address
      */
-    function getWrapLocks(address _address) external view returns (Lock[]) {
+    function getStakedLocks(address _address) external view returns (Lock[]) {
         return addressWrapLocks[_address];
     }
 
     /**
-     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related lockedWraps
+     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related stakedLocks
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
      */
@@ -226,20 +226,20 @@ contract LockableTokenWrapper is AragonApp {
         internal
         returns (bool)
     {
-        Lock[] storage lockedWraps = addressWrapLocks[_unwrapper];
+        Lock[] storage stakedLocks = addressWrapLocks[_unwrapper];
 
         uint256 total = 0;
-        uint64[] memory lockToRemove = new uint64[](lockedWraps.length);
+        uint64[] memory lockToRemove = new uint64[](stakedLocks.length);
         uint64 indexLockToRemove = 0;
 
         bool result = false;
-        for (uint64 i = 0; i < lockedWraps.length; i++) {
+        for (uint64 i = 0; i < stakedLocks.length; i++) {
             if (
                 block.timestamp >=
-                lockedWraps[i].lockDate.add(lockedWraps[i].lockTime) &&
-                !isWrapLockEmpty(lockedWraps[i])
+                stakedLocks[i].lockDate.add(stakedLocks[i].lockTime) &&
+                !isWrapLockEmpty(stakedLocks[i])
             ) {
-                total = total.add(lockedWraps[i].amount);
+                total = total.add(stakedLocks[i].amount);
 
                 if (_amount == total) {
                     lockToRemove[indexLockToRemove] = i;
@@ -248,7 +248,7 @@ contract LockableTokenWrapper is AragonApp {
                     break;
                 } else if (_amount < total) {
                     // remainder. update it from the last lock
-                    lockedWraps[i].amount = total.sub(_amount);
+                    stakedLocks[i].amount = total.sub(_amount);
                     result = true;
                     break;
                 } else {
@@ -259,7 +259,7 @@ contract LockableTokenWrapper is AragonApp {
         }
 
         for (uint64 j = 0; j < indexLockToRemove; j++) {
-            delete lockedWraps[lockToRemove[j]];
+            delete stakedLocks[lockToRemove[j]];
         }
 
         return result;
@@ -272,12 +272,12 @@ contract LockableTokenWrapper is AragonApp {
     * @param _address address
     */
     function whereInsert(address _address) internal view returns (uint64) {
-        Lock[] storage lockedWraps = addressWrapLocks[_address];
+        Lock[] storage stakedLocks = addressWrapLocks[_address];
 
-        if (lockedWraps.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
+        if (stakedLocks.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
 
-        for (uint64 i = 0; i < lockedWraps.length; i++) {
-            if (isWrapLockEmpty(lockedWraps[i])) {
+        for (uint64 i = 0; i < stakedLocks.length; i++) {
+            if (isWrapLockEmpty(stakedLocks[i])) {
                 return i;
             }
         }
@@ -290,12 +290,12 @@ contract LockableTokenWrapper is AragonApp {
      * @param _address address
      */
     function canInsert(address _address) internal view returns (bool) {
-        Lock[] storage lockedWraps = addressWrapLocks[_address];
+        Lock[] storage stakedLocks = addressWrapLocks[_address];
 
-        if (lockedWraps.length < maxLocks) return true;
+        if (stakedLocks.length < maxLocks) return true;
 
-        for (uint256 i = 0; i < lockedWraps.length; i++) {
-            if (isWrapLockEmpty(lockedWraps[i])) {
+        for (uint256 i = 0; i < stakedLocks.length; i++) {
+            if (isWrapLockEmpty(stakedLocks[i])) {
                 return true;
             }
         }

@@ -1,7 +1,22 @@
+require('dotenv').config()
 const { usePlugin } = require('@nomiclabs/buidler/config')
 const hooks = require('./scripts/buidler-hooks')
 
 usePlugin('@aragon/buidler-aragon')
+
+const getEnvironmentVariable = _envVar =>
+  process.env[_envVar]
+    ? process.env[_envVar]
+    : (
+      console.error(
+        '✘ Cannot migrate!',
+        '✘ Please provide an infura api key as and an',
+        '✘ account private key as environment variables:',
+        '✘ PRIVATE_KEY',
+        '✘ INFURA_KEY'
+      ),
+      process.exit(1)
+    )
 
 module.exports = {
   // Default Buidler configurations. Read more about it at https://buidler.dev/config/
@@ -10,6 +25,10 @@ module.exports = {
     localhost: {
       url: 'http://localhost:8545',
     },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${getEnvironmentVariable('INFURA_KEY')}`,
+      accounts: [getEnvironmentVariable('PRIVATE_KEY')]
+    }
   },
   solc: {
     version: '0.4.24',
@@ -28,7 +47,7 @@ module.exports = {
     clientServePort: 3000,
     appSrcPath: 'app/',
     appBuildOutputPath: 'dist/',
-    appName: 'lockable-token-wrapper',
+    appName: 'staking-manager',
     hooks, // Path to script hooks
   },
 }

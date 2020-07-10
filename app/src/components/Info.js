@@ -52,7 +52,7 @@ const Info = (_props) => {
       </TokenDetails>
 
       <LockDetails>
-        Deposit your
+        Stake your
         <TokenSymbol
           css={`
             color: ${theme.info};
@@ -66,9 +66,9 @@ const Info = (_props) => {
             color: ${theme.info};
           `}
         >
-          {` ${miniMeToken.symbol}`}.
-        </TokenSymbol>{' '}
-        After depositing, it will be possible to withdraw them only after at
+          {` ${miniMeToken.symbol}`}
+        </TokenSymbol>{'. '}
+        After staking, it will be possible to unstake them only after at
         least
         <Days
           css={`

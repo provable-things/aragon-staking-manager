@@ -23,9 +23,9 @@ app.store(
           return { ...nextState, isSyncing: true }
         case events.SYNC_STATUS_SYNCED:
           return { ...nextState, isSyncing: false }
-        case 'Wrap':
+        case 'Staked':
           return handleEvent(nextState)
-        case 'Unwrap':
+        case 'Unstaked':
           return handleEvent(nextState, returnValues)
         default:
           return state
@@ -77,13 +77,13 @@ const handleEvent = async (_nextState, _returnValues) => {
     _nextState.account
   )
 
-  const lockedWraps = await getLockedWraps(_nextState.account)
+  const stakedLocks = await getStakedLocks(_nextState.account)
 
   return {
     ..._nextState,
     miniMeTokenBalance,
     depositTokenBalance,
-    lockedWraps,
+    stakedLocks,
   }
 }
 
@@ -96,20 +96,20 @@ const handleAccountChange = async (_nextState, { account }) => {
     account
   )
 
-  const lockedWraps = await getLockedWraps(account)
+  const stakedLocks = await getStakedLocks(account)
 
   return {
     ..._nextState,
     miniMeTokenBalance,
     depositTokenBalance,
     account,
-    lockedWraps,
+    stakedLocks,
   }
 }
 
-const getLockedWraps = async (_tokenAddress) => {
-  const lockedWraps = await app.call('getWrapLocks', _tokenAddress).toPromise()
-  return lockedWraps.map((_lock) => {
+const getStakedLocks = async (_tokenAddress) => {
+  const stakedLocks = await app.call('getStakedLocks', _tokenAddress).toPromise()
+  return stakedLocks.map((_lock) => {
     return {
       amount: parseInt(_lock.amount),
       lockDate: parseInt(_lock.lockDate),

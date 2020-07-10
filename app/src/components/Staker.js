@@ -17,7 +17,7 @@ const formatSeconds = {
 
 const LOCK_FORMAT_OPTIONS = ['Years', 'Months', 'Days', 'Hours', 'Minutes']
 
-const Wrapper = (_props) => {
+const Staker = (_props) => {
   const { action, onClick, minLockTime } = _props
 
   const [lockFormat, setLockFormat] = useState(0)
@@ -28,7 +28,7 @@ const Wrapper = (_props) => {
 
   const handleClick = () => {
     setError(null)
-    if (action === 'Wrap') {
+    if (action === 'Stake') {
       const secondsLockTime = lockTime * formatSeconds[lockFormat]
 
       if (secondsLockTime < minLockTime) {
@@ -70,11 +70,11 @@ const Wrapper = (_props) => {
         `}
       >
         {`This action will ${
-          action === 'Wrap' ? 'create' : 'burn'
+          action === 'Stake' ? 'create' : 'burn'
         } tokens and transfer them to the transaction sender.`}
         <br />
-        {action === 'Wrap'
-          ? `Keep in mind that you cannot unwrap them before ${parseSeconds(
+        {action === 'Stake'
+          ? `Keep in mind that you cannot unstake them before ${parseSeconds(
               minLockTime
             )}.`
           : ''}
@@ -98,7 +98,7 @@ const Wrapper = (_props) => {
           />
         </Field>
       </WrapperField>
-      {action === 'Wrap' ? (
+      {action === 'Stake' ? (
         <Fragment>
           <WrapperField>
             <Field
@@ -148,7 +148,7 @@ const Wrapper = (_props) => {
         onClick={handleClick}
         label={action}
         disabled={
-          action === 'Wrap'
+          action === 'Stake'
             ? amount.length === 0 ||
               receiver.length === 0 ||
               lockTime === 0 ||
@@ -156,7 +156,7 @@ const Wrapper = (_props) => {
             : amount.length === 0
         }
       />
-      {action === 'Wrap' && error ? (
+      {action === 'Stake' && error ? (
         <Info
           css={`
             margin-top: ${2 * GU}px;
@@ -181,10 +181,10 @@ const WrapperLockTimeSelection = styled.div`
   align-items: baseline;
 `
 
-Wrapper.propTypes = {
+Staker.propTypes = {
   action: PropTypes.string,
   onClick: PropTypes.func,
   minLockTime: PropTypes.number,
 }
 
-export default Wrapper
+export default Staker
