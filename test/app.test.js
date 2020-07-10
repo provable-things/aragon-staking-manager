@@ -310,13 +310,9 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
       it('Should not be able to stake more than you have approved', async () => {
         const amountToWrap = 100
-        await depositToken.approve(
-          stakingManager.address,
-          amountToWrap / 2,
-          {
-            from: appManager,
-          }
-        )
+        await depositToken.approve(stakingManager.address, amountToWrap / 2, {
+          from: appManager,
+        })
 
         await assertRevert(
           stakingManager.stake(amountToWrap, LOCK_TIME, appManager, {

@@ -19,7 +19,6 @@ const App = () => {
     panelState,
     minLockTime,
     stakedLocks,
-    account
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
@@ -48,7 +47,7 @@ const App = () => {
 
   return (
     <Main>
-      {isSyncing || !depositToken || !miniMeToken ? (
+      {isSyncing ? (
         <SyncIndicator />
       ) : (
         <Fragment>

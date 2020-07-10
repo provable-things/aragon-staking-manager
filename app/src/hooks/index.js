@@ -45,7 +45,7 @@ const useAppLogic = () => {
     isSyncing,
     minLockTime,
     stakedLocks,
-    account
+    account,
   } = useAppState()
 
   const panelState = useSidePanel()
@@ -61,11 +61,11 @@ const useAppLogic = () => {
     depositTokenBalance,
     miniMeToken,
     miniMeTokenBalance,
-    isSyncing,
+    isSyncing: isSyncing || !depositToken || !miniMeToken,
     panelState,
     minLockTime,
     stakedLocks,
-    account
+    account,
   }
 }
 

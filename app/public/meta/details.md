@@ -1,6 +1,1 @@
-An application for Aragon.
-
-**Features**
-- Feature \#1.
-- Feature \#2.
-- Feature \#3.
+An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 token(s) in exchange for miniMeToken(s).
