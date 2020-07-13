@@ -113,7 +113,7 @@ contract StakingManager is AragonApp {
             ERROR_INSUFFICENT_TOKENS
         );
 
-        require(canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
+        require(_canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
 
         require(_lockTime >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
 
@@ -128,7 +128,7 @@ contract StakingManager is AragonApp {
 
         tokenManager.mint(_receiver, _amount);
 
-        uint64 position = whereInsert(_receiver);
+        uint64 position = _whereInsert(_receiver);
         require(
             position < maxLocks.add(NOT_PUSH_THREESHOLD),
             ERROR_IMPOSSIBLE_TO_INSERT
@@ -163,7 +163,7 @@ contract StakingManager is AragonApp {
         );
 
         require(
-            _unwrap(msg.sender, _amount),
+            _unstake(msg.sender, _amount),
             ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
         );
 
@@ -222,7 +222,7 @@ contract StakingManager is AragonApp {
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
      */
-    function _unwrap(address _unwrapper, uint256 _amount)
+    function _unstake(address _unwrapper, uint256 _amount)
         internal
         returns (bool)
     {
@@ -237,7 +237,7 @@ contract StakingManager is AragonApp {
             if (
                 block.timestamp >=
                 stakedLocks[i].lockDate.add(stakedLocks[i].lockTime) &&
-                !isWrapLockEmpty(stakedLocks[i])
+                !_isWrapLockEmpty(stakedLocks[i])
             ) {
                 total = total.add(stakedLocks[i].amount);
 
@@ -271,13 +271,13 @@ contract StakingManager is AragonApp {
               in which it's possible to insert a new Lock
     * @param _address address
     */
-    function whereInsert(address _address) internal view returns (uint64) {
+    function _whereInsert(address _address) internal view returns (uint64) {
         Lock[] storage stakedLocks = addressWrapLocks[_address];
 
         if (stakedLocks.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
 
         for (uint64 i = 0; i < stakedLocks.length; i++) {
-            if (isWrapLockEmpty(stakedLocks[i])) {
+            if (_isWrapLockEmpty(stakedLocks[i])) {
                 return i;
             }
         }
@@ -289,13 +289,13 @@ contract StakingManager is AragonApp {
      * @notice Check if there an address has reached the max limit of allowed Lock
      * @param _address address
      */
-    function canInsert(address _address) internal view returns (bool) {
+    function _canInsert(address _address) internal view returns (bool) {
         Lock[] storage stakedLocks = addressWrapLocks[_address];
 
         if (stakedLocks.length < maxLocks) return true;
 
         for (uint256 i = 0; i < stakedLocks.length; i++) {
-            if (isWrapLockEmpty(stakedLocks[i])) {
+            if (_isWrapLockEmpty(stakedLocks[i])) {
                 return true;
             }
         }
@@ -307,11 +307,7 @@ contract StakingManager is AragonApp {
      * @notice Check if a Lock is empty
      * @param _lock lock
      */
-    function isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
-        if (_lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0) {
-            return true;
-        }
-
-        return false;
+    function _isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
+        return _lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0;
     }
 }

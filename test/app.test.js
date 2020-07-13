@@ -21,7 +21,7 @@ const LOCK_TIME = ONE_DAY * 7
 
 contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
   let miniMeToken,
-    lockableTokenWrapperBase,
+    stakingManagerBase,
     stakingManager,
     tokenManager,
     tokenManagerBase,
@@ -38,10 +38,10 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
   const NOT_CONTRACT = appManager
 
   before('deploy base apps', async () => {
-    lockableTokenWrapperBase = await StakingManager.new()
-    CHANGE_LOCK_TIME_ROLE = await lockableTokenWrapperBase.CHANGE_LOCK_TIME_ROLE()
-    CHANGE_MAX_LOCKS_ROLE = await lockableTokenWrapperBase.CHANGE_MAX_LOCKS_ROLE()
-    CHANGE_VAULT_ROLE = await lockableTokenWrapperBase.CHANGE_VAULT_ROLE()
+    stakingManagerBase = await StakingManager.new()
+    CHANGE_LOCK_TIME_ROLE = await stakingManagerBase.CHANGE_LOCK_TIME_ROLE()
+    CHANGE_MAX_LOCKS_ROLE = await stakingManagerBase.CHANGE_MAX_LOCKS_ROLE()
+    CHANGE_VAULT_ROLE = await stakingManagerBase.CHANGE_VAULT_ROLE()
 
     tokenManagerBase = await TokenManager.new()
     MINT_ROLE = await tokenManagerBase.MINT_ROLE()
@@ -71,7 +71,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
       await newApp(
         dao,
         nameHash('token-deposit.aragonpm.test'),
-        lockableTokenWrapperBase.address,
+        stakingManagerBase.address,
         appManager
       )
     )
