@@ -1,6 +1,6 @@
 # :crystal_ball: staking-manager
 
-An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 token(s) in exchange for miniMeToken(s)
+An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 tokens in exchange for organization's tokens.
 
 &nbsp;
 

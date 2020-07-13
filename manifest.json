@@ -1,7 +1,7 @@
 {
   "name": "Staking Manager",
-  "author": "Alessandro Manfredi <alle.manfredi@gmail.com>",
-  "description": "lock your token for a customizable amount of time in exchange for Dao's token(s)",
+  "author": "allemanfredi@provable-things <alle.manfredi@gmail.com>",
+  "description": "Lock your tokens for a customizable amount of time in exchange for organization's tokens",
   "details_url": "/meta/details.md",
   "source_url": "https://github.com/provable-things/aragon-staking-manager",
   "icons": [
