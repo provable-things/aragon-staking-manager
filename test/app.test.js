@@ -818,6 +818,38 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           initBalances.balanceVault
         )
       })
+
+      it('Should be able to unwrap after changing CHANGE_MAX_LOCKS_ROLE until MAX_LOCKS + 1', async () => {
+        await setPermission(
+          acl,
+          appManager,
+          stakingManager.address,
+          CHANGE_MAX_LOCKS_ROLE,
+          appManager
+        )
+
+        await stakingManager.changeMaxLocks(MAX_LOCKS + 1, {
+          from: appManager,
+        })
+
+        for (let i = 0; i < MAX_LOCKS + 1; i++) {
+          await stake(
+            depositToken,
+            stakingManager,
+            10,
+            LOCK_TIME,
+            appManager,
+            appManager
+          )
+        }
+
+        await assertRevert(
+          stakingManager.stake(10, LOCK_TIME, appManager, {
+            from: appManager,
+          }),
+          'STAKING_MANAGER_MAXIMUN_LOCKS_REACHED'
+        )
+      })
     })
   })
 })
