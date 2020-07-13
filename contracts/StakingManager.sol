@@ -163,7 +163,7 @@ contract StakingManager is AragonApp {
         );
 
         require(
-            _unwrap(msg.sender, _amount),
+            _unstake(msg.sender, _amount),
             ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
         );
 
@@ -222,7 +222,7 @@ contract StakingManager is AragonApp {
      * @param _unwrapper address who want to unwrap
      * @param _amount amount
      */
-    function _unwrap(address _unwrapper, uint256 _amount)
+    function _unstake(address _unwrapper, uint256 _amount)
         internal
         returns (bool)
     {
