@@ -111,7 +111,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           ONE_DAY * 6,
           MAX_LOCKS
         ),
-        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'STAKING_MANAGER_ADDRESS_NOT_CONTRACT'
       )
     })
 
@@ -124,7 +124,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           ONE_DAY * 6,
           MAX_LOCKS
         ),
-        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'STAKING_MANAGER_ADDRESS_NOT_CONTRACT'
       )
     })
 
@@ -137,7 +137,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           ONE_DAY * 6,
           MAX_LOCKS
         ),
-        'LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT'
+        'STAKING_MANAGER_ADDRESS_NOT_CONTRACT'
       )
     })
   })
@@ -279,7 +279,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.stake(100, LOCK_TIME, appManager, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
+          'STAKING_MANAGER_WRAP_REVERTED'
         )
       })
 
@@ -304,7 +304,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
             appManager,
             appManager
           ),
-          'LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED'
+          'STAKING_MANAGER_MAXIMUN_LOCKS_REACHED'
         )
       })
 
@@ -318,7 +318,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.stake(amountToWrap, LOCK_TIME, appManager, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED'
+          'STAKING_MANAGER_WRAP_REVERTED'
         )
       })
 
@@ -332,7 +332,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
             appManager,
             appManager
           ),
-          'LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW'
+          'STAKING_MANAGER_LOCK_TIME_TOO_LOW'
         )
       })
     })
@@ -409,7 +409,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.unstake(amountToWrap * 2, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
         )
       })
 
@@ -428,7 +428,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.unstake(amountToWrap, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+          'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -499,7 +499,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.unstake(amountToUnwrap, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
+          'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -573,7 +573,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.unstake(10, {
             from: appManager,
           }),
-          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
         )
       })
 
@@ -661,7 +661,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
         await assertRevert(
           unstake(stakingManager, 100, appManager),
-          'LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
         )
       })
 

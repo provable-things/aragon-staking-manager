@@ -23,21 +23,21 @@ contract StakingManager is AragonApp {
     bytes32 public constant CHANGE_VAULT_ROLE = keccak256("CHANGE_VAULT_ROLE");
 
     // prettier-ignore
-    string private constant ERROR_ADDRESS_NOT_CONTRACT = "LOCKABLE_TOKEN_WRAPPER_ADDRESS_NOT_CONTRACT";
+    string private constant ERROR_ADDRESS_NOT_CONTRACT = "STAKING_MANAGER_ADDRESS_NOT_CONTRACT";
     // prettier-ignore
-    string private constant ERROR_TOKEN_WRAP_REVERTED = "LOCKABLE_TOKEN_WRAPPER_WRAP_REVERTED";
+    string private constant ERROR_TOKEN_WRAP_REVERTED = "STAKING_MANAGER_WRAP_REVERTED";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_TOKENS";
+    string private constant ERROR_INSUFFICENT_TOKENS = "STAKING_MANAGER_INSUFFICENT_TOKENS";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_UNLOCKED_TOKENS = "LOCKABLE_TOKEN_WRAPPER_INSUFFICENT_UNLOCKED_TOKENS";
+    string private constant ERROR_INSUFFICENT_UNLOCKED_TOKENS = "STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS";
     // prettier-ignore
-    string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "LOCKABLE_TOKEN_WRAPPER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
+    string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
-    string private constant ERROR_MAXIMUN_LOCKS_REACHED = "LOCKABLE_TOKEN_WRAPPER_MAXIMUN_LOCKS_REACHED";
+    string private constant ERROR_MAXIMUN_LOCKS_REACHED = "STAKING_MANAGER_MAXIMUN_LOCKS_REACHED";
     // prettier-ignore
-    string private constant ERROR_LOCK_TIME_TOO_LOW = "LOCKABLE_TOKEN_WRAPPER_LOCK_TIME_TOO_LOW";
+    string private constant ERROR_LOCK_TIME_TOO_LOW = "STAKING_MANAGER_LOCK_TIME_TOO_LOW";
     // prettier-ignore
-    string private constant ERROR_IMPOSSIBLE_TO_INSERT = "LOCKABLE_TOKEN_WRAPPER_IMPOSSIBLE_TO_INSERT";
+    string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
 
     uint64 private constant PUSH_THREESHOLD = 1;
     uint64 private constant NOT_PUSH_THREESHOLD = 2;
