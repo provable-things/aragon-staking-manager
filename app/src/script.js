@@ -4,51 +4,69 @@ import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
 import { correctFormat } from './utils/number-utils'
+import { first } from 'rxjs/operators'
 
 const app = new Aragon()
 
 // TODO: check that tokens (miniMe and deposit) have the same decimals
 
-app.store(
-  async (state, { event, returnValues }) => {
-    const nextState = {
-      ...state,
-    }
+app
+  .call('tokenManager')
+  .subscribe(initialize, (err) =>
+    console.error(
+      `Could not start background script execution due to the contract not loading token: ${err}`
+    )
+  )
 
-    try {
-      switch (event) {
-        case events.ACCOUNTS_TRIGGER:
-          return handleAccountChange(nextState, returnValues)
-        case events.SYNC_STATUS_SYNCING:
-          return { ...nextState, isSyncing: true }
-        case events.SYNC_STATUS_SYNCED:
-          return { ...nextState, isSyncing: false }
-        case 'Staked':
-          return handleEvent(nextState)
-        case 'Unstaked':
-          return handleEvent(nextState, returnValues)
-        default:
-          return state
-      }
-    } catch (_err) {
-      console.log(_err)
-    }
-  },
-  {
-    init: initializeState(),
+async function initialize(_tokenManagerAddress) {
+  const network = await app.network().pipe(first()).toPromise()
+  const tokenManagerContract = app.external(
+    _tokenManagerAddress,
+    TokenManagerAbi
+  )
+
+  const settings = {
+    network,
   }
-)
+  return createStore(tokenManagerContract, settings)
+}
 
-function initializeState() {
-  return async (cachedState) => {
+function createStore(_tokenManagerContract, _settings) {
+  return app.store(
+    async (state, { event, returnValues }) => {
+      const nextState = {
+        ...state,
+      }
+
+      try {
+        switch (event) {
+          case events.ACCOUNTS_TRIGGER:
+            return handleAccountChange(nextState, returnValues)
+          case events.SYNC_STATUS_SYNCING:
+            return { ...nextState, isSyncing: true }
+          case events.SYNC_STATUS_SYNCED:
+            return { ...nextState, isSyncing: false }
+          case 'Staked':
+            return handleEvent(nextState)
+          case 'Unstaked':
+            return handleEvent(nextState, returnValues)
+          default:
+            return state
+        }
+      } catch (_err) {
+        console.log(_err)
+      }
+    },
+    {
+      init: initializeState(_tokenManagerContract, _settings),
+    }
+  )
+}
+
+function initializeState(_tokenManagerContract, _settings) {
+  return async (_cachedState) => {
     try {
-      const tokenManagerAddress = await app.call('tokenManager').toPromise()
-      const tokenManagerContract = app.external(
-        tokenManagerAddress,
-        TokenManagerAbi
-      )
-
-      const miniMeTokenAddress = await tokenManagerContract.token().toPromise()
+      const miniMeTokenAddress = await _tokenManagerContract.token().toPromise()
       const miniMeToken = await getTokenData(miniMeTokenAddress)
 
       const depositTokenAddress = await app.call('depositToken').toPromise()
@@ -57,10 +75,11 @@ function initializeState() {
       const minLockTime = parseInt(await app.call('minLockTime').toPromise())
 
       return {
-        ...cachedState,
+        ..._cachedState,
         miniMeToken,
         depositToken,
         minLockTime,
+        _settings,
       }
     } catch (_err) {
       console.log(_err)
@@ -68,24 +87,31 @@ function initializeState() {
   }
 }
 
-const handleEvent = async (_nextState, _returnValues) => {
+const handleEvent = async (_nextState) => {
   try {
-    const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
-      _nextState.miniMeToken.address,
-      _nextState.miniMeToken.decimals,
-      _nextState.depositToken.address,
-      _nextState.depositToken.decimals,
-      _nextState.account
-    )
+    if (_nextState.account) {
+      const {
+        miniMeTokenBalance,
+        depositTokenBalance,
+      } = await getTokenBalances(
+        _nextState.miniMeToken.address,
+        _nextState.miniMeToken.decimals,
+        _nextState.depositToken.address,
+        _nextState.depositToken.decimals,
+        _nextState.account
+      )
 
-    const stakedLocks = await getStakedLocks(_nextState.account)
+      const stakedLocks = await getStakedLocks(_nextState.account)
 
-    return {
-      ..._nextState,
-      miniMeTokenBalance,
-      depositTokenBalance,
-      stakedLocks,
+      return {
+        ..._nextState,
+        miniMeTokenBalance,
+        depositTokenBalance,
+        stakedLocks,
+      }
     }
+
+    return _nextState
   } catch (_err) {
     return _nextState
   }

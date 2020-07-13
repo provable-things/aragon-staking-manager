@@ -61,7 +61,7 @@ const useAppLogic = () => {
     depositTokenBalance,
     miniMeToken,
     miniMeTokenBalance,
-    isSyncing,
+    isSyncing: isSyncing || !depositToken || !miniMeToken,
     panelState,
     minLockTime,
     stakedLocks,
