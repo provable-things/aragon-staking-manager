@@ -308,10 +308,6 @@ contract StakingManager is AragonApp {
      * @param _lock lock
      */
     function isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
-        if (_lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0) {
-            return true;
-        }
-
-        return false;
+        return _lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0;
     }
 }
