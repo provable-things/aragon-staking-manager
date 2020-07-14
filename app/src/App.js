@@ -7,6 +7,7 @@ import LockedWraps from './components/LockedWraps'
 import Info from './components/Info'
 import LocksDetails from './components/LocksDetails'
 import { correctFormat, parseAmount } from './utils/number-utils'
+import { useGuiStyle } from '@aragon/api-react'
 
 const App = () => {
   const {
@@ -22,6 +23,7 @@ const App = () => {
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
+  const { appearance } = useGuiStyle()
 
   const handleClick = ({ amount, action, lockTime, receiver }) => {
     if (action === 'Stake') {
@@ -46,7 +48,7 @@ const App = () => {
   }
 
   return (
-    <Main>
+    <Main theme={appearance}>
       {isSyncing ? (
         <SyncIndicator />
       ) : (
