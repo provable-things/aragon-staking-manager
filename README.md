@@ -8,6 +8,18 @@ An Aragon app that allows to lock for a customizable amount of time, a quantity 
 
 &nbsp;
 
+## :arrow_down: How to install
+
+```
+dao install <DAO address> staking-manager.open.aragonpm.eth --app-init-args <token manager> <vault> <erc20 token address> <min lock time> <max locks> --env aragon:rinkeby
+```
+
+&nbsp;
+
+***
+
+&nbsp;
+
 ## :clipboard: How to run locally
 
 ```
