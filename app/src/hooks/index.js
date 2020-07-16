@@ -46,6 +46,7 @@ const useAppLogic = () => {
     minLockTime,
     stakedLocks,
     account,
+    vaultBalance,
   } = useAppState()
 
   const panelState = useSidePanel()
@@ -66,6 +67,7 @@ const useAppLogic = () => {
     minLockTime,
     stakedLocks,
     account,
+    vaultBalance,
   }
 }
 

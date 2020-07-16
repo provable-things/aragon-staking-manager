@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Button, EmptyStateCard, GU, textStyle } from '@aragon/ui'
 import PropTypes from 'prop-types'
 
-const NoLockedWraps = (_props) => {
+const NoTokenStaked = (_props) => {
   const { onOpenSidebar } = _props
 
   return (
@@ -24,8 +24,8 @@ const NoLockedWraps = (_props) => {
   )
 }
 
-NoLockedWraps.propTypes = {
+NoTokenStaked.propTypes = {
   onOpenSidebar: PropTypes.func,
 }
 
-export default NoLockedWraps
+export default NoTokenStaked

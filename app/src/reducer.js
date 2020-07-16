@@ -10,6 +10,8 @@ const reducer = (_state) => {
       minLockTime: 0,
       stakedLocks: [],
       settings: null,
+      vaultBalance: null,
+      vaultAddress: null,
     }
   }
 

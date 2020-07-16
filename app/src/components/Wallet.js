@@ -2,10 +2,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { strip } from '../utils/number-utils'
 import { parseSeconds } from '../utils/time-utils'
-import { Box, useTheme } from '@aragon/ui'
+import { Box, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
 
-const Info = (_props) => {
+const Wallet = (_props) => {
   const {
     depositToken,
     depositTokenBalance,
@@ -17,7 +17,7 @@ const Info = (_props) => {
   const theme = useTheme()
 
   return (
-    <Box heading={'INFO'}>
+    <Box heading={'Your wallet holdings'}>
       <TokenDetails>
         <TokenName>
           <TokenSymbol
@@ -87,7 +87,7 @@ const TokenSymbol = styled.span`
 `
 
 const TokenDetails = styled.div`
-  margin-top: 5px;
+  margin-top: ${GU}px;
   display: flex;
   justify-content: space-between;
 `
@@ -110,7 +110,7 @@ const Days = styled.span`
   font-weight: bold;
 `
 
-Info.propTypes = {
+Wallet.propTypes = {
   depositToken: PropTypes.object,
   depositTokenBalance: PropTypes.number,
   miniMeToken: PropTypes.object,
@@ -118,4 +118,4 @@ Info.propTypes = {
   minLockTime: PropTypes.number,
 }
 
-export default Info
+export default Wallet
