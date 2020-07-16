@@ -23,7 +23,7 @@ const StakeHistory = (_props) => {
     <Table
       header={
         <TableRow>
-          <TableHeader title="Locked Wraps" />
+          <TableHeader title={`Your ${depositToken.symbol} at stake`} />
         </TableRow>
       }
     >
