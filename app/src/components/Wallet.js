@@ -17,17 +17,20 @@ const Wallet = (_props) => {
   const theme = useTheme()
 
   return (
-    <Box heading={'Your wallet holdings'}>
+    <Box
+      heading={'Your wallet holdings'}
+      css={`
+        height: 100%;
+      `}
+    >
       <TokenDetails>
-        <TokenName>
-          <TokenSymbol
-            css={`
-              color: ${theme.info};
-            `}
-          >
-            {` ${depositToken.symbol} `}
-          </TokenSymbol>
-        </TokenName>{' '}
+        <TokenSymbol
+          css={`
+            color: ${theme.info};
+          `}
+        >
+          {` ${depositToken.symbol} `}
+        </TokenSymbol>
         <TokenBalance>
           {depositTokenBalance || depositTokenBalance === 0
             ? strip(depositTokenBalance)
@@ -35,15 +38,13 @@ const Wallet = (_props) => {
         </TokenBalance>
       </TokenDetails>
       <TokenDetails>
-        <TokenName>
-          <TokenSymbol
-            css={`
-              color: ${theme.info};
-            `}
-          >
-            {` ${miniMeToken.symbol} `}
-          </TokenSymbol>
-        </TokenName>{' '}
+        <TokenSymbol
+          css={`
+            color: ${theme.info};
+          `}
+        >
+          {` ${miniMeToken.symbol} `}
+        </TokenSymbol>
         <TokenBalance>
           {miniMeTokenBalance || miniMeTokenBalance === 0
             ? strip(miniMeTokenBalance)
@@ -92,17 +93,16 @@ const TokenDetails = styled.div`
   justify-content: space-between;
 `
 
-const TokenName = styled.span`
-  float: left;
-`
-
 const TokenBalance = styled.span`
   float: right;
   font-weight: bold;
 `
 
 const LockDetails = styled.div`
-  margin-top: 20px;
+  bottom: 0;
+  position: absolute;
+  margin-right: 5px;
+  margin-bottom: 15px;
 `
 
 const Days = styled.span`

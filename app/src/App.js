@@ -5,7 +5,7 @@ import { Row, Col } from 'react-bootstrap'
 import Staker from './components/Staker'
 import StakeHistory from './components/StakeHistory'
 import Wallet from './components/Wallet'
-import Details from './components/Details'
+import Info from './components/Info'
 import { correctFormat, parseAmount } from './utils/number-utils'
 import { useGuiStyle } from '@aragon/api-react'
 import VotingPower from './components/VotingPower'
@@ -105,6 +105,7 @@ const App = () => {
               <VotingPower
                 miniMeTokenBalance={miniMeTokenBalance}
                 miniMeToken={miniMeToken}
+                depositToken={depositToken}
                 vaultBalance={vaultBalance}
               />
             </Col>
@@ -118,7 +119,7 @@ const App = () => {
               />
             </Col>
             <Col xs={12} xl={4} className="mt-3 mt-xl-0">
-              <Details depositToken={depositToken} stakedLocks={stakedLocks} />
+              <Info depositToken={depositToken} stakedLocks={stakedLocks} />
             </Col>
           </Row>
           <Row>

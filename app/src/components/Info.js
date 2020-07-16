@@ -9,7 +9,7 @@ import { Box, Distribution, useTheme, GU } from '@aragon/ui'
 import { correctFormat } from '../utils/number-utils'
 import styled from 'styled-components'
 
-const Details = (_props) => {
+const Info = (_props) => {
   const { depositToken, stakedLocks } = _props
 
   const theme = useTheme()
@@ -25,7 +25,12 @@ const Details = (_props) => {
   )
 
   return (
-    <Box heading={`Your ${depositToken.symbol} at stake`}>
+    <Box
+      heading="INFO"
+      css={`
+        height: 100%;
+      `}
+    >
       <TokenDetails>
         <TokenName>
           <TokenSymbol
@@ -113,10 +118,10 @@ const ChartWrapper = styled.div`
   margin-top: 30px;
 `
 
-Details.propTypes = {
+Info.propTypes = {
   depositToken: PropTypes.object,
   stakedLocks: PropTypes.array,
   minLockTime: PropTypes.number,
 }
 
-export default Details
+export default Info
