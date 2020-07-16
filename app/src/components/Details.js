@@ -5,11 +5,11 @@ import {
   getTotalAmountOUnlockedTokens,
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
-import { Box, Distribution, useTheme } from '@aragon/ui'
+import { Box, Distribution, useTheme, GU } from '@aragon/ui'
 import { correctFormat } from '../utils/number-utils'
 import styled from 'styled-components'
 
-const LocksDetails = (_props) => {
+const Details = (_props) => {
   const { depositToken, stakedLocks } = _props
 
   const theme = useTheme()
@@ -25,8 +25,8 @@ const LocksDetails = (_props) => {
   )
 
   return (
-    <Box heading={'Locks Details'}>
-      <TokenUnlockableDetails>
+    <Box heading={`Your ${depositToken.symbol} at stake`}>
+      <TokenDetails>
         <TokenName>
           <TokenSymbol
             css={`
@@ -39,8 +39,8 @@ const LocksDetails = (_props) => {
         <TokenBalance>
           {strip(correctFormat(locked, depositToken.decimals, '/'))}
         </TokenBalance>
-      </TokenUnlockableDetails>
-      <TokenUnlockableDetails>
+      </TokenDetails>
+      <TokenDetails>
         <TokenName>
           <TokenSymbol
             css={`
@@ -53,7 +53,27 @@ const LocksDetails = (_props) => {
         <TokenBalance>
           {strip(correctFormat(unlocked, depositToken.decimals, '/'))}
         </TokenBalance>
-      </TokenUnlockableDetails>
+      </TokenDetails>
+      <div
+        css={`
+          width: 100%;
+          padding: ${0.5 * GU}px ${1 * GU}px;
+        `}
+      />
+      <TokenDetails>
+        <TokenName>
+          <TokenSymbol
+            css={`
+              color: ${theme.info};
+            `}
+          >
+            {`TOTAL ${depositToken.symbol} `}
+          </TokenSymbol>
+        </TokenName>{' '}
+        <TokenBalance>
+          {strip(correctFormat(unlocked, depositToken.decimals, '/'))}
+        </TokenBalance>
+      </TokenDetails>
       <ChartWrapper>
         <Distribution
           heading="Distribution"
@@ -83,8 +103,8 @@ const TokenBalance = styled.span`
   font-weight: bold;
 `
 
-const TokenUnlockableDetails = styled.div`
-  margin-top: 10px;
+const TokenDetails = styled.div`
+  margin-top: ${GU}px;
   display: flex;
   justify-content: space-between;
 `
@@ -93,10 +113,10 @@ const ChartWrapper = styled.div`
   margin-top: 30px;
 `
 
-LocksDetails.propTypes = {
+Details.propTypes = {
   depositToken: PropTypes.object,
   stakedLocks: PropTypes.array,
   minLockTime: PropTypes.number,
 }
 
-export default LocksDetails
+export default Details

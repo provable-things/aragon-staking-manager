@@ -3,11 +3,12 @@ import { useAppLogic } from './hooks'
 import { Button, Header, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { Row, Col } from 'react-bootstrap'
 import Staker from './components/Staker'
-import LockedWraps from './components/LockedWraps'
-import Info from './components/Info'
-import LocksDetails from './components/LocksDetails'
+import StakeHistory from './components/StakeHistory'
+import Wallet from './components/Wallet'
+import Details from './components/Details'
 import { correctFormat, parseAmount } from './utils/number-utils'
 import { useGuiStyle } from '@aragon/api-react'
+import VotingPower from './components/VotingPower'
 
 const App = () => {
   const {
@@ -20,9 +21,12 @@ const App = () => {
     panelState,
     minLockTime,
     stakedLocks,
+    account,
+    vaultBalance,
   } = useAppLogic()
 
   const [action, setAction] = useState(null)
+  const [defaultAmount, setDefaultAmount] = useState(null)
   const { appearance } = useGuiStyle()
 
   const handleClick = ({ amount, action, lockTime, receiver }) => {
@@ -82,44 +86,53 @@ const App = () => {
             opened={panelState.visible}
             onClose={(_e) => {
               setAction(null)
+              setDefaultAmount(null)
               panelState.requestClose(_e)
             }}
             onTransitionEnd={panelState.endTransition}
           >
             <Staker
               action={action}
+              account={account}
+              defaultAmount={defaultAmount}
               minLockTime={minLockTime}
               onClick={handleClick}
             />
           </SidePanel>
 
           <Row>
-            <Col xs={12} lg={4}>
-              <Row>
-                <Col xs={12}>
-                  <Info
-                    depositToken={depositToken}
-                    depositTokenBalance={depositTokenBalance}
-                    miniMeToken={miniMeToken}
-                    miniMeTokenBalance={miniMeTokenBalance}
-                    minLockTime={minLockTime}
-                  />
-                </Col>
-                <Col xs={12} className="mt-3">
-                  <LocksDetails
-                    depositToken={depositToken}
-                    stakedLocks={stakedLocks}
-                  />
-                </Col>
-              </Row>
+            <Col xs={12} xl={4}>
+              <VotingPower
+                miniMeTokenBalance={miniMeTokenBalance}
+                miniMeToken={miniMeToken}
+                vaultBalance={vaultBalance}
+              />
             </Col>
-            <Col xs={12} lg={8} className="mt-3 mt-lg-0">
-              <LockedWraps
+            <Col xs={12} xl={4} className="mt-3 mt-xl-0">
+              <Wallet
+                depositToken={depositToken}
+                depositTokenBalance={depositTokenBalance}
+                miniMeToken={miniMeToken}
+                miniMeTokenBalance={miniMeTokenBalance}
+                minLockTime={minLockTime}
+              />
+            </Col>
+            <Col xs={12} xl={4} className="mt-3 mt-xl-0">
+              <Details depositToken={depositToken} stakedLocks={stakedLocks} />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} className="mt-3">
+              <StakeHistory
                 depositToken={depositToken}
                 stakedLocks={stakedLocks}
-                onUnwrap={handleClick}
-                onOpenSidebar={(_e) => {
-                  panelState.requestOpen(_e)
+                onUnwrap={({ amount }) => {
+                  setDefaultAmount(amount)
+                  panelState.requestOpen()
+                  setAction('Unstake')
+                }}
+                onOpenSidebar={() => {
+                  panelState.requestOpen()
                   setAction('Stake')
                 }}
               />

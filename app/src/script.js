@@ -74,11 +74,20 @@ function initializeState(_tokenManagerContract, _settings) {
 
       const minLockTime = parseInt(await app.call('minLockTime').toPromise())
 
+      const vaultAddress = await app.call('vault').toPromise()
+      const vaultBalance = await getTokenBalance(
+        depositTokenAddress,
+        depositToken.decimals,
+        vaultAddress
+      )
+
       return {
         ..._cachedState,
         miniMeToken,
         depositToken,
         minLockTime,
+        vaultBalance,
+        vaultAddress,
         _settings,
       }
     } catch (_err) {
@@ -101,6 +110,12 @@ const handleEvent = async (_nextState) => {
         _nextState.account
       )
 
+      const vaultBalance = await getTokenBalance(
+        _nextState.depositToken.address,
+        _nextState.depositToken.decimals,
+        _nextState.vaultAddress
+      )
+
       const stakedLocks = await getStakedLocks(_nextState.account)
 
       return {
@@ -108,6 +123,7 @@ const handleEvent = async (_nextState) => {
         miniMeTokenBalance,
         depositTokenBalance,
         stakedLocks,
+        vaultBalance,
       }
     }
 

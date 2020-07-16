@@ -12,9 +12,9 @@ import {
 import { correctFormat, strip } from '../utils/number-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
-import NoLockedWraps from './NoLockedWraps'
+import NoTokenStaked from './NoTokenStaked'
 
-const LockedWraps = (_props) => {
+const StakeHistory = (_props) => {
   const { depositToken, stakedLocks, onUnwrap, onOpenSidebar } = _props
 
   const now = new Date().getTime() / 1000
@@ -71,14 +71,14 @@ const LockedWraps = (_props) => {
       })}
     </Table>
   ) : (
-    <NoLockedWraps onOpenSidebar={onOpenSidebar} />
+    <NoTokenStaked onOpenSidebar={onOpenSidebar} />
   )
 }
 
-LockedWraps.propTypes = {
+StakeHistory.propTypes = {
   depositToken: PropTypes.object,
   stakedLocks: PropTypes.array,
   onUnwrap: PropTypes.func,
 }
 
-export default LockedWraps
+export default StakeHistory

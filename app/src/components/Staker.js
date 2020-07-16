@@ -1,37 +1,50 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, Component } from 'react'
 import styled from 'styled-components'
-import { Button, Field, GU, Info, TextInput, DropDown } from '@aragon/ui'
+import {
+  Button,
+  Field,
+  GU,
+  Info,
+  TextInput,
+  DropDown,
+  Checkbox,
+} from '@aragon/ui'
 import PropTypes from 'prop-types'
-import { parseSeconds } from '../utils/time-utils'
+import {
+  parseSeconds,
+  calculateInitialDate,
+  formatSeconds,
+  LOCK_FORMAT_OPTIONS,
+} from '../utils/time-utils'
 import Web3 from 'web3'
 
 const web3 = new Web3()
 
-const formatSeconds = {
-  0: 3.154e7, // Years
-  1: 2.628e6, // Months
-  2: 86400, // Days
-  3: 3600, // Hours
-  4: 60, // Minutes
-}
+class Staker extends Component {
+  constructor(_props, _context) {
+    super(_props, _context)
 
-const LOCK_FORMAT_OPTIONS = ['Years', 'Months', 'Days', 'Hours', 'Minutes']
+    const { account, defaultAmount, minLockTime } = _props
 
-const Staker = (_props) => {
-  const { action, onClick, minLockTime } = _props
+    const { format, time } = calculateInitialDate(minLockTime)
 
-  const [lockFormat, setLockFormat] = useState(0)
-  const [amount, setAmount] = useState('')
-  const [receiver, setReceiver] = useState('')
-  const [lockTime, setLockTime] = useState('')
-  const [error, setError] = useState(null)
+    this.state = {
+      lockFormat: LOCK_FORMAT_OPTIONS.indexOf(format),
+      lockTime: time,
+      amount: defaultAmount ? defaultAmount : '',
+      receiver: account ? account : '',
+      error: '',
+      advance: false,
+    }
+  }
 
-  const handleClick = () => {
-    setError(null)
-    if (action === 'Stake') {
-      const secondsLockTime = lockTime * formatSeconds[lockFormat]
+  handleClick = () => {
+    this.setState({ error: null })
+    if (this.props.action === 'Stake') {
+      const secondsLockTime =
+        this.state.lockTime * formatSeconds[this.state.lockFormat]
 
-      if (secondsLockTime < minLockTime) {
+      if (secondsLockTime < this.props.minLockTime) {
         setError(
           `Lock Time too low. Please insert a lock of at least ${parseSeconds(
             minLockTime
@@ -40,135 +53,148 @@ const Staker = (_props) => {
         return
       }
 
-      if (!web3.utils.isAddress(receiver)) {
-        setError('Invalid Ethereum address.')
+      if (!web3.utils.isAddress(this.state.receiver)) {
+        this.setState({ error: 'Invalid Ethereum address.' })
         return
       }
 
-      onClick({
-        amount,
-        action,
-        receiver,
+      this.props.onClick({
+        amount: this.state.amount,
+        action: this.props.action,
+        receiver: this.state.receiver,
         lockTime: secondsLockTime,
       })
       return
     } else {
-      onClick({
-        amount,
-        action,
+      this.props.onClick({
+        amount: this.state.amount,
+        action: this.props.action,
       })
     }
   }
 
-  return (
-    <Fragment>
-      <Info
-        title="ACTION"
-        css={`
-          width: 100%;
-          margin-top: ${2 * GU}px;
-        `}
-      >
-        {`This action will ${
-          action === 'Stake' ? 'create' : 'burn'
-        } tokens and transfer them to the transaction sender.`}
-        <br />
-        {action === 'Stake'
-          ? `Keep in mind that you cannot unstake them before ${parseSeconds(
-              minLockTime
-            )}.`
-          : ''}
-      </Info>
-      <WrapperField>
-        <Field
-          label="Enter the amount here:"
-          required
-          css={`
-            margin-top: ${3 * GU}px;
-          `}
-        >
-          <TextInput
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            wide
-            min={0}
-            type="number"
-            step="any"
-            required
-          />
-        </Field>
-      </WrapperField>
-      {action === 'Stake' ? (
-        <Fragment>
-          <WrapperField>
-            <Field
-              label="Enter the receiver here:"
-              required
-              css={`
-                margin-top: ${1 * GU}px;
-              `}
-            >
-              <TextInput
-                value={receiver}
-                onChange={(e) => setReceiver(e.target.value)}
-                wide
-                type="test"
-                required
-              />
-            </Field>
-          </WrapperField>
-          <WrapperLockTimeSelection>
-            <Field
-              label="Select a lock time"
-              required
-              css={`
-                margin-top: ${1 * GU}px;
-                width: 50%;
-              `}
-            >
-              <TextInput
-                value={lockTime}
-                onChange={(e) => setLockTime(e.target.value)}
-                min={0}
-                type="number"
-                step="any"
-                required
-              />
-            </Field>
-            <DropDown
-              width={'50%'}
-              selected={lockFormat}
-              onChange={setLockFormat}
-              items={LOCK_FORMAT_OPTIONS}
-            />
-          </WrapperLockTimeSelection>
-        </Fragment>
-      ) : null}
-      <Button
-        onClick={handleClick}
-        label={action}
-        disabled={
-          action === 'Stake'
-            ? amount.length === 0 ||
-              receiver.length === 0 ||
-              lockTime === 0 ||
-              lockTime.length === 0
-            : amount.length === 0
-        }
-      />
-      {action === 'Stake' && error ? (
+  render() {
+    const { minLockTime, action } = this.props
+
+    return (
+      <Fragment>
         <Info
+          title="ACTION"
           css={`
+            width: 100%;
             margin-top: ${2 * GU}px;
           `}
-          mode="error"
-          title="Error"
         >
-          {error}
+          {`This action will ${
+            action === 'Stake' ? 'create' : 'burn'
+          } tokens and transfer them to the transaction sender.`}
+          <br />
+          {action === 'Stake'
+            ? `Keep in mind that you cannot unstake them before ${parseSeconds(
+                minLockTime
+              )}.`
+            : ''}
         </Info>
-      ) : null}
-    </Fragment>
-  )
+        <WrapperField>
+          <Field
+            label="Enter the amount here:"
+            required
+            css={`
+              margin-top: ${3 * GU}px;
+            `}
+          >
+            <TextInput
+              value={this.state.amount}
+              onChange={(e) => this.setState({ amount: e.target.value })}
+              wide
+              min={0}
+              type="number"
+              step="any"
+              required
+            />
+          </Field>
+        </WrapperField>
+        {action === 'Stake' ? (
+          <LabelCheckBox>
+            <Checkbox
+              checked={this.state.advance}
+              onChange={(advance) => this.setState({ advance })}
+            />
+            Advanced
+          </LabelCheckBox>
+        ) : null}
+        {action === 'Stake' && this.state.advance ? (
+          <Fragment>
+            <WrapperField>
+              <Field
+                label="Enter the receiver here:"
+                required
+                css={`
+                  margin-top: ${1 * GU}px;
+                `}
+              >
+                <TextInput
+                  value={this.state.receiver}
+                  onChange={(e) => this.setState({ receiver: e.target.value })}
+                  wide
+                  type="test"
+                  required
+                />
+              </Field>
+            </WrapperField>
+            <WrapperLockTimeSelection>
+              <Field
+                label="Select a lock time"
+                required
+                css={`
+                  margin-top: ${1 * GU}px;
+                  width: 50%;
+                `}
+              >
+                <TextInput
+                  value={this.state.lockTime}
+                  onChange={(e) => this.setState({ lockTime: e.target.value })}
+                  min={0}
+                  type="number"
+                  step="any"
+                  required
+                />
+              </Field>
+              <DropDown
+                width={'50%'}
+                selected={this.state.lockFormat}
+                onChange={(lockFormat) => this.setState({ lockFormat })}
+                items={LOCK_FORMAT_OPTIONS}
+              />
+            </WrapperLockTimeSelection>
+          </Fragment>
+        ) : null}
+        <Button
+          onClick={this.handleClick}
+          label={action}
+          disabled={
+            action === 'Stake'
+              ? this.state.amount.length === 0 ||
+                this.state.receiver.length === 0 ||
+                this.state.lockTime === 0 ||
+                this.state.lockTime.length === 0
+              : this.state.amount.length === 0
+          }
+        />
+        {action === 'Stake' && this.state.error ? (
+          <Info
+            css={`
+              margin-top: ${2 * GU}px;
+            `}
+            mode="error"
+            title="Error"
+          >
+            {this.state.error}
+          </Info>
+        ) : null}
+      </Fragment>
+    )
+  }
 }
 
 const WrapperField = styled.div`
@@ -181,8 +207,16 @@ const WrapperLockTimeSelection = styled.div`
   align-items: baseline;
 `
 
+const LabelCheckBox = styled.label`
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  margin-botton: ${1 * GU}px;
+`
+
 Staker.propTypes = {
   action: PropTypes.string,
+  account: PropTypes.string,
   onClick: PropTypes.func,
   minLockTime: PropTypes.number,
 }
