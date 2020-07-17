@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { strip } from '../utils/amount-utils'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
 
 const VotingPower = (_props) => {
-  const { miniMeToken, vaultBalance, miniMeTokenBalance, depositToken } = _props
-  const votingPower = vaultBalance ? miniMeTokenBalance / vaultBalance : 0
+  const { vaultBalance, miniMeTokenBalance, depositToken } = _props
+  const [votingPower, setVotingPower] = useState(null)
+
+  useEffect(
+    () => setVotingPower(vaultBalance ? miniMeTokenBalance / vaultBalance : 0),
+    [miniMeTokenBalance, vaultBalance]
+  )
 
   const theme = useTheme()
 
@@ -90,7 +95,6 @@ const Detail = styled.div`
 
 VotingPower.propTypes = {
   depositToken: PropTypes.object,
-  miniMeToken: PropTypes.object,
   miniMeTokenBalance: PropTypes.number,
   vaultBalance: PropTypes.number,
 }

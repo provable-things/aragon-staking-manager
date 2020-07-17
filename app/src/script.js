@@ -72,8 +72,6 @@ function initializeState(_tokenManagerContract, _settings) {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
-      const minLockTime = parseInt(await app.call('minLockTime').toPromise())
-
       const vaultAddress = await app.call('vault').toPromise()
       const vaultBalance = await getTokenBalance(
         depositTokenAddress,
@@ -85,7 +83,7 @@ function initializeState(_tokenManagerContract, _settings) {
         ..._cachedState,
         miniMeToken,
         depositToken,
-        minLockTime,
+        minLockTime: parseInt(await app.call('minLockTime').toPromise()),
         vaultBalance,
         vaultAddress,
         _settings,
@@ -110,20 +108,16 @@ const handleEvent = async (_nextState) => {
         _nextState.account
       )
 
-      const vaultBalance = await getTokenBalance(
-        _nextState.depositToken.address,
-        _nextState.depositToken.decimals,
-        _nextState.vaultAddress
-      )
-
-      const stakedLocks = await getStakedLocks(_nextState.account)
-
       return {
         ..._nextState,
         miniMeTokenBalance,
         depositTokenBalance,
-        stakedLocks,
-        vaultBalance,
+        stakedLocks: await getStakedLocks(_nextState.account),
+        vaultBalance: await getTokenBalance(
+          _nextState.depositToken.address,
+          _nextState.depositToken.decimals,
+          _nextState.vaultAddress
+        ),
       }
     }
 
@@ -147,14 +141,12 @@ const handleAccountChange = async (_nextState, { account }) => {
         account
       )
 
-      const stakedLocks = await getStakedLocks(account)
-
       return {
         ..._nextState,
         miniMeTokenBalance,
         depositTokenBalance,
         account,
-        stakedLocks,
+        stakedLocks: await getStakedLocks(account),
       }
     }
 
