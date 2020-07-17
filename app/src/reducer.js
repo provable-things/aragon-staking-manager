@@ -1,3 +1,5 @@
+import { correctFormat } from './utils/amount-utils'
+
 const reducer = (_state) => {
   if (_state === null) {
     return {
@@ -20,10 +22,21 @@ const reducer = (_state) => {
   return {
     ..._state,
     stakedLocks: stakedLocks
-      ? stakedLocks.filter(
-          ({ amount, lockDate, lockTime }) =>
-            amount !== 0 && lockDate !== 0 && lockTime !== 0
-        )
+      ? stakedLocks
+          .filter(
+            ({ amount, lockDate, lockTime }) =>
+              amount !== 0 && lockDate !== 0 && lockTime !== 0
+          )
+          .map((_stakedLock) => {
+            return {
+              ..._stakedLock,
+              amount: correctFormat(
+                _stakedLock.amount,
+                _state.depositToken.decimals,
+                '/'
+              ),
+            }
+          })
       : [],
   }
 }

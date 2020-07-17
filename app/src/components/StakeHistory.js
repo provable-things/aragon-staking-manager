@@ -9,7 +9,6 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { correctFormat, strip } from '../utils/amount-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
@@ -39,11 +38,7 @@ const StakeHistory = (_props) => {
         return (
           <TableRow key={_index}>
             <TableCell>
-              <Text>
-                {`${strip(correctFormat(amount, depositToken.decimals, '/'))} ${
-                  depositToken.symbol
-                }`}
-              </Text>
+              <Text>{`${amount} ${depositToken.symbol}`}</Text>
             </TableCell>
             <TableCell>
               {lockDate + lockTime < now ? (
@@ -64,7 +59,7 @@ const StakeHistory = (_props) => {
                   onClick={() =>
                     onUnwrap({
                       action: 'Unstake',
-                      amount: correctFormat(amount, depositToken.decimals, '/'),
+                      amount,
                     })
                   }
                 >

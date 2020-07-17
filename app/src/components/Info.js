@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { strip } from '../utils/amount-utils'
 import {
@@ -6,7 +6,6 @@ import {
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
 import { Box, Distribution, useTheme, GU } from '@aragon/ui'
-import { correctFormat } from '../utils/amount-utils'
 import styled from 'styled-components'
 
 const Info = (_props) => {
@@ -14,15 +13,22 @@ const Info = (_props) => {
 
   const theme = useTheme()
 
-  const unlocked = getTotalAmountOUnlockedTokens(stakedLocks)
-  const locked = getTotalAmountOfLockedTokens(stakedLocks)
+  const [locked, setLocked] = useState(0)
+  const [unlocked, setUnlocked] = useState(0)
+  const [perLocked, setPerLocked] = useState(0)
+  const [perUnlocked, setPerUnlocked] = useState(0)
 
-  const perUnlocked = parseFloat(
-    ((unlocked / (unlocked + locked)) * 100).toFixed(2)
-  )
-  const perLocked = parseFloat(
-    ((locked / (unlocked + locked)) * 100).toFixed(2)
-  )
+  useEffect(() => {
+    setUnlocked(getTotalAmountOUnlockedTokens(stakedLocks))
+    setLocked(getTotalAmountOfLockedTokens(stakedLocks))
+    setPerLocked(
+      parseFloat(((unlocked / (unlocked + locked)) * 100).toFixed(2))
+    )
+
+    setPerUnlocked(
+      parseFloat(((locked / (unlocked + locked)) * 100).toFixed(2))
+    )
+  }, [stakedLocks])
 
   return (
     <Box
@@ -41,9 +47,7 @@ const Info = (_props) => {
             {`LOCKED ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>
-          {strip(correctFormat(locked, depositToken.decimals, '/'))}
-        </TokenBalance>
+        <TokenBalance>{strip(locked)}</TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenName>
@@ -55,9 +59,7 @@ const Info = (_props) => {
             {`UNLOCKED ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>
-          {strip(correctFormat(unlocked, depositToken.decimals, '/'))}
-        </TokenBalance>
+        <TokenBalance>{strip(unlocked)}</TokenBalance>
       </TokenDetails>
       <div
         css={`
@@ -75,9 +77,7 @@ const Info = (_props) => {
             {`TOTAL ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>
-          {strip(correctFormat(unlocked + locked, depositToken.decimals, '/'))}
-        </TokenBalance>
+        <TokenBalance>{strip(unlocked + locked)}</TokenBalance>
       </TokenDetails>
       <ChartWrapper>
         <Distribution
