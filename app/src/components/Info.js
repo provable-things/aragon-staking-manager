@@ -76,7 +76,7 @@ const Info = (_props) => {
           </TokenSymbol>
         </TokenName>{' '}
         <TokenBalance>
-          {strip(correctFormat(unlocked, depositToken.decimals, '/'))}
+          {strip(correctFormat(unlocked + locked, depositToken.decimals, '/'))}
         </TokenBalance>
       </TokenDetails>
       <ChartWrapper>
