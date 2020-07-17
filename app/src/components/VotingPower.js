@@ -17,7 +17,7 @@ const VotingPower = (_props) => {
         height: 100%;
       `}
     >
-      <Info>
+      <Detail>
         <DetailText>
           Total
           <TokenSymbol
@@ -32,8 +32,8 @@ const VotingPower = (_props) => {
         <DetailValue>
           {vaultBalance || vaultBalance === 0 ? strip(vaultBalance) : '-'}
         </DetailValue>
-      </Info>
-      <Info>
+      </Detail>
+      <Detail>
         <DetailText>
           Your
           <TokenSymbol
@@ -50,8 +50,8 @@ const VotingPower = (_props) => {
             ? strip(miniMeTokenBalance)
             : '-'}
         </DetailValue>
-      </Info>
-      <Info
+      </Detail>
+      <Detail
         css={`
           margin-top: ${3 * GU}px;
         `}
@@ -62,7 +62,7 @@ const VotingPower = (_props) => {
             ? `${votingPower >= 100 ? 100 : (votingPower * 100).toFixed(2)}%`
             : '0%'}{' '}
         </DetailValue>
-      </Info>
+      </Detail>
       <ProgressBar value={votingPower ? votingPower : 0} />
     </Box>
   )
@@ -81,7 +81,7 @@ const DetailValue = styled.span`
   font-weight: bold;
 `
 
-const Info = styled.div`
+const Detail = styled.div`
   margin-top: ${GU}px;
   margin-bottom: ${2 * GU}px;
   display: flex;
