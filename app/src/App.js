@@ -6,7 +6,7 @@ import Staker from './components/Staker'
 import StakeHistory from './components/StakeHistory'
 import Wallet from './components/Wallet'
 import Info from './components/Info'
-import { correctFormat, parseAmount } from './utils/number-utils'
+import { correctFormat, parseAmount } from './utils/amount-utils'
 import { useGuiStyle } from '@aragon/api-react'
 import VotingPower from './components/VotingPower'
 

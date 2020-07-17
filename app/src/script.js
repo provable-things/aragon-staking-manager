@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
-import { correctFormat } from './utils/number-utils'
+import { correctFormat } from './utils/amount-utils'
 import { first } from 'rxjs/operators'
 
 const app = new Aragon()

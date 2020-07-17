@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/number-utils'
+import { strip } from '../utils/amount-utils'
 import {
   getTotalAmountOUnlockedTokens,
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
 import { Box, Distribution, useTheme, GU } from '@aragon/ui'
-import { correctFormat } from '../utils/number-utils'
+import { correctFormat } from '../utils/amount-utils'
 import styled from 'styled-components'
 
 const Info = (_props) => {

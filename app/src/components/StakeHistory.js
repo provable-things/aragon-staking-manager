@@ -9,7 +9,7 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { correctFormat, strip } from '../utils/number-utils'
+import { correctFormat, strip } from '../utils/amount-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
