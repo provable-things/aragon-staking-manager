@@ -19,6 +19,7 @@ const VotingPower = (_props) => {
     >
       <Info>
         <DetailText>
+          Total
           <TokenSymbol
             css={`
               color: ${theme.info};
@@ -28,7 +29,27 @@ const VotingPower = (_props) => {
           </TokenSymbol>{' '}
           stacked in the DAO:{' '}
         </DetailText>
-        <DetailValue>{strip(vaultBalance)}</DetailValue>
+        <DetailValue>
+          {vaultBalance || vaultBalance === 0 ? strip(vaultBalance) : '-'}
+        </DetailValue>
+      </Info>
+      <Info>
+        <DetailText>
+          Your
+          <TokenSymbol
+            css={`
+              color: ${theme.info};
+            `}
+          >
+            {` ${depositToken.symbol}`}
+          </TokenSymbol>{' '}
+          stacked in the DAO:{' '}
+        </DetailText>
+        <DetailValue>
+          {miniMeTokenBalance || miniMeTokenBalance === 0
+            ? strip(miniMeTokenBalance)
+            : '-'}
+        </DetailValue>
       </Info>
       <Info
         css={`

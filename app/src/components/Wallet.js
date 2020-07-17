@@ -99,10 +99,9 @@ const TokenBalance = styled.span`
 `
 
 const LockDetails = styled.div`
-  bottom: 0;
-  position: absolute;
   margin-right: 5px;
   margin-bottom: 15px;
+  margin-top: 75px;
 `
 
 const Days = styled.span`

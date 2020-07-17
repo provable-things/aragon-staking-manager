@@ -26,7 +26,7 @@ const Info = (_props) => {
 
   return (
     <Box
-      heading="INFO"
+      heading={`Your ${depositToken.symbol} at stake`}
       css={`
         height: 100%;
       `}

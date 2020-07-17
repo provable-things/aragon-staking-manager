@@ -126,6 +126,7 @@ const App = () => {
             <Col xs={12} className="mt-3">
               <StakeHistory
                 depositToken={depositToken}
+                miniMeToken={miniMeToken}
                 stakedLocks={stakedLocks}
                 onUnwrap={({ amount }) => {
                   setDefaultAmount(amount)
