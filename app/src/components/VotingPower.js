@@ -1,8 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/number-utils'
+import { strip } from '../utils/amount-utils'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
-import { correctFormat } from '../utils/number-utils'
 import styled from 'styled-components'
 
 const VotingPower = (_props) => {
