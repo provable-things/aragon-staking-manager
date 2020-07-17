@@ -15,7 +15,13 @@ import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
 
 const StakeHistory = (_props) => {
-  const { depositToken, stakedLocks, onUnwrap, onOpenSidebar } = _props
+  const {
+    depositToken,
+    stakedLocks,
+    onUnwrap,
+    onOpenSidebar,
+    miniMeToken,
+  } = _props
 
   const now = new Date().getTime() / 1000
 
@@ -23,7 +29,9 @@ const StakeHistory = (_props) => {
     <Table
       header={
         <TableRow>
-          <TableHeader title={`Your ${depositToken.symbol} at stake`} />
+          <TableHeader
+            title={`UNDERLAYING ASSETS FOR YOUR ${miniMeToken.symbol}`}
+          />
         </TableRow>
       }
     >
@@ -77,6 +85,7 @@ const StakeHistory = (_props) => {
 
 StakeHistory.propTypes = {
   depositToken: PropTypes.object,
+  miniMeToken: PropTypes.object,
   stakedLocks: PropTypes.array,
   onUnwrap: PropTypes.func,
 }
