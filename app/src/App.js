@@ -29,7 +29,7 @@ const App = () => {
   const [defaultAmount, setDefaultAmount] = useState(null)
   const { appearance } = useGuiStyle()
 
-  const handleClick = ({ amount, action, lockTime, receiver }) => {
+  const handleAction = ({ amount, action, lockTime, receiver }) => {
     if (action === 'Stake') {
       const formattedAmount = correctFormat(
         parseAmount(depositToken.decimals, amount),
@@ -96,7 +96,7 @@ const App = () => {
               account={account}
               defaultAmount={defaultAmount}
               minLockTime={minLockTime}
-              onClick={handleClick}
+              onAction={handleAction}
             />
           </SidePanel>
 

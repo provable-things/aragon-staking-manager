@@ -38,7 +38,7 @@ class Staker extends Component {
     }
   }
 
-  handleClick = () => {
+  handleAction = () => {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
       const secondsLockTime =
@@ -58,7 +58,7 @@ class Staker extends Component {
         return
       }
 
-      this.props.onClick({
+      this.props.onAction({
         amount: this.state.amount,
         action: this.props.action,
         receiver: this.state.receiver,
@@ -66,7 +66,7 @@ class Staker extends Component {
       })
       return
     } else {
-      this.props.onClick({
+      this.props.onAction({
         amount: this.state.amount,
         action: this.props.action,
       })
@@ -170,7 +170,7 @@ class Staker extends Component {
           </Fragment>
         ) : null}
         <Button
-          onClick={this.handleClick}
+          onClick={this.handleAction}
           label={action}
           disabled={
             action === 'Stake'
@@ -217,7 +217,7 @@ const LabelCheckBox = styled.label`
 Staker.propTypes = {
   action: PropTypes.string,
   account: PropTypes.string,
-  onClick: PropTypes.func,
+  onAction: PropTypes.func,
   minLockTime: PropTypes.number,
 }
 
