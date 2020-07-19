@@ -3,7 +3,6 @@ import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
-import { correctFormat } from './utils/amount-utils'
 import { first } from 'rxjs/operators'
 
 const app = new Aragon()
@@ -90,6 +89,7 @@ function initializeState(_tokenManagerContract, _settings) {
       }
     } catch (_err) {
       console.log(_err)
+      return _cachedState
     }
   }
 }
@@ -156,18 +156,9 @@ const handleAccountChange = async (_nextState, { account }) => {
   }
 }
 
-const getStakedLocks = async (_tokenAddress) => {
+const getStakedLocks = (_tokenAddress) => {
   try {
-    const stakedLocks = await app
-      .call('getStakedLocks', _tokenAddress)
-      .toPromise()
-    return stakedLocks.map((_lock) => {
-      return {
-        amount: parseInt(_lock.amount),
-        lockDate: parseInt(_lock.lockDate),
-        lockTime: parseInt(_lock.lockTime),
-      }
-    })
+    return app.call('getStakedLocks', _tokenAddress).toPromise()
   } catch (_err) {
     return []
   }
@@ -220,11 +211,10 @@ const getTokenBalances = async (
   }
 }
 
-const getTokenBalance = async (_tokenAddress, _tokenDecimals, _address) => {
+const getTokenBalance = (_tokenAddress, _tokenDecimals, _address) => {
   try {
     const token = app.external(_tokenAddress, ERC20Abi)
-    const balance = await token.balanceOf(_address).toPromise()
-    return correctFormat(balance, _tokenDecimals, '/')
+    return token.balanceOf(_address).toPromise()
   } catch (_err) {
     throw new Error(_err.message)
   }

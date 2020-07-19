@@ -1,10 +1,12 @@
-const getTotalAmountOUnlockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return 0
+import { toBN } from 'web3-utils'
 
-  let unlocked = 0
+const getTotalAmountOfUnlockedTokens = (_locks) => {
+  if (!_locks || _locks.length === 0) return toBN(0)
+
+  let unlocked = toBN(0)
   _locks.forEach((_lock) => {
     if (isUnlocked(_lock)) {
-      unlocked += _lock.amount
+      unlocked = unlocked.add(_lock.amount)
     }
   })
 
@@ -12,12 +14,12 @@ const getTotalAmountOUnlockedTokens = (_locks) => {
 }
 
 const getTotalAmountOfLockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return 0
+  if (!_locks || _locks.length === 0) return toBN(0)
 
-  let locked = 0
+  let locked = toBN(0)
   _locks.forEach((_lock) => {
     if (!isUnlocked(_lock)) {
-      locked += _lock.amount
+      locked = locked.add(_lock.amount)
     }
   })
 
@@ -29,4 +31,4 @@ const isUnlocked = (_lock) => {
   return _lock.lockDate + _lock.lockTime < now
 }
 
-export { getTotalAmountOUnlockedTokens, getTotalAmountOfLockedTokens }
+export { getTotalAmountOfUnlockedTokens, getTotalAmountOfLockedTokens }

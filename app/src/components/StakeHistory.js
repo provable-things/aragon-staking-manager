@@ -12,6 +12,7 @@ import {
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
+import { strip, offChainFormat } from '../utils/amount-utils'
 
 const StakeHistory = (_props) => {
   const {
@@ -38,7 +39,9 @@ const StakeHistory = (_props) => {
         return (
           <TableRow key={_index}>
             <TableCell>
-              <Text>{`${amount} ${depositToken.symbol}`}</Text>
+              <Text>{`${strip(offChainFormat(amount, depositToken.decimals))} ${
+                depositToken.symbol
+              }`}</Text>
             </TableCell>
             <TableCell>
               {lockDate + lockTime < now ? (
@@ -59,7 +62,7 @@ const StakeHistory = (_props) => {
                   onClick={() =>
                     onUnwrap({
                       action: 'Unstake',
-                      amount,
+                      amount: offChainFormat(amount, depositToken.decimals),
                     })
                   }
                 >

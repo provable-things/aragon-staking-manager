@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
+import { offChainFormat, strip } from '../utils/amount-utils'
 import { parseSeconds } from '../utils/time-utils'
 import { Box, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
@@ -15,6 +15,32 @@ const Wallet = (_props) => {
   } = _props
 
   const theme = useTheme()
+  const [depositTokenBalanceFormatted, setDepositTokenBalance] = useState('-')
+  const [miniMeTokenBalanceFormatted, setMiniMeTokenBalance] = useState('-')
+
+  useEffect(() => {
+    if (!miniMeTokenBalance) {
+      setMiniMeTokenBalance('-')
+      return
+    }
+
+    setMiniMeTokenBalance(
+      strip(offChainFormat(miniMeTokenBalance, miniMeToken.decimals).toString())
+    )
+  }, [miniMeTokenBalance])
+
+  useEffect(() => {
+    if (!depositTokenBalance) {
+      setDepositTokenBalance('-')
+      return
+    }
+
+    setDepositTokenBalance(
+      strip(
+        offChainFormat(depositTokenBalance, depositToken.decimals).toString()
+      )
+    )
+  }, [depositTokenBalance])
 
   return (
     <Box
@@ -31,11 +57,7 @@ const Wallet = (_props) => {
         >
           {` ${depositToken.symbol} `}
         </TokenSymbol>
-        <TokenBalance>
-          {depositTokenBalance || depositTokenBalance === 0
-            ? strip(depositTokenBalance)
-            : '-'}
-        </TokenBalance>
+        <TokenBalance>{depositTokenBalanceFormatted}</TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenSymbol
@@ -45,11 +67,7 @@ const Wallet = (_props) => {
         >
           {` ${miniMeToken.symbol} `}
         </TokenSymbol>
-        <TokenBalance>
-          {miniMeTokenBalance || miniMeTokenBalance === 0
-            ? strip(miniMeTokenBalance)
-            : '-'}
-        </TokenBalance>
+        <TokenBalance>{miniMeTokenBalanceFormatted}</TokenBalance>
       </TokenDetails>
 
       <LockDetails>
@@ -111,9 +129,9 @@ const Days = styled.span`
 
 Wallet.propTypes = {
   depositToken: PropTypes.object,
-  depositTokenBalance: PropTypes.number,
+  depositTokenBalance: PropTypes.object,
   miniMeToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.number,
+  miniMeTokenBalance: PropTypes.object,
   minLockTime: PropTypes.number,
 }
 

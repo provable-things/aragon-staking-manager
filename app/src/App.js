@@ -6,9 +6,11 @@ import Staker from './components/Staker'
 import StakeHistory from './components/StakeHistory'
 import Wallet from './components/Wallet'
 import Info from './components/Info'
-import { correctFormat, parseAmount } from './utils/amount-utils'
+import { onChainFormat, parseAmount, stretch } from './utils/amount-utils'
 import { useGuiStyle } from '@aragon/api-react'
 import VotingPower from './components/VotingPower'
+import Web3 from 'web3'
+import { toBN } from 'web3-utils'
 
 const App = () => {
   const {
@@ -31,22 +33,17 @@ const App = () => {
 
   const handleAction = ({ amount, action, lockTime, receiver }) => {
     if (action === 'Stake') {
-      const formattedAmount = correctFormat(
-        parseAmount(depositToken.decimals, amount),
-        depositToken.decimals,
-        '*'
-      )
+      const onChainAmount = onChainFormat(toBN(amount), depositToken.decimals)
 
-      actions.stake(formattedAmount, lockTime, receiver, {
-        token: { address: depositToken.address, value: formattedAmount },
+      actions.stake(onChainAmount.toString(), lockTime, receiver, {
+        token: {
+          address: depositToken.address,
+          value: onChainAmount.toString(),
+        },
       })
     } else if (action === 'Unstake') {
       actions.unstake(
-        correctFormat(
-          parseAmount(miniMeToken.decimals, amount),
-          miniMeToken.decimals,
-          '*'
-        )
+        onChainFormat(toBN(amount), miniMeToken.decimals).toString()
       )
     }
   }

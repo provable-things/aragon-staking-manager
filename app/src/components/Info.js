@@ -1,35 +1,45 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
+import { offChainFormat, strip } from '../utils/amount-utils'
 import {
-  getTotalAmountOUnlockedTokens,
+  getTotalAmountOfUnlockedTokens,
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
 import { Box, Distribution, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
+import { toBN } from 'web3-utils'
 
 const Info = (_props) => {
   const { depositToken, stakedLocks } = _props
 
   const theme = useTheme()
 
-  const [locked, setLocked] = useState(0)
-  const [unlocked, setUnlocked] = useState(0)
+  const [locked, setLocked] = useState('0')
+  const [unlocked, setUnlocked] = useState('0')
+  const [sum, setSum] = useState('0')
   const [perLocked, setPerLocked] = useState(0)
   const [perUnlocked, setPerUnlocked] = useState(0)
 
   useEffect(() => {
-    setUnlocked(getTotalAmountOUnlockedTokens(stakedLocks))
-    setLocked(getTotalAmountOfLockedTokens(stakedLocks))
-    setPerLocked(
-      parseFloat(((unlocked / (unlocked + locked)) * 100).toFixed(2))
+    const lockedbn = offChainFormat(
+      getTotalAmountOfLockedTokens(stakedLocks),
+      depositToken.decimals
     )
+    const unlockedbn = offChainFormat(
+      getTotalAmountOfUnlockedTokens(stakedLocks),
+      depositToken.decimals
+    )
+    const sumbn = unlockedbn.add(lockedbn)
 
-    setPerUnlocked(
-      parseFloat(((locked / (unlocked + locked)) * 100).toFixed(2))
-    )
+    setLocked(strip(lockedbn.toString()))
+    setUnlocked(strip(unlockedbn.toString()))
+    setSum(strip(sumbn.toString()))
+
+    if (sumbn.cmp(toBN(0)) === 0) return
+
+    setPerLocked(parseInt(lockedbn.div(sumbn).mul(toBN(100)).toString()))
+    setPerUnlocked(parseInt(unlockedbn.div(sumbn).mul(toBN(100)).toString()))
   }, [stakedLocks])
-
   return (
     <Box
       heading={`Your ${depositToken.symbol} at stake`}
@@ -47,7 +57,7 @@ const Info = (_props) => {
             {`LOCKED ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>{strip(locked)}</TokenBalance>
+        <TokenBalance>{locked}</TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenName>
@@ -59,7 +69,7 @@ const Info = (_props) => {
             {`UNLOCKED ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>{strip(unlocked)}</TokenBalance>
+        <TokenBalance>{unlocked}</TokenBalance>
       </TokenDetails>
       <div
         css={`
@@ -77,19 +87,21 @@ const Info = (_props) => {
             {`TOTAL ${depositToken.symbol} `}
           </TokenSymbol>
         </TokenName>{' '}
-        <TokenBalance>{strip(unlocked + locked)}</TokenBalance>
+        <TokenBalance>{sum}</TokenBalance>
       </TokenDetails>
       <ChartWrapper>
-        <Distribution
-          heading="Distribution"
-          items={[
-            { item: 'Locked', percentage: perLocked ? perLocked : 0 },
-            {
-              item: 'Unlocked',
-              percentage: perUnlocked ? perUnlocked : 0,
-            },
-          ]}
-        />
+        {
+          <Distribution
+            heading="Distribution"
+            items={[
+              { item: 'Locked', percentage: perLocked ? perLocked : 0 },
+              {
+                item: 'Unlocked',
+                percentage: perUnlocked ? perUnlocked : 0,
+              },
+            ]}
+          />
+        }
       </ChartWrapper>
     </Box>
   )

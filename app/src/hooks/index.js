@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useAragonApi, useAppState } from '@aragon/api-react'
 import { useSidePanel } from './side-panel'
 
-const useWrapAction = (_onDone) => {
+const useStakeAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
@@ -19,7 +19,7 @@ const useWrapAction = (_onDone) => {
   )
 }
 
-const useUnwrapAction = (_onDone) => {
+const useUnstakeAction = (_onDone) => {
   const { api } = useAragonApi()
 
   return useCallback(
@@ -52,8 +52,8 @@ const useAppLogic = () => {
   const panelState = useSidePanel()
 
   const actions = {
-    stake: useWrapAction(panelState.requestClose),
-    unstake: useUnwrapAction(panelState.requestClose),
+    stake: useStakeAction(panelState.requestClose),
+    unstake: useUnstakeAction(panelState.requestClose),
   }
 
   return {
@@ -71,4 +71,4 @@ const useAppLogic = () => {
   }
 }
 
-export { useWrapAction, useUnwrapAction, useAppLogic }
+export { useStakeAction, useUnstakeAction, useAppLogic }

@@ -1,17 +1,46 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
+import { strip, offChainFormat } from '../utils/amount-utils'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
+import { toBN } from 'web3-utils'
 
 const VotingPower = (_props) => {
-  const { vaultBalance, miniMeTokenBalance, depositToken } = _props
+  const { vaultBalance, miniMeTokenBalance, depositToken, miniMeToken } = _props
   const [votingPower, setVotingPower] = useState(null)
 
-  useEffect(
-    () => setVotingPower(vaultBalance ? miniMeTokenBalance / vaultBalance : 0),
-    [miniMeTokenBalance, vaultBalance]
-  )
+  const [vaultBalanceFormatted, setVaultBalanceFormatted] = useState('-')
+  const [miniMeTokenBalanceFormatted, setMiniMeTokenBalance] = useState('-')
+
+  useEffect(() => {
+    setVotingPower(
+      vaultBalance && vaultBalance.cmp(toBN(0)) !== 0
+        ? parseInt(miniMeTokenBalance.div(vaultBalance))
+        : 0
+    )
+  }, [miniMeTokenBalance, vaultBalance])
+
+  useEffect(() => {
+    if (!miniMeTokenBalance) {
+      setMiniMeTokenBalance('-')
+      return
+    }
+
+    setMiniMeTokenBalance(
+      strip(offChainFormat(miniMeTokenBalance, miniMeToken.decimals).toString())
+    )
+  }, [miniMeTokenBalance])
+
+  useEffect(() => {
+    if (!vaultBalance) {
+      setVaultBalanceFormatted('-')
+      return
+    }
+
+    setVaultBalanceFormatted(
+      strip(offChainFormat(vaultBalance, miniMeToken.decimals).toString())
+    )
+  }, [vaultBalance])
 
   const theme = useTheme()
 
@@ -34,9 +63,7 @@ const VotingPower = (_props) => {
           </TokenSymbol>{' '}
           stacked in the DAO:{' '}
         </DetailText>
-        <DetailValue>
-          {vaultBalance || vaultBalance === 0 ? strip(vaultBalance) : '-'}
-        </DetailValue>
+        <DetailValue>{vaultBalanceFormatted}</DetailValue>
       </Detail>
       <Detail>
         <DetailText>
@@ -50,11 +77,7 @@ const VotingPower = (_props) => {
           </TokenSymbol>{' '}
           stacked in the DAO:{' '}
         </DetailText>
-        <DetailValue>
-          {miniMeTokenBalance || miniMeTokenBalance === 0
-            ? strip(miniMeTokenBalance)
-            : '-'}
-        </DetailValue>
+        <DetailValue>{miniMeTokenBalanceFormatted}</DetailValue>
       </Detail>
       <Detail
         css={`
@@ -94,9 +117,10 @@ const Detail = styled.div`
 `
 
 VotingPower.propTypes = {
+  miniMeToken: PropTypes.object,
   depositToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.number,
-  vaultBalance: PropTypes.number,
+  miniMeTokenBalance: PropTypes.object,
+  vaultBalance: PropTypes.object,
 }
 
 export default VotingPower
