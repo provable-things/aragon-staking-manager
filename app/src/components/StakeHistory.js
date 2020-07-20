@@ -12,7 +12,7 @@ import {
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
-import { strip } from '../utils/amount-utils'
+import { strip, offChainFormat } from '../utils/amount-utils'
 
 const StakeHistory = (_props) => {
   const {
@@ -62,7 +62,7 @@ const StakeHistory = (_props) => {
                   onClick={() =>
                     onUnwrap({
                       action: 'Unstake',
-                      amount: offChainFormat(amount, depositToken.decimals),
+                      amount,
                     })
                   }
                 >

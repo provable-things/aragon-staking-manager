@@ -27,16 +27,14 @@ const VotingPower = (_props) => {
     }
 
     setMiniMeTokenBalance(strip(miniMeTokenBalance.toString()))
-  }, [miniMeTokenBalance])
 
-  useEffect(() => {
     if (!vaultBalance) {
       setVaultBalanceFormatted('-')
       return
     }
 
     setVaultBalanceFormatted(strip(vaultBalance.toString()))
-  }, [vaultBalance])
+  }, [miniMeTokenBalance, vaultBalance])
 
   const theme = useTheme()
 
