@@ -53,7 +53,7 @@ function createStore(_tokenManagerContract, _settings) {
             return state
         }
       } catch (_err) {
-        console.log(_err)
+        console.error(`Failed to create store: ${_err.message}`)
       }
     },
     {
@@ -88,7 +88,7 @@ function initializeState(_tokenManagerContract, _settings) {
         _settings,
       }
     } catch (_err) {
-      console.log(_err)
+      console.error(`Failed to initialize state: ${_err.message}`)
       return _cachedState
     }
   }
@@ -123,6 +123,7 @@ const handleEvent = async (_nextState) => {
 
     return _nextState
   } catch (_err) {
+    console.error(`Failed to handle event: ${_err.message}`)
     return _nextState
   }
 }
@@ -152,6 +153,7 @@ const handleAccountChange = async (_nextState, { account }) => {
 
     return _nextState
   } catch (_err) {
+    console.error(`Failed to handle account change: ${_err.message}`)
     return _nextState
   }
 }
@@ -160,6 +162,7 @@ const getStakedLocks = (_tokenAddress) => {
   try {
     return app.call('getStakedLocks', _tokenAddress).toPromise()
   } catch (_err) {
+    console.error(`Failed to load staked locks: ${_err.message}`)
     return []
   }
 }
@@ -178,6 +181,7 @@ const getTokenData = async (_tokenAddress) => {
       address: _tokenAddress,
     }
   } catch (err) {
+    console.error(`Failed to load token data: ${_err.message}`)
     // TODO find a way to get a fallback
     throw new Error(_err.message)
   }
@@ -207,6 +211,7 @@ const getTokenBalances = async (
       depositTokenBalance,
     }
   } catch (_err) {
+    console.error(`Failed to load token balances: ${_err.message}`)
     throw new Error(_err.message)
   }
 }
@@ -216,6 +221,7 @@ const getTokenBalance = (_tokenAddress, _tokenDecimals, _address) => {
     const token = app.external(_tokenAddress, ERC20Abi)
     return token.balanceOf(_address).toPromise()
   } catch (_err) {
+    console.error(`Failed to load token balance: ${_err.message}`)
     throw new Error(_err.message)
   }
 }
