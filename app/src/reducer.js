@@ -1,4 +1,5 @@
 import { toBN } from 'web3-utils'
+import { offChainFormat } from './utils/amount-utils'
 
 const reducer = (_state) => {
   if (_state === null) {
@@ -19,25 +20,34 @@ const reducer = (_state) => {
 
   const {
     stakedLocks,
+    miniMeToken,
     miniMeTokenBalance,
+    depositToken,
     depositTokenBalance,
     vaultBalance,
   } = _state
 
   return {
     ..._state,
-    miniMeTokenBalance: miniMeTokenBalance ? toBN(miniMeTokenBalance) : toBN(0),
-    depositTokenBalance: depositTokenBalance
-      ? toBN(depositTokenBalance)
+    miniMeTokenBalance: miniMeTokenBalance
+      ? offChainFormat(toBN(miniMeTokenBalance), miniMeToken.decimals)
       : toBN(0),
-    vaultBalance: vaultBalance ? toBN(vaultBalance) : toBN(0),
+    depositTokenBalance: depositTokenBalance
+      ? offChainFormat(toBN(depositTokenBalance), depositToken.decimals)
+      : toBN(0),
+    vaultBalance: vaultBalance
+      ? offChainFormat(toBN(vaultBalance), depositToken.decimals)
+      : toBN(0),
     stakedLocks: stakedLocks
       ? stakedLocks
           .map((_stakedLock) => {
             return {
               lockDate: parseInt(_stakedLock.lockDate),
               lockTime: parseInt(_stakedLock.lockTime),
-              amount: toBN(_stakedLock.amount),
+              amount: offChainFormat(
+                toBN(_stakedLock.amount),
+                depositToken.decimals
+              ),
             }
           })
           .filter(

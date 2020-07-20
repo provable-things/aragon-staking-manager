@@ -24,9 +24,7 @@ const Wallet = (_props) => {
       return
     }
 
-    setMiniMeTokenBalance(
-      strip(offChainFormat(miniMeTokenBalance, miniMeToken.decimals).toString())
-    )
+    setMiniMeTokenBalance(strip(miniMeTokenBalance.toString()))
   }, [miniMeTokenBalance])
 
   useEffect(() => {
@@ -35,11 +33,7 @@ const Wallet = (_props) => {
       return
     }
 
-    setDepositTokenBalance(
-      strip(
-        offChainFormat(depositTokenBalance, depositToken.decimals).toString()
-      )
-    )
+    setDepositTokenBalance(strip(depositTokenBalance.toString()))
   }, [depositTokenBalance])
 
   return (

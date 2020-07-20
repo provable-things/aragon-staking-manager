@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { offChainFormat, strip } from '../utils/amount-utils'
+import { strip } from '../utils/amount-utils'
 import {
   getTotalAmountOfUnlockedTokens,
   getTotalAmountOfLockedTokens,
@@ -21,14 +21,8 @@ const Info = (_props) => {
   const [perUnlocked, setPerUnlocked] = useState(0)
 
   useEffect(() => {
-    const lockedbn = offChainFormat(
-      getTotalAmountOfLockedTokens(stakedLocks),
-      depositToken.decimals
-    )
-    const unlockedbn = offChainFormat(
-      getTotalAmountOfUnlockedTokens(stakedLocks),
-      depositToken.decimals
-    )
+    const lockedbn = getTotalAmountOfLockedTokens(stakedLocks)
+    const unlockedbn = getTotalAmountOfUnlockedTokens(stakedLocks)
     const sumbn = unlockedbn.add(lockedbn)
 
     setLocked(strip(lockedbn.toString()))

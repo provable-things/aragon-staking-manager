@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { strip, offChainFormat } from '../utils/amount-utils'
+import { strip } from '../utils/amount-utils'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
 import { toBN } from 'web3-utils'
@@ -26,9 +26,7 @@ const VotingPower = (_props) => {
       return
     }
 
-    setMiniMeTokenBalance(
-      strip(offChainFormat(miniMeTokenBalance, miniMeToken.decimals).toString())
-    )
+    setMiniMeTokenBalance(strip(miniMeTokenBalance.toString()))
   }, [miniMeTokenBalance])
 
   useEffect(() => {
@@ -37,9 +35,7 @@ const VotingPower = (_props) => {
       return
     }
 
-    setVaultBalanceFormatted(
-      strip(offChainFormat(vaultBalance, miniMeToken.decimals).toString())
-    )
+    setVaultBalanceFormatted(strip(vaultBalance.toString()))
   }, [vaultBalance])
 
   const theme = useTheme()

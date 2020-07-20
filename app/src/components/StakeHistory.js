@@ -12,7 +12,7 @@ import {
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
-import { strip, offChainFormat } from '../utils/amount-utils'
+import { strip } from '../utils/amount-utils'
 
 const StakeHistory = (_props) => {
   const {
@@ -39,7 +39,7 @@ const StakeHistory = (_props) => {
         return (
           <TableRow key={_index}>
             <TableCell>
-              <Text>{`${strip(offChainFormat(amount, depositToken.decimals))} ${
+              <Text>{`${strip(amount.toString())} ${
                 depositToken.symbol
               }`}</Text>
             </TableCell>
