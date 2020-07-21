@@ -29,8 +29,6 @@ contract StakingManager is AragonApp {
     // prettier-ignore
     string private constant ERROR_INSUFFICENT_TOKENS = "STAKING_MANAGER_INSUFFICENT_TOKENS";
     // prettier-ignore
-    string private constant ERROR_INSUFFICENT_UNLOCKED_TOKENS = "STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS";
-    // prettier-ignore
     string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
     string private constant ERROR_MAXIMUN_LOCKS_REACHED = "STAKING_MANAGER_MAXIMUN_LOCKS_REACHED";
@@ -39,13 +37,13 @@ contract StakingManager is AragonApp {
     // prettier-ignore
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
 
-    uint64 private constant PUSH_THREESHOLD = 1;
-    uint64 private constant NOT_PUSH_THREESHOLD = 2;
+    uint64 private constant PUSH_THRESHOLD = 1;
+    uint64 private constant NOT_PUSH_THRESHOLD = 2;
 
     struct Lock {
-        uint64 lockTime;
+        uint64 lockDate;
+        uint64 duration;
         uint256 amount;
-        uint256 lockDate;
     }
 
     TokenManager public tokenManager;
@@ -61,10 +59,11 @@ contract StakingManager is AragonApp {
         address sender,
         address receiver,
         uint256 amount,
-        uint64 lockTime
+        uint64 duration,
+        uint64 lockDate
     );
     event Unstaked(address receiver, uint256 amount);
-    event LockTimeChanged(uint256 lockTime);
+    event LockTimeChanged(uint256 duration);
     event MaxLocksChanged(uint64 maxLocks);
     event VaultChanged(address vault);
 
@@ -100,12 +99,12 @@ contract StakingManager is AragonApp {
      * @notice Stake a given amount of `depositToken` into tokenManager's token
      * @dev This function requires the MINT_ROLE permission on the TokenManager specified
      * @param _amount Wrapped amount
-     * @param _lockTime lock time for this wrapping
+     * @param _duration lock time for this wrapping
      * @param _receiver address who will receive back once unwrapped
      */
     function stake(
         uint256 _amount,
-        uint64 _lockTime,
+        uint64 _duration,
         address _receiver
     ) external returns (bool) {
         require(
@@ -115,7 +114,7 @@ contract StakingManager is AragonApp {
 
         require(_canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
 
-        require(_lockTime >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
+        require(_duration >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
 
         require(
             ERC20(depositToken).safeTransferFrom(
@@ -130,24 +129,26 @@ contract StakingManager is AragonApp {
 
         uint64 position = _whereInsert(_receiver);
         require(
-            position < maxLocks.add(NOT_PUSH_THREESHOLD),
+            position < maxLocks.add(NOT_PUSH_THRESHOLD),
             ERROR_IMPOSSIBLE_TO_INSERT
         );
 
+        uint64 lockDate = getTimestamp64();
+
         // if there is at least an empty slot
-        if (position < maxLocks.add(PUSH_THREESHOLD)) {
+        if (position < maxLocks.add(PUSH_THRESHOLD)) {
             addressWrapLocks[_receiver][position] = Lock(
-                _lockTime,
-                _amount,
-                block.timestamp
+                lockDate,
+                _duration,
+                _amount
             );
         } else {
             addressWrapLocks[_receiver].push(
-                Lock(_lockTime, _amount, block.timestamp)
+                Lock(lockDate, _duration, _amount)
             );
         }
 
-        emit Staked(msg.sender, _receiver, _amount, _lockTime);
+        emit Staked(msg.sender, _receiver, _amount, _duration, lockDate);
         return true;
     }
 
@@ -157,11 +158,6 @@ contract StakingManager is AragonApp {
      * @param _amount Wrapped amount
      */
     function unstake(uint256 _amount) external returns (uint256) {
-        require(
-            tokenManager.token().balanceOf(msg.sender) >= _amount,
-            ERROR_INSUFFICENT_UNLOCKED_TOKENS
-        );
-
         require(
             _unstake(msg.sender, _amount),
             ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
@@ -233,10 +229,11 @@ contract StakingManager is AragonApp {
         uint64 indexLockToRemove = 0;
 
         bool result = false;
+        uint64 timestamp = getTimestamp64();
         for (uint64 i = 0; i < stakedLocks.length; i++) {
             if (
-                block.timestamp >=
-                stakedLocks[i].lockDate.add(stakedLocks[i].lockTime) &&
+                timestamp >=
+                stakedLocks[i].lockDate.add(stakedLocks[i].duration) &&
                 !_isWrapLockEmpty(stakedLocks[i])
             ) {
                 total = total.add(stakedLocks[i].amount);
@@ -267,14 +264,14 @@ contract StakingManager is AragonApp {
 
     /**
     * @notice Returns the position in which it's possible to insert a new Lock within addressWrapLocks.
-              .add(PUSH_THREESHOLD) it means that the array can grow, .add(NOT_PUSH_THREESHOLD) it means error othewise returns the index
+              .add(PUSH_THRESHOLD) it means that the array can grow, .add(NOT_PUSH_THRESHOLD) it means error othewise returns the index
               in which it's possible to insert a new Lock
     * @param _address address
     */
     function _whereInsert(address _address) internal view returns (uint64) {
         Lock[] storage stakedLocks = addressWrapLocks[_address];
 
-        if (stakedLocks.length < maxLocks) return maxLocks.add(PUSH_THREESHOLD);
+        if (stakedLocks.length < maxLocks) return maxLocks.add(PUSH_THRESHOLD);
 
         for (uint64 i = 0; i < stakedLocks.length; i++) {
             if (_isWrapLockEmpty(stakedLocks[i])) {
@@ -282,7 +279,7 @@ contract StakingManager is AragonApp {
             }
         }
 
-        return maxLocks.add(NOT_PUSH_THREESHOLD);
+        return maxLocks.add(NOT_PUSH_THRESHOLD);
     }
 
     /**
@@ -308,6 +305,6 @@ contract StakingManager is AragonApp {
      * @param _lock lock
      */
     function _isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
-        return _lock.lockTime == 0 && _lock.lockDate == 0 && _lock.amount == 0;
+        return _lock.duration == 0 && _lock.lockDate == 0 && _lock.amount == 0;
     }
 }
