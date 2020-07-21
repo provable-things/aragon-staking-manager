@@ -2,7 +2,7 @@ const { assert } = require('chai')
 const { assertRevert } = require('@aragon/contract-test-helpers/assertThrow')
 const { newDao, newApp } = require('./helpers/dao')
 const { setPermission } = require('./helpers/permissions')
-const timeTravel = require('./helpers/time-travel')
+const { timeTravel } = require('./helpers/time-travel')
 const { stake, unstake, getBalances } = require('./helpers/utils')
 
 const MiniMeToken = artifacts.require('MiniMeToken')
@@ -364,7 +364,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
       })
 
-      it('Should burn WrappedToken(s) in exchange for DepositToken', async () => {
+      it('Should be able to both staking and unstaking', async () => {
         const amountToUnwrap = 100
 
         const initBalances = await getBalances(depositToken, vault, appManager)
@@ -376,7 +376,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await unstake(stakingManager, amountToUnwrap, appManager)
         const actualBalances = await getBalances(
           depositToken,
@@ -409,7 +409,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.unstake(amountToWrap * 2, {
             from: appManager,
           }),
-          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -445,7 +445,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await stake(
           depositToken,
           stakingManager,
@@ -454,7 +454,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await unstake(stakingManager, amountToUnwrap, appManager)
         const actualBalances = await getBalances(
           depositToken,
@@ -484,7 +484,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await stake(
           depositToken,
           stakingManager,
@@ -513,7 +513,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await stake(
           depositToken,
           stakingManager,
@@ -524,7 +524,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
         // NOTE: unstake 15 of first 20 wrapped tokens
         await unstake(stakingManager, 15, appManager)
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await unstake(stakingManager, 1, appManager)
         await unstake(stakingManager, 1, appManager)
         await unstake(stakingManager, 20, appManager)
@@ -557,7 +557,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await stake(
           depositToken,
           stakingManager,
@@ -567,13 +567,13 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager
         )
         await unstake(stakingManager, 15, appManager)
-        await timeTravel(new Date().getSeconds() + ONE_DAY * 6 + ONE_DAY)
+        await timeTravel(ONE_DAY * 6 + ONE_DAY)
         await unstake(stakingManager, 20, appManager)
         await assertRevert(
           stakingManager.unstake(10, {
             from: appManager,
           }),
-          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -587,7 +587,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await timeTravel(LOCK_TIME * 2)
         await stake(
           depositToken,
           stakingManager,
@@ -597,7 +597,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager
         )
         await unstake(stakingManager, 15, appManager)
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 5)
+        await timeTravel(LOCK_TIME * 5)
         await unstake(stakingManager, 1, appManager)
         await unstake(stakingManager, 1, appManager)
         await unstake(stakingManager, 20, appManager)
@@ -632,7 +632,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           ACCOUNTS_1,
           appManager
         )
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await timeTravel(LOCK_TIME * 2)
         await unstake(stakingManager, amountToUnwrap, ACCOUNTS_1)
         const actualBalances = await getBalances(
           depositToken,
@@ -661,7 +661,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
         await assertRevert(
           unstake(stakingManager, 100, appManager),
-          'STAKING_MANAGER_INSUFFICENT_UNLOCKED_TOKENS'
+          'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
 
@@ -678,7 +678,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           )
         }
 
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await timeTravel(LOCK_TIME)
 
         await unstake(stakingManager, 12, appManager)
         await stake(
@@ -733,7 +733,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           )
         }
 
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await timeTravel(LOCK_TIME * 2)
 
         for (let i = 0; i < MAX_LOCKS * 2; i++) {
           await unstake(
@@ -745,8 +745,8 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
         let locks = await stakingManager.getStakedLocks(appManager)
         let filtered = locks.filter(
-          ({ lockDate, lockTime, amount }) =>
-            lockDate === '0' && lockTime === '0' && amount === '0'
+          ({ lockDate, duration, amount }) =>
+            lockDate === '0' && duration === '0' && amount === '0'
         )
 
         assert.strictEqual(locks.length, filtered.length)
@@ -797,10 +797,9 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           )
         }
 
-        await timeTravel(new Date().getSeconds() + LOCK_TIME * 2)
+        await timeTravel(LOCK_TIME * 2)
 
         await unstake(stakingManager, expectedBalance - 3, appManager)
-
         await unstake(stakingManager, 3, appManager)
 
         const actualBalances = await getBalances(

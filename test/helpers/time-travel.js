@@ -13,4 +13,6 @@ const timeTravel = async (seconds) => {
   await send('evm_mine')
 }
 
-module.exports = timeTravel
+module.exports = {
+  timeTravel,
+}

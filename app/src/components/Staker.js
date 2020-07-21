@@ -30,7 +30,7 @@ class Staker extends Component {
 
     this.state = {
       lockFormat: LOCK_FORMAT_OPTIONS.indexOf(format),
-      lockTime: time,
+      duration: time,
       amount: defaultAmount ? defaultAmount : '',
       receiver: account ? account : '',
       error: '',
@@ -42,7 +42,7 @@ class Staker extends Component {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
       const secondsLockTime =
-        this.state.lockTime * formatSeconds[this.state.lockFormat]
+        this.state.duration * formatSeconds[this.state.lockFormat]
 
       if (secondsLockTime < this.props.minLockTime) {
         setError(
@@ -62,7 +62,7 @@ class Staker extends Component {
         amount: this.state.amount,
         action: this.props.action,
         receiver: this.state.receiver,
-        lockTime: secondsLockTime,
+        duration: secondsLockTime,
       })
       return
     } else {
@@ -152,8 +152,8 @@ class Staker extends Component {
                 `}
               >
                 <TextInput
-                  value={this.state.lockTime}
-                  onChange={(e) => this.setState({ lockTime: e.target.value })}
+                  value={this.state.duration}
+                  onChange={(e) => this.setState({ duration: e.target.value })}
                   min={0}
                   type="number"
                   step="any"
@@ -176,8 +176,8 @@ class Staker extends Component {
             action === 'Stake'
               ? this.state.amount.length === 0 ||
                 this.state.receiver.length === 0 ||
-                this.state.lockTime === 0 ||
-                this.state.lockTime.length === 0
+                this.state.duration === 0 ||
+                this.state.duration.length === 0
               : this.state.amount.length === 0
           }
         />

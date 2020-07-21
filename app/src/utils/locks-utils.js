@@ -28,7 +28,7 @@ const getTotalAmountOfLockedTokens = (_locks) => {
 
 const isUnlocked = (_lock) => {
   const now = new Date().getTime() / 1000
-  return _lock.lockDate + _lock.lockTime < now
+  return _lock.lockDate + _lock.duration < now
 }
 
 export { getTotalAmountOfUnlockedTokens, getTotalAmountOfLockedTokens }

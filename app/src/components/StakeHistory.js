@@ -35,7 +35,7 @@ const StakeHistory = (_props) => {
         </TableRow>
       }
     >
-      {stakedLocks.map(({ amount, lockDate, lockTime }, _index) => {
+      {stakedLocks.map(({ amount, lockDate, duration }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
@@ -44,7 +44,7 @@ const StakeHistory = (_props) => {
               }`}</Text>
             </TableCell>
             <TableCell>
-              {lockDate + lockTime < now ? (
+              {lockDate + duration < now ? (
                 <Tag mode="new">Unlocked</Tag>
               ) : (
                 <Text
@@ -52,12 +52,12 @@ const StakeHistory = (_props) => {
                     font-weight: bold;
                   `}
                 >
-                  {parseSeconds(lockDate + lockTime - now)}
+                  {parseSeconds(lockDate + duration - now)}
                 </Text>
               )}
             </TableCell>
             <TableCell>
-              {lockDate + lockTime < now ? (
+              {lockDate + duration < now ? (
                 <Button
                   onClick={() =>
                     onUnwrap({

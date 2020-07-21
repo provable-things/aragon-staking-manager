@@ -12,6 +12,14 @@ import VotingPower from './components/VotingPower'
 import Web3 from 'web3'
 import { toBN } from 'web3-utils'
 
+window.addEventListener(
+  'message',
+  (e) => {
+    console.log(e)
+  },
+  false
+)
+
 const App = () => {
   const {
     depositToken,
@@ -31,11 +39,11 @@ const App = () => {
   const [defaultAmount, setDefaultAmount] = useState(null)
   const { appearance } = useGuiStyle()
 
-  const handleAction = ({ amount, action, lockTime, receiver }) => {
+  const handleAction = ({ amount, action, duration, receiver }) => {
     if (action === 'Stake') {
       const onChainAmount = onChainFormat(toBN(amount), depositToken.decimals)
 
-      actions.stake(onChainAmount.toString(), lockTime, receiver, {
+      actions.stake(onChainAmount.toString(), duration, receiver, {
         token: {
           address: depositToken.address,
           value: onChainAmount.toString(),

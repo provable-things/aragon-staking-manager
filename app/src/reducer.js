@@ -43,7 +43,7 @@ const reducer = (_state) => {
           .map((_stakedLock) => {
             return {
               lockDate: parseInt(_stakedLock.lockDate),
-              lockTime: parseInt(_stakedLock.lockTime),
+              duration: parseInt(_stakedLock.duration),
               amount: offChainFormat(
                 toBN(_stakedLock.amount),
                 depositToken.decimals
@@ -51,8 +51,8 @@ const reducer = (_state) => {
             }
           })
           .filter(
-            ({ amount, lockDate, lockTime }) =>
-              amount.cmp(toBN(0)) !== 0 && lockDate !== 0 && lockTime !== 0
+            ({ amount, lockDate, duration }) =>
+              amount.cmp(toBN(0)) !== 0 && lockDate !== 0 && duration !== 0
           )
       : [],
   }
