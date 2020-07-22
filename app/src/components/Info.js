@@ -1,39 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
-import {
-  getTotalAmountOfUnlockedTokens,
-  getTotalAmountOfLockedTokens,
-} from '../utils/locks-utils'
+import React from 'react'
+import { useAppState } from '@aragon/api-react'
 import { Box, Distribution, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
-import { toBN } from 'web3-utils'
+import { useInfoDetails } from '../hooks/info-details'
 
 const Info = (_props) => {
-  const { depositToken, stakedLocks } = _props
+  const { depositToken } = useAppState()
+
+  const { locked, unlocked, sum, perLocked, perUnlocked } = useInfoDetails()
 
   const theme = useTheme()
 
-  const [locked, setLocked] = useState('0')
-  const [unlocked, setUnlocked] = useState('0')
-  const [sum, setSum] = useState('0')
-  const [perLocked, setPerLocked] = useState(0)
-  const [perUnlocked, setPerUnlocked] = useState(0)
-
-  useEffect(() => {
-    const lockedbn = getTotalAmountOfLockedTokens(stakedLocks)
-    const unlockedbn = getTotalAmountOfUnlockedTokens(stakedLocks)
-    const sumbn = unlockedbn.add(lockedbn)
-
-    setLocked(strip(lockedbn.toString()))
-    setUnlocked(strip(unlockedbn.toString()))
-    setSum(strip(sumbn.toString()))
-
-    if (sumbn.cmp(toBN(0)) === 0) return
-
-    setPerLocked(parseInt(lockedbn.div(sumbn).mul(toBN(100)).toString()))
-    setPerUnlocked(parseInt(unlockedbn.div(sumbn).mul(toBN(100)).toString()))
-  }, [stakedLocks])
   return (
     <Box
       heading={`Your ${depositToken.symbol} at stake`}
@@ -123,11 +100,5 @@ const TokenDetails = styled.div`
 const ChartWrapper = styled.div`
   margin-top: 30px;
 `
-
-Info.propTypes = {
-  depositToken: PropTypes.object,
-  stakedLocks: PropTypes.array,
-  minLockTime: PropTypes.number,
-}
 
 export default Info

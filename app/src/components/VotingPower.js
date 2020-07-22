@@ -1,40 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
+import React from 'react'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
+import { useAppState } from '@aragon/api-react'
 import styled from 'styled-components'
-import { toBN } from 'web3-utils'
+import { useVotingPowerDetails } from '../hooks/voting-power'
 
 const VotingPower = (_props) => {
-  const { vaultBalance, miniMeTokenBalance, depositToken, miniMeToken } = _props
-  const [votingPower, setVotingPower] = useState(null)
+  const { depositToken } = useAppState()
 
-  const [vaultBalanceFormatted, setVaultBalanceFormatted] = useState('-')
-  const [miniMeTokenBalanceFormatted, setMiniMeTokenBalance] = useState('-')
-
-  useEffect(() => {
-    setVotingPower(
-      vaultBalance && vaultBalance.cmp(toBN(0)) !== 0
-        ? parseInt(miniMeTokenBalance.div(vaultBalance))
-        : 0
-    )
-  }, [miniMeTokenBalance, vaultBalance])
-
-  useEffect(() => {
-    if (!miniMeTokenBalance) {
-      setMiniMeTokenBalance('-')
-      return
-    }
-
-    setMiniMeTokenBalance(strip(miniMeTokenBalance.toString()))
-
-    if (!vaultBalance) {
-      setVaultBalanceFormatted('-')
-      return
-    }
-
-    setVaultBalanceFormatted(strip(vaultBalance.toString()))
-  }, [miniMeTokenBalance, vaultBalance])
+  const [
+    { votingPower, miniMeTokenBalance, vaultBalance },
+  ] = useVotingPowerDetails()
 
   const theme = useTheme()
 
@@ -57,7 +32,7 @@ const VotingPower = (_props) => {
           </TokenSymbol>{' '}
           stacked in the DAO:{' '}
         </DetailText>
-        <DetailValue>{vaultBalanceFormatted}</DetailValue>
+        <DetailValue>{vaultBalance}</DetailValue>
       </Detail>
       <Detail>
         <DetailText>
@@ -71,7 +46,7 @@ const VotingPower = (_props) => {
           </TokenSymbol>{' '}
           stacked in the DAO:{' '}
         </DetailText>
-        <DetailValue>{miniMeTokenBalanceFormatted}</DetailValue>
+        <DetailValue>{miniMeTokenBalance}</DetailValue>
       </Detail>
       <Detail
         css={`
@@ -109,12 +84,5 @@ const Detail = styled.div`
   display: flex;
   justify-content: space-between;
 `
-
-VotingPower.propTypes = {
-  miniMeToken: PropTypes.object,
-  depositToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.object,
-  vaultBalance: PropTypes.object,
-}
 
 export default VotingPower

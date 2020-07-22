@@ -8,7 +8,6 @@ import { first } from 'rxjs/operators'
 const app = new Aragon()
 
 // TODO: check that tokens (miniMe and deposit) have the same decimals
-
 app
   .call('tokenManager')
   .subscribe(initialize, (err) =>

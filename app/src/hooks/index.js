@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useAragonApi, useAppState } from '@aragon/api-react'
+import { useAragonApi } from '@aragon/api-react'
 import { useSidePanel } from './side-panel'
 
 const useStakeAction = (_onDone) => {
@@ -37,37 +37,17 @@ const useUnstakeAction = (_onDone) => {
 }
 
 const useAppLogic = () => {
-  const {
-    depositToken,
-    depositTokenBalance,
-    miniMeToken,
-    miniMeTokenBalance,
-    isSyncing,
-    minLockTime,
-    stakedLocks,
-    account,
-    vaultBalance,
-  } = useAppState()
-
   const panelState = useSidePanel()
 
   const actions = {
     stake: useStakeAction(panelState.requestClose),
     unstake: useUnstakeAction(panelState.requestClose),
+    panelState,
   }
 
   return {
     actions,
-    depositToken,
-    depositTokenBalance,
-    miniMeToken,
-    miniMeTokenBalance,
-    isSyncing: isSyncing || !depositToken || !miniMeToken,
     panelState,
-    minLockTime,
-    stakedLocks,
-    account,
-    vaultBalance,
   }
 }
 

@@ -12,16 +12,13 @@ import {
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
-import { strip, offChainFormat } from '../utils/amount-utils'
+import { strip } from '../utils/amount-utils'
+import { useAppState } from '@aragon/api-react'
 
 const StakeHistory = (_props) => {
-  const {
-    depositToken,
-    stakedLocks,
-    onUnwrap,
-    onOpenSidebar,
-    miniMeToken,
-  } = _props
+  const { onUnwrap, onOpenSidebar } = _props
+
+  const { depositToken, stakedLocks, miniMeToken } = useAppState()
 
   const now = new Date().getTime() / 1000
 
