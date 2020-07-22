@@ -9,24 +9,24 @@ const app = new Aragon()
 
 // TODO: check that tokens (miniMe and deposit) have the same decimals
 app
-  .call('tokenManager')
+  .call('wrappedTokenManager')
   .subscribe(initialize, (err) =>
     console.error(
       `Could not start background script execution due to the contract not loading token: ${err}`
     )
   )
 
-async function initialize(_tokenManagerAddress) {
+async function initialize(_wrappedTokenManagerAddress) {
   const network = await app.network().pipe(first()).toPromise()
-  const tokenManagerContract = app.external(
-    _tokenManagerAddress,
+  const wrappedTokenManagerContract = app.external(
+    _wrappedTokenManagerAddress,
     TokenManagerAbi
   )
 
   const settings = {
     network,
   }
-  return createStore(tokenManagerContract, settings)
+  return createStore(wrappedTokenManagerContract, settings)
 }
 
 function createStore(_tokenManagerContract, _settings) {

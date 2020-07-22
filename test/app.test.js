@@ -23,7 +23,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
   let miniMeToken,
     stakingManagerBase,
     stakingManager,
-    tokenManager,
+    wrappedTokenManager,
     tokenManagerBase,
     depositToken,
     vaultBase,
@@ -76,7 +76,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
       )
     )
 
-    tokenManager = await TokenManager.at(
+    wrappedTokenManager = await TokenManager.at(
       await newApp(
         dao,
         nameHash('token-manager.aragonpm.test'),
@@ -84,7 +84,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         appManager
       )
     )
-    await miniMeToken.changeController(tokenManager.address)
+    await miniMeToken.changeController(wrappedTokenManager.address)
 
     vault = await Vault.at(
       await newApp(
@@ -96,7 +96,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
     )
 
     await vault.initialize()
-    await tokenManager.initialize(miniMeToken.address, false, 0)
+    await wrappedTokenManager.initialize(miniMeToken.address, false, 0)
 
     depositToken = await MockErc20.new(appManager, MOCK_TOKEN_BALANCE)
   })
@@ -118,7 +118,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
     it('Should revert when passed non-contract address as vault', async () => {
       await assertRevert(
         stakingManager.initialize(
-          tokenManager.address,
+          wrappedTokenManager.address,
           NOT_CONTRACT,
           ETH_ADDRESS,
           ONE_DAY * 6,
@@ -131,7 +131,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
     it('Should revert when passed non-contract address as deposit token', async () => {
       await assertRevert(
         stakingManager.initialize(
-          tokenManager.address,
+          wrappedTokenManager.address,
           vault.address,
           NOT_CONTRACT,
           ONE_DAY * 6,
@@ -145,7 +145,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
   describe('initialize(address _tokenManager, address _vault, address address _depositToken, _uint256 _minLockTime, _uint256 maxLocks)', () => {
     beforeEach(async () => {
       await stakingManager.initialize(
-        tokenManager.address,
+        wrappedTokenManager.address,
         vault.address,
         depositToken.address,
         ONE_DAY * 6,
@@ -154,11 +154,11 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
     })
 
     it('Should set correct variables', async () => {
-      const actualTokenManager = await stakingManager.tokenManager()
+      const actualTokenManager = await stakingManager.wrappedTokenManager()
       const actualVault = await stakingManager.vault()
       const actualDepositToken = await stakingManager.depositToken()
 
-      assert.strictEqual(actualTokenManager, tokenManager.address)
+      assert.strictEqual(actualTokenManager, wrappedTokenManager.address)
       assert.strictEqual(actualVault, vault.address)
       assert.strictEqual(actualDepositToken, depositToken.address)
     })
@@ -192,11 +192,11 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         from: appManager,
       })
 
-      await stakingManager.changeMaxLocks(MAX_LOCKS + 1, {
+      await stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS + 1, {
         from: appManager,
       })
 
-      await stakingManager.changeVault(vault.address, {
+      await stakingManager.changeVaultContractAddress(vault.address, {
         from: appManager,
       })
 
@@ -209,7 +209,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
     it('Should not be able to set maxLocks because of no permission', async () => {
       await assertRevert(
-        stakingManager.changeMaxLocks(MAX_LOCKS + 1, {
+        stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS + 1, {
           from: appManager,
         }),
         'APP_AUTH_FAILED'
@@ -227,7 +227,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
     it('Should not be able to set a new Vault because of no permission', async () => {
       await assertRevert(
-        stakingManager.changeVault(vault.address, {
+        stakingManager.changeVaultContractAddress(vault.address, {
           from: appManager,
         }),
         'APP_AUTH_FAILED'
@@ -240,7 +240,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         await setPermission(
           acl,
           stakingManager.address,
-          tokenManager.address,
+          wrappedTokenManager.address,
           MINT_ROLE,
           appManager
         )
@@ -304,7 +304,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
             appManager,
             appManager
           ),
-          'STAKING_MANAGER_MAXIMUN_LOCKS_REACHED'
+          'STAKING_MANAGER_IMPOSSIBLE_TO_INSERT'
         )
       })
 
@@ -342,7 +342,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         await setPermission(
           acl,
           stakingManager.address,
-          tokenManager.address,
+          wrappedTokenManager.address,
           MINT_ROLE,
           appManager
         )
@@ -350,7 +350,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         await setPermission(
           acl,
           stakingManager.address,
-          tokenManager.address,
+          wrappedTokenManager.address,
           BURN_ROLE,
           appManager
         )
@@ -827,7 +827,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager
         )
 
-        await stakingManager.changeMaxLocks(MAX_LOCKS + 1, {
+        await stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS + 1, {
           from: appManager,
         })
 
@@ -846,7 +846,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stakingManager.stake(10, LOCK_TIME, appManager, {
             from: appManager,
           }),
-          'STAKING_MANAGER_MAXIMUN_LOCKS_REACHED'
+          'STAKING_MANAGER_WRAP_REVERTED'
         )
       })
     })

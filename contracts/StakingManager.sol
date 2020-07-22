@@ -31,14 +31,9 @@ contract StakingManager is AragonApp {
     // prettier-ignore
     string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
-    string private constant ERROR_MAXIMUN_LOCKS_REACHED = "STAKING_MANAGER_MAXIMUN_LOCKS_REACHED";
-    // prettier-ignore
     string private constant ERROR_LOCK_TIME_TOO_LOW = "STAKING_MANAGER_LOCK_TIME_TOO_LOW";
     // prettier-ignore
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
-
-    uint64 private constant PUSH_THRESHOLD = 1;
-    uint64 private constant NOT_PUSH_THRESHOLD = 2;
 
     struct Lock {
         uint64 lockDate;
@@ -46,14 +41,14 @@ contract StakingManager is AragonApp {
         uint256 amount;
     }
 
-    TokenManager public tokenManager;
+    TokenManager public wrappedTokenManager;
     Vault public vault;
 
     address public depositToken;
     uint64 public minLockTime;
     uint64 public maxLocks;
 
-    mapping(address => Lock[]) public addressWrapLocks;
+    mapping(address => Lock[]) public addressStakeLocks;
 
     event Staked(
         address sender,
@@ -86,7 +81,7 @@ contract StakingManager is AragonApp {
         require(isContract(_depositToken), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_vault), ERROR_ADDRESS_NOT_CONTRACT);
 
-        tokenManager = TokenManager(_tokenManager);
+        wrappedTokenManager = TokenManager(_tokenManager);
         vault = Vault(_vault);
         depositToken = _depositToken;
         minLockTime = _minLockTime;
@@ -96,7 +91,7 @@ contract StakingManager is AragonApp {
     }
 
     /**
-     * @notice Stake a given amount of `depositToken` into tokenManager's token
+     * @notice Stake a given amount of `depositToken` into wrappedTokenManager's token
      * @dev This function requires the MINT_ROLE permission on the TokenManager specified
      * @param _amount Wrapped amount
      * @param _duration lock time for this wrapping
@@ -112,10 +107,7 @@ contract StakingManager is AragonApp {
             ERROR_INSUFFICENT_TOKENS
         );
 
-        require(_canInsert(_receiver), ERROR_MAXIMUN_LOCKS_REACHED);
-
         require(_duration >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
-
         require(
             ERC20(depositToken).safeTransferFrom(
                 msg.sender,
@@ -125,25 +117,20 @@ contract StakingManager is AragonApp {
             ERROR_TOKEN_WRAP_REVERTED
         );
 
-        tokenManager.mint(_receiver, _amount);
+        wrappedTokenManager.mint(_receiver, _amount);
 
-        uint64 position = _whereInsert(_receiver);
-        require(
-            position < maxLocks.add(NOT_PUSH_THRESHOLD),
-            ERROR_IMPOSSIBLE_TO_INSERT
-        );
-
+        uint64 position = _getEmptyLockIndexForAddress(_receiver);
         uint64 lockDate = getTimestamp64();
 
         // if there is at least an empty slot
-        if (position < maxLocks.add(PUSH_THRESHOLD)) {
-            addressWrapLocks[_receiver][position] = Lock(
+        if (position < maxLocks.add(1)) {
+            addressStakeLocks[_receiver][position] = Lock(
                 lockDate,
                 _duration,
                 _amount
             );
         } else {
-            addressWrapLocks[_receiver].push(
+            addressStakeLocks[_receiver].push(
                 Lock(lockDate, _duration, _amount)
             );
         }
@@ -153,17 +140,17 @@ contract StakingManager is AragonApp {
     }
 
     /**
-     * @notice Unstake a given amount of tokenManager's token
+     * @notice Unstake a given amount of wrappedTokenManager's token
      * @dev This function requires the BURN_ROLE permissions on the TokenManager and TRANSFER_ROLE on the Vault specified
      * @param _amount Wrapped amount
      */
     function unstake(uint256 _amount) external returns (uint256) {
         require(
-            _unstake(msg.sender, _amount),
+            _updateStakedTokenLocks(msg.sender, _amount),
             ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS
         );
 
-        tokenManager.burn(msg.sender, _amount);
+        wrappedTokenManager.burn(msg.sender, _amount);
         vault.transfer(depositToken, msg.sender, _amount);
 
         emit Unstaked(msg.sender, _amount);
@@ -186,7 +173,7 @@ contract StakingManager is AragonApp {
      * @notice Change max stakedLocks
      * @param _maxLocks Maximun number of stakedLocks allowed for an address
      */
-    function changeMaxLocks(uint64 _maxLocks)
+    function changeMaxAllowedStakeLocks(uint64 _maxLocks)
         external
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
@@ -198,7 +185,10 @@ contract StakingManager is AragonApp {
      * @notice Change vault
      * @param _vault new Vault address
      */
-    function changeVault(address _vault) external auth(CHANGE_VAULT_ROLE) {
+    function changeVaultContractAddress(address _vault)
+        external
+        auth(CHANGE_VAULT_ROLE)
+    {
         require(isContract(_vault), ERROR_ADDRESS_NOT_CONTRACT);
 
         vault = Vault(_vault);
@@ -210,94 +200,90 @@ contract StakingManager is AragonApp {
      * @param _address address
      */
     function getStakedLocks(address _address) external view returns (Lock[]) {
-        return addressWrapLocks[_address];
+        return addressStakeLocks[_address];
     }
 
     /**
-     * @notice Check if it's possible to unwrap the specified _amount of token and updates (or deletes) related stakedLocks
+     * @notice Check if it's possible to unwrap the specified _amountToUnstake of token and updates (or deletes) related stakedLocks
      * @param _unwrapper address who want to unwrap
-     * @param _amount amount
+     * @param _amountToUnstake amount
      */
-    function _unstake(address _unwrapper, uint256 _amount)
-        internal
-        returns (bool)
-    {
-        Lock[] storage stakedLocks = addressWrapLocks[_unwrapper];
+    function _updateStakedTokenLocks(
+        address _unwrapper,
+        uint256 _amountToUnstake
+    ) internal returns (bool) {
+        Lock[] storage stakedLocks = addressStakeLocks[_unwrapper];
 
-        uint256 total = 0;
-        uint64[] memory lockToRemove = new uint64[](stakedLocks.length);
-        uint64 indexLockToRemove = 0;
+        uint256 totalAmountUnstakedSoFar = 0;
+        uint256 stakedLocksLength = stakedLocks.length;
+        uint64[] memory locksToRemove = new uint64[](stakedLocksLength);
+        uint64 currentIndexOfLocksToBeRemoved = 0;
 
         bool result = false;
         uint64 timestamp = getTimestamp64();
-        for (uint64 i = 0; i < stakedLocks.length; i++) {
+        uint64 i = 0;
+        for (; i < stakedLocksLength; i++) {
             if (
                 timestamp >=
                 stakedLocks[i].lockDate.add(stakedLocks[i].duration) &&
                 !_isWrapLockEmpty(stakedLocks[i])
             ) {
-                total = total.add(stakedLocks[i].amount);
+                totalAmountUnstakedSoFar = totalAmountUnstakedSoFar.add(
+                    stakedLocks[i].amount
+                );
 
-                if (_amount == total) {
-                    lockToRemove[indexLockToRemove] = i;
-                    indexLockToRemove = indexLockToRemove.add(1);
+                if (_amountToUnstake == totalAmountUnstakedSoFar) {
+                    locksToRemove[currentIndexOfLocksToBeRemoved] = i;
+                    currentIndexOfLocksToBeRemoved = currentIndexOfLocksToBeRemoved
+                        .add(1);
                     result = true;
                     break;
-                } else if (_amount < total) {
+                } else if (_amountToUnstake < totalAmountUnstakedSoFar) {
                     // remainder. update it from the last lock
-                    stakedLocks[i].amount = total.sub(_amount);
+                    stakedLocks[i].amount = totalAmountUnstakedSoFar.sub(
+                        _amountToUnstake
+                    );
                     result = true;
                     break;
                 } else {
-                    lockToRemove[indexLockToRemove] = i;
-                    indexLockToRemove = indexLockToRemove.add(1);
+                    locksToRemove[currentIndexOfLocksToBeRemoved] = i;
+                    currentIndexOfLocksToBeRemoved = currentIndexOfLocksToBeRemoved
+                        .add(1);
                 }
             }
         }
 
-        for (uint64 j = 0; j < indexLockToRemove; j++) {
-            delete stakedLocks[lockToRemove[j]];
+        i = 0;
+        for (; i < currentIndexOfLocksToBeRemoved; i++) {
+            delete stakedLocks[locksToRemove[i]];
         }
 
         return result;
     }
 
     /**
-    * @notice Returns the position in which it's possible to insert a new Lock within addressWrapLocks.
-              .add(PUSH_THRESHOLD) it means that the array can grow, .add(NOT_PUSH_THRESHOLD) it means error othewise returns the index
-              in which it's possible to insert a new Lock
-    * @param _address address
-    */
-    function _whereInsert(address _address) internal view returns (uint64) {
-        Lock[] storage stakedLocks = addressWrapLocks[_address];
-
-        if (stakedLocks.length < maxLocks) return maxLocks.add(PUSH_THRESHOLD);
-
-        for (uint64 i = 0; i < stakedLocks.length; i++) {
-            if (_isWrapLockEmpty(stakedLocks[i])) {
-                return i;
-            }
-        }
-
-        return maxLocks.add(NOT_PUSH_THRESHOLD);
-    }
-
-    /**
-     * @notice Check if there an address has reached the max limit of allowed Lock
+     * @notice Returns the position in which it's possible to insert a new Lock within addressStakeLocks
      * @param _address address
      */
-    function _canInsert(address _address) internal view returns (bool) {
-        Lock[] storage stakedLocks = addressWrapLocks[_address];
+    function _getEmptyLockIndexForAddress(address _address)
+        internal
+        view
+        returns (uint64)
+    {
+        Lock[] storage stakedLocks = addressStakeLocks[_address];
+        uint256 numberOfStakeLocks = stakedLocks.length;
 
-        if (stakedLocks.length < maxLocks) return true;
-
-        for (uint256 i = 0; i < stakedLocks.length; i++) {
-            if (_isWrapLockEmpty(stakedLocks[i])) {
-                return true;
+        if (numberOfStakeLocks < maxLocks) {
+            return maxLocks.add(1);
+        } else {
+            for (uint64 i = 0; i < numberOfStakeLocks; i++) {
+                if (_isWrapLockEmpty(stakedLocks[i])) {
+                    return i;
+                }
             }
-        }
 
-        return false;
+            revert(ERROR_IMPOSSIBLE_TO_INSERT);
+        }
     }
 
     /**
