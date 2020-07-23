@@ -125,7 +125,6 @@ contract StakingManager is AragonApp {
         ) = _getEmptyLockIndexForAddress(_receiver);
         uint64 lockDate = getTimestamp64();
 
-        // if there is at least an empty slot
         if (emptyIndex < totalNumberOfStakedLocks) {
             addressStakeLocks[_receiver][emptyIndex] = Lock(
                 lockDate,
