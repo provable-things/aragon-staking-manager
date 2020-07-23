@@ -119,12 +119,15 @@ contract StakingManager is AragonApp {
 
         wrappedTokenManager.mint(_receiver, _amount);
 
-        uint64 position = _getEmptyLockIndexForAddress(_receiver);
+        (
+            uint256 emptyIndex,
+            uint256 totalNumberOfStakedLocks
+        ) = _getEmptyLockIndexForAddress(_receiver);
         uint64 lockDate = getTimestamp64();
 
         // if there is at least an empty slot
-        if (position < maxLocks.add(1)) {
-            addressStakeLocks[_receiver][position] = Lock(
+        if (emptyIndex < totalNumberOfStakedLocks) {
+            addressStakeLocks[_receiver][emptyIndex] = Lock(
                 lockDate,
                 _duration,
                 _amount
@@ -239,7 +242,6 @@ contract StakingManager is AragonApp {
                     result = true;
                     break;
                 } else if (_amountToUnstake < totalAmountUnstakedSoFar) {
-                    // remainder. update it from the last lock
                     stakedLocks[i].amount = totalAmountUnstakedSoFar.sub(
                         _amountToUnstake
                     );
@@ -253,8 +255,7 @@ contract StakingManager is AragonApp {
             }
         }
 
-        i = 0;
-        for (; i < currentIndexOfLocksToBeRemoved; i++) {
+        for (i = 0; i < currentIndexOfLocksToBeRemoved; i++) {
             delete stakedLocks[locksToRemove[i]];
         }
 
@@ -268,17 +269,17 @@ contract StakingManager is AragonApp {
     function _getEmptyLockIndexForAddress(address _address)
         internal
         view
-        returns (uint64)
+        returns (uint256, uint256)
     {
         Lock[] storage stakedLocks = addressStakeLocks[_address];
         uint256 numberOfStakeLocks = stakedLocks.length;
 
         if (numberOfStakeLocks < maxLocks) {
-            return maxLocks.add(1);
+            return (maxLocks.add(1), numberOfStakeLocks);
         } else {
-            for (uint64 i = 0; i < numberOfStakeLocks; i++) {
+            for (uint256 i = 0; i < numberOfStakeLocks; i++) {
                 if (_isWrapLockEmpty(stakedLocks[i])) {
-                    return i;
+                    return (i, numberOfStakeLocks);
                 }
             }
 
