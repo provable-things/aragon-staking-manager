@@ -422,6 +422,9 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager,
           appManager
         )
+
+        await timeTravel(LOCK_TIME)
+         
         await assertRevert(
           stakingManager.unstake(amountToStake * 2, {
             from: appManager,
