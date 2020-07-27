@@ -426,9 +426,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         await timeTravel(LOCK_TIME)
          
         await assertRevert(
-          stakingManager.unstake(amountToStake * 2, {
-            from: appManager,
-          }),
+          unstake(stakingManager, amountToStake * 2, appManager),
           'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
@@ -445,9 +443,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           appManager
         )
         await assertRevert(
-          stakingManager.unstake(amountToStake, {
-            from: appManager,
-          }),
+          unstake(stakingManager, amountToStake, appManager),
           'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
@@ -516,9 +512,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
 
         // NOTE: trying to unstake 200 but only 100 are unlockable so the tx must be reverted
         await assertRevert(
-          stakingManager.unstake(amountToUnstake, {
-            from: appManager,
-          }),
+          unstake(stakingManager, amountToUnstake, appManager),
           'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'
         )
       })
