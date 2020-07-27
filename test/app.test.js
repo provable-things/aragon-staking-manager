@@ -192,7 +192,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         from: appManager,
       })
 
-      await stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS + 1, {
+      await stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS - 1, {
         from: appManager,
       })
 
@@ -203,7 +203,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
       const maxLocks = parseInt(await stakingManager.maxLocks())
       const lockTime = parseInt(await stakingManager.minLockTime())
 
-      assert.strictEqual(maxLocks, MAX_LOCKS + 1)
+      assert.strictEqual(maxLocks, MAX_LOCKS - 1)
       assert.strictEqual(lockTime, ONE_DAY * 7)
     })
 
@@ -213,6 +213,23 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           from: appManager,
         }),
         'APP_AUTH_FAILED'
+      )
+    })
+
+    it('Should not be able to set maxLocks because of of value too high', async () => {
+      await setPermission(
+        acl,
+        appManager,
+        stakingManager.address,
+        CHANGE_MAX_LOCKS_ROLE,
+        appManager
+      )
+
+      await assertRevert(
+        stakingManager.changeMaxAllowedStakeLocks(MAX_LOCKS + 1, {
+          from: appManager,
+        }),
+        'STAKING_MANAGER_MAX_LOCKS_TOO_HIGH'
       )
     })
 

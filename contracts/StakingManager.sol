@@ -22,6 +22,8 @@ contract StakingManager is AragonApp {
     // prettier-ignore
     bytes32 public constant CHANGE_VAULT_ROLE = keccak256("CHANGE_VAULT_ROLE");
 
+    uint64 public constant MAX_LOCKS_LIMIT = 20;
+
     // prettier-ignore
     string private constant ERROR_ADDRESS_NOT_CONTRACT = "STAKING_MANAGER_ADDRESS_NOT_CONTRACT";
     // prettier-ignore
@@ -36,6 +38,8 @@ contract StakingManager is AragonApp {
     string private constant ERROR_LOCK_TIME_TOO_LOW = "STAKING_MANAGER_LOCK_TIME_TOO_LOW";
     // prettier-ignore
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
+    // prettier-ignore
+    string private constant ERROR_MAX_LOCKS_TOO_HIGH = "STAKING_MANAGER_MAX_LOCKS_TOO_HIGH";
 
     struct Lock {
         uint64 lockDate;
@@ -82,6 +86,7 @@ contract StakingManager is AragonApp {
         require(isContract(_tokenManager), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_depositToken), ERROR_ADDRESS_NOT_CONTRACT);
         require(isContract(_vault), ERROR_ADDRESS_NOT_CONTRACT);
+        require(_maxLocks <= MAX_LOCKS_LIMIT, ERROR_MAX_LOCKS_TOO_HIGH);
 
         wrappedTokenManager = TokenManager(_tokenManager);
         vault = Vault(_vault);
@@ -184,6 +189,7 @@ contract StakingManager is AragonApp {
         external
         auth(CHANGE_MAX_LOCKS_ROLE)
     {
+        require(_maxLocks <= MAX_LOCKS_LIMIT, ERROR_MAX_LOCKS_TOO_HIGH);
         maxLocks = _maxLocks;
         emit MaxLocksChanged(maxLocks);
     }
