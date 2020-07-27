@@ -25,9 +25,11 @@ contract StakingManager is AragonApp {
     // prettier-ignore
     string private constant ERROR_ADDRESS_NOT_CONTRACT = "STAKING_MANAGER_ADDRESS_NOT_CONTRACT";
     // prettier-ignore
-    string private constant ERROR_TOKEN_WRAP_REVERTED = "STAKING_MANAGER_WRAP_REVERTED";
+    string private constant ERROR_STAKE_REVERTED = "STAKING_MANAGER_STAKE_REVERTED";
     // prettier-ignore
     string private constant ERROR_INSUFFICENT_TOKENS = "STAKING_MANAGER_INSUFFICENT_TOKENS";
+    // prettier-ignore
+    string private constant ERROR_TOKENS_NOT_APPROVED = "STAKING_MANAGER_TOKENS_NOT_APPROVED";
     // prettier-ignore
     string private constant ERROR_NOT_ENOUGH_UNWRAPPABLE_TOKENS = "STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS";
     // prettier-ignore
@@ -102,19 +104,22 @@ contract StakingManager is AragonApp {
         uint64 _duration,
         address _receiver
     ) external returns (bool) {
+        require(_duration >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
             ERROR_INSUFFICENT_TOKENS
         );
-
-        require(_duration >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
+        require(
+            ERC20(depositToken).allowance(msg.sender, this) >= _amount,
+            ERROR_TOKENS_NOT_APPROVED
+        );
         require(
             ERC20(depositToken).safeTransferFrom(
                 msg.sender,
                 address(vault),
                 _amount
             ),
-            ERROR_TOKEN_WRAP_REVERTED
+            ERROR_STAKE_REVERTED
         );
 
         wrappedTokenManager.mint(_receiver, _amount);
