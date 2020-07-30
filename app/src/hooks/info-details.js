@@ -8,7 +8,7 @@ import { toBN } from 'web3-utils'
 import { strip } from '../utils/amount-utils'
 
 const useInfoDetails = () => {
-  const { stakedLocks } = useAppState()
+  const { stakedLocks, account } = useAppState()
 
   return useMemo(() => {
     const lockedbn = getTotalAmountOfLockedTokens(stakedLocks)
@@ -16,9 +16,9 @@ const useInfoDetails = () => {
     const sumbn = unlockedbn.add(lockedbn)
 
     return {
-      locked: lockedbn ? strip(lockedbn.toString()) : '0',
-      unlocked: unlockedbn ? strip(unlockedbn.toString()) : '0',
-      sum: sumbn ? strip(sumbn.toString()) : '0',
+      locked: lockedbn && account ? strip(lockedbn.toString()) : '-',
+      unlocked: unlockedbn && account ? strip(unlockedbn.toString()) : '-',
+      sum: sumbn && account ? strip(sumbn.toString()) : '-',
       perLocked:
         sumbn.cmp(toBN(0)) !== 0
           ? parseInt(lockedbn.div(sumbn).mul(toBN(100)).toString())

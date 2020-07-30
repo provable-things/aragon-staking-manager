@@ -424,7 +424,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         )
 
         await timeTravel(LOCK_TIME)
-         
+
         await assertRevert(
           unstake(stakingManager, amountToStake * 2, appManager),
           'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS'

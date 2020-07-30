@@ -4,7 +4,7 @@ import { toBN } from 'web3-utils'
 import { strip } from '../utils/amount-utils'
 
 const useVotingPowerDetails = () => {
-  const { vaultBalance, miniMeTokenBalance } = useAppState()
+  const { vaultBalance, miniMeTokenBalance, account } = useAppState()
 
   return useMemo(() => {
     const votingPower =
@@ -15,9 +15,10 @@ const useVotingPowerDetails = () => {
     return [
       {
         votingPower,
-        miniMeTokenBalance: miniMeTokenBalance
-          ? strip(miniMeTokenBalance.toString())
-          : '-',
+        miniMeTokenBalance:
+          miniMeTokenBalance && account
+            ? strip(miniMeTokenBalance.toString())
+            : '-',
         vaultBalance: vaultBalance ? strip(vaultBalance.toString()) : '-',
       },
     ]
