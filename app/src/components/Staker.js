@@ -53,7 +53,7 @@ class Staker extends Component {
       if (secondsLockTime < this.props.minLockTime) {
         this.setState({
           error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(
-            minLockTime
+            this.props.minLockTime
           )}.`,
         })
         return
