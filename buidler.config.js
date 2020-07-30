@@ -12,7 +12,8 @@ const getEnvironmentVariable = _envVar =>
         '✘ Cannot migrate!',
         '✘ Please provide an infura api key as and an',
         '✘ account private key as environment variables:',
-        '✘ PRIVATE_KEY',
+        '✘ MAINNET_PRIVATE_KEY',
+        '✘ RINKEBY_PRIVATE_KEY',
         '✘ INFURA_KEY'
       ),
       process.exit(1)
@@ -27,7 +28,12 @@ module.exports = {
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${getEnvironmentVariable('INFURA_KEY')}`,
-      accounts: [getEnvironmentVariable('PRIVATE_KEY')]
+      accounts: [getEnvironmentVariable('RINKEBY_PRIVATE_KEY')]
+    },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${getEnvironmentVariable('INFURA_KEY')}`,
+      accounts: [getEnvironmentVariable('MAINNET_PRIVATE_KEY')],
+      gasPrice: 60e9
     }
   },
   solc: {
