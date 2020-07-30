@@ -1,6 +1,6 @@
 {
   "name": "staking-manager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 tokens in exchange organization's tokens",
   "author": "allemanfredi@provable-things <alle.manfredi@gmail.com>",
   "scripts": {
