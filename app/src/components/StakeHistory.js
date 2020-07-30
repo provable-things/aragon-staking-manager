@@ -44,13 +44,7 @@ const StakeHistory = (_props) => {
               {lockDate + duration < now ? (
                 <Tag mode="new">Unlocked</Tag>
               ) : (
-                <Text
-                  css={`
-                    font-weight: bold;
-                  `}
-                >
-                  {parseSeconds(lockDate + duration - now)}
-                </Text>
+                <Tag mode="identifier">Locked</Tag>
               )}
             </TableCell>
             <TableCell>
@@ -66,7 +60,13 @@ const StakeHistory = (_props) => {
                   <IconUnlock />
                 </Button>
               ) : (
-                <Tag mode="identifier">Locked</Tag>
+                <Text
+                  css={`
+                    font-weight: bold;
+                  `}
+                >
+                  {parseSeconds(lockDate + duration - now)}
+                </Text>
               )}
             </TableCell>
           </TableRow>

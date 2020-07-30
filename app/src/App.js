@@ -20,6 +20,8 @@ const App = () => {
     isSyncing,
     depositToken,
     miniMeToken,
+    depositTokenBalance,
+    miniMeTokenBalance,
   } = useAppState()
   const { appearance } = useGuiStyle()
 
@@ -88,6 +90,8 @@ const App = () => {
               account={account}
               defaultAmount={defaultAmount}
               minLockTime={minLockTime}
+              depositTokenBalance={depositTokenBalance}
+              miniMeTokenBalance={miniMeTokenBalance}
               onAction={handleAction}
             />
           </SidePanel>

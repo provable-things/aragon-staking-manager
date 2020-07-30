@@ -17,6 +17,7 @@ import {
   LOCK_FORMAT_OPTIONS,
 } from '../utils/time-utils'
 import Web3 from 'web3'
+import { toBN } from 'web3-utils'
 
 const web3 = new Web3()
 
@@ -41,15 +42,20 @@ class Staker extends Component {
   handleAction = () => {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
+      if (this.props.depositTokenBalance.cmp(toBN(this.state.amount)) == -1) {
+        this.setState({ error: 'Balance too low' })
+        return
+      }
+
       const secondsLockTime =
         this.state.duration * formatSeconds[this.state.lockFormat]
 
       if (secondsLockTime < this.props.minLockTime) {
-        setError(
-          `Lock Time too low. Please insert a lock of at least ${parseSeconds(
+        this.setState({
+          error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(
             minLockTime
-          )}.`
-        )
+          )}.`,
+        })
         return
       }
 
@@ -66,6 +72,11 @@ class Staker extends Component {
       })
       return
     } else {
+      if (this.props.miniMeTokenBalance.cmp(toBN(this.state.amount)) == -1) {
+        this.setState({ error: 'Balance too low' })
+        return
+      }
+
       this.props.onAction({
         amount: this.state.amount,
         action: this.props.action,
@@ -181,7 +192,7 @@ class Staker extends Component {
               : this.state.amount.length === 0
           }
         />
-        {action === 'Stake' && this.state.error ? (
+        {this.state.error ? (
           <Info
             css={`
               margin-top: ${2 * GU}px;
