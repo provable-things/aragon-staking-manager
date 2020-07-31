@@ -40,6 +40,8 @@ contract StakingManager is AragonApp {
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
     // prettier-ignore
     string private constant ERROR_MAX_LOCKS_TOO_HIGH = "STAKING_MANAGER_MAX_LOCKS_TOO_HIGH";
+    // prettier-ignore
+    string private constant ERROR_AMOUNT_TOO_LOW = "STAKING_MANAGER_AMOUNT_TOO_LOW";
 
     struct Lock {
         uint64 lockDate;
@@ -110,6 +112,7 @@ contract StakingManager is AragonApp {
         address _receiver
     ) external returns (bool) {
         require(_duration >= minLockTime, ERROR_LOCK_TIME_TOO_LOW);
+        require(_amount > 0, ERROR_AMOUNT_TOO_LOW);
         require(
             ERC20(depositToken).balanceOf(msg.sender) >= _amount,
             ERROR_INSUFFICENT_TOKENS

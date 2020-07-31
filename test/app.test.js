@@ -1,5 +1,5 @@
 const { assert } = require('chai')
-const { assertRevert } = require('@aragon/contract-test-helpers/assertThrow')
+const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const { newDao, newApp } = require('./helpers/dao')
 const { setPermission } = require('./helpers/permissions')
 const { timeTravel } = require('./helpers/time-travel')
@@ -70,7 +70,7 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
     stakingManager = await StakingManager.at(
       await newApp(
         dao,
-        nameHash('token-deposit.aragonpm.test'),
+        nameHash('staking-manager.aragonpm.test'),
         stakingManagerBase.address,
         appManager
       )
@@ -829,6 +829,20 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         assert.strictEqual(
           actualBalances.balanceVault,
           initBalances.balanceVault
+        )
+      })
+
+      it('Should not be able to stake zero tokens', async () => {
+        await assertRevert(
+          stake(
+            depositToken,
+            stakingManager,
+            0,
+            LOCK_TIME,
+            appManager,
+            appManager
+          ),
+          'STAKING_MANAGER_AMOUNT_TOO_LOW'
         )
       })
     })
