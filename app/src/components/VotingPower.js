@@ -30,7 +30,7 @@ const VotingPower = (_props) => {
           >
             {` ${depositToken.symbol}`}
           </TokenSymbol>{' '}
-          stacked in the DAO:{' '}
+          staked in the DAO:{' '}
         </DetailText>
         <DetailValue>{vaultBalance}</DetailValue>
       </Detail>
@@ -44,7 +44,7 @@ const VotingPower = (_props) => {
           >
             {` ${depositToken.symbol}`}
           </TokenSymbol>{' '}
-          stacked in the DAO:{' '}
+          staked in the DAO:{' '}
         </DetailText>
         <DetailValue>{miniMeTokenBalance}</DetailValue>
       </Detail>
