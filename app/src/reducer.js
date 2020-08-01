@@ -1,19 +1,19 @@
-import { toBN } from 'web3-utils'
 import { offChainFormat } from './utils/amount-utils'
+import BigNumber from 'bignumber.js'
 
 const reducer = (_state) => {
   if (_state === null) {
     return {
       account: null,
-      depositTokenBalance: toBN(0),
+      depositTokenBalance: new BigNumber(0),
       depositToken: null,
-      miniMeTokenBalance: toBN(0),
+      miniMeTokenBalance: new BigNumber(0),
       miniMeToken: null,
       isSyncing: true,
       minLockTime: 0,
       stakedLocks: [],
       settings: null,
-      vaultBalance: toBN(0),
+      vaultBalance: new BigNumber(0),
       vaultAddress: null,
     }
   }
@@ -30,14 +30,17 @@ const reducer = (_state) => {
   return {
     ..._state,
     miniMeTokenBalance: miniMeTokenBalance
-      ? offChainFormat(toBN(miniMeTokenBalance), miniMeToken.decimals)
-      : toBN(0),
+      ? offChainFormat(new BigNumber(miniMeTokenBalance), miniMeToken.decimals)
+      : new BigNumber(0),
     depositTokenBalance: depositTokenBalance
-      ? offChainFormat(toBN(depositTokenBalance), depositToken.decimals)
-      : toBN(0),
+      ? offChainFormat(
+          new BigNumber(depositTokenBalance),
+          depositToken.decimals
+        )
+      : new BigNumber(0),
     vaultBalance: vaultBalance
-      ? offChainFormat(toBN(vaultBalance), depositToken.decimals)
-      : toBN(0),
+      ? offChainFormat(new BigNumber(vaultBalance), depositToken.decimals)
+      : new BigNumber(0),
     stakedLocks: stakedLocks
       ? stakedLocks
           .map((_stakedLock) => {
@@ -45,14 +48,14 @@ const reducer = (_state) => {
               lockDate: parseInt(_stakedLock.lockDate),
               duration: parseInt(_stakedLock.duration),
               amount: offChainFormat(
-                toBN(_stakedLock.amount),
+                new BigNumber(_stakedLock.amount),
                 depositToken.decimals
               ),
             }
           })
           .filter(
             ({ amount, lockDate, duration }) =>
-              amount.cmp(toBN(0)) !== 0 && lockDate !== 0 && duration !== 0
+              !amount.isEqualTo(0) && lockDate !== 0 && duration !== 0
           )
       : [],
   }

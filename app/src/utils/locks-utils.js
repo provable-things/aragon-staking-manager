@@ -1,12 +1,12 @@
-import { toBN } from 'web3-utils'
+import BigNumber from 'bignumber.js'
 
 const getTotalAmountOfUnlockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return toBN(0)
+  if (!_locks || _locks.length === 0) return new BigNumber(0)
 
-  let unlocked = toBN(0)
+  let unlocked = new BigNumber(0)
   _locks.forEach((_lock) => {
     if (isUnlocked(_lock)) {
-      unlocked = unlocked.add(_lock.amount)
+      unlocked = unlocked.plus(_lock.amount)
     }
   })
 
@@ -14,12 +14,12 @@ const getTotalAmountOfUnlockedTokens = (_locks) => {
 }
 
 const getTotalAmountOfLockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return toBN(0)
+  if (!_locks || _locks.length === 0) return new BigNumber(0)
 
-  let locked = toBN(0)
+  let locked = new BigNumber(0)
   _locks.forEach((_lock) => {
     if (!isUnlocked(_lock)) {
-      locked = locked.add(_lock.amount)
+      locked = locked.plus(_lock.amount)
     }
   })
 

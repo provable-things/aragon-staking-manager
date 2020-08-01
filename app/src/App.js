@@ -9,8 +9,8 @@ import Info from './components/Info'
 import { onChainFormat } from './utils/amount-utils'
 import { useGuiStyle } from '@aragon/api-react'
 import VotingPower from './components/VotingPower'
-import { toBN } from 'web3-utils'
 import { useAppState } from '@aragon/api-react'
+import BigNumber from 'bignumber.js'
 
 const App = () => {
   const { actions, panelState } = useAppLogic()
@@ -30,17 +30,20 @@ const App = () => {
 
   const handleAction = ({ amount, action, duration, receiver }) => {
     if (action === 'Stake') {
-      const onChainAmount = onChainFormat(toBN(amount), depositToken.decimals)
+      const onChainAmount = onChainFormat(
+        new BigNumber(amount),
+        depositToken.decimals
+      )
 
-      actions.stake(onChainAmount.toString(), duration, receiver, {
+      actions.stake(onChainAmount.toFixed(), duration, receiver, {
         token: {
           address: depositToken.address,
-          value: onChainAmount.toString(),
+          value: onChainAmount.toFixed(),
         },
       })
     } else if (action === 'Unstake') {
       actions.unstake(
-        onChainFormat(toBN(amount), miniMeToken.decimals).toString()
+        onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed()
       )
     }
   }

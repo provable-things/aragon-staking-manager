@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useAppState } from '@aragon/api-react'
-import { toBN } from 'web3-utils'
 import { strip } from '../utils/amount-utils'
 
 const useVotingPowerDetails = () => {
@@ -8,8 +7,8 @@ const useVotingPowerDetails = () => {
 
   return useMemo(() => {
     const votingPower =
-      vaultBalance && vaultBalance.cmp(toBN(0)) !== 0
-        ? parseInt(miniMeTokenBalance.div(vaultBalance))
+      vaultBalance && !vaultBalance.isEqualTo(0)
+        ? parseInt(miniMeTokenBalance.dividedBy(vaultBalance))
         : 0
 
     return [

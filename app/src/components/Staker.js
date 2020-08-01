@@ -17,7 +17,7 @@ import {
   LOCK_FORMAT_OPTIONS,
 } from '../utils/time-utils'
 import Web3 from 'web3'
-import { toBN } from 'web3-utils'
+import BigNumber from 'bignumber.js'
 
 const web3 = new Web3()
 
@@ -42,7 +42,11 @@ class Staker extends Component {
   handleAction = () => {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
-      if (this.props.depositTokenBalance.cmp(toBN(this.state.amount)) == -1) {
+      if (
+        this.props.depositTokenBalance.isLessThan(
+          new BigNumber(this.state.amount)
+        )
+      ) {
         this.setState({ error: 'Balance too low' })
         return
       }
@@ -72,7 +76,11 @@ class Staker extends Component {
       })
       return
     } else {
-      if (this.props.miniMeTokenBalance.cmp(toBN(this.state.amount)) == -1) {
+      if (
+        this.props.miniMeTokenBalance.isLessThan(
+          new BigNumber(this.state.amount)
+        )
+      ) {
         this.setState({ error: 'Balance too low' })
         return
       }
