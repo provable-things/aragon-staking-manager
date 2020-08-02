@@ -5,7 +5,7 @@
   "author": "allemanfredi@provable-things <alle.manfredi@gmail.com>",
   "scripts": {
     "postinstall": "yarn compile && yarn build-app",
-    "build-app": "cd app && npm install && cd ..",
+    "build-app": "cd app && yarn install && cd ..",
     "compile": "buidler compile --force",
     "test": "buidler test --network buidlerevm",
     "start": "buidler start",
