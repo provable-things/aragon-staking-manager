@@ -3,32 +3,30 @@ import 'regenerator-runtime/runtime'
 import Aragon, { events } from '@aragon/api'
 import ERC20Abi from './abi/ERC20.json'
 import TokenManagerAbi from './abi/TokenManager.json'
-import { correctFormat } from './utils/amount-utils'
 import { first } from 'rxjs/operators'
 
 const app = new Aragon()
 
 // TODO: check that tokens (miniMe and deposit) have the same decimals
-
 app
-  .call('tokenManager')
+  .call('wrappedTokenManager')
   .subscribe(initialize, (err) =>
     console.error(
       `Could not start background script execution due to the contract not loading token: ${err}`
     )
   )
 
-async function initialize(_tokenManagerAddress) {
+async function initialize(_wrappedTokenManagerAddress) {
   const network = await app.network().pipe(first()).toPromise()
-  const tokenManagerContract = app.external(
-    _tokenManagerAddress,
+  const wrappedTokenManagerContract = app.external(
+    _wrappedTokenManagerAddress,
     TokenManagerAbi
   )
 
   const settings = {
     network,
   }
-  return createStore(tokenManagerContract, settings)
+  return createStore(wrappedTokenManagerContract, settings)
 }
 
 function createStore(_tokenManagerContract, _settings) {
@@ -54,7 +52,7 @@ function createStore(_tokenManagerContract, _settings) {
             return state
         }
       } catch (_err) {
-        console.log(_err)
+        console.error(`Failed to create store: ${_err.message}`)
       }
     },
     {
@@ -72,8 +70,6 @@ function initializeState(_tokenManagerContract, _settings) {
       const depositTokenAddress = await app.call('depositToken').toPromise()
       const depositToken = await getTokenData(depositTokenAddress)
 
-      const minLockTime = parseInt(await app.call('minLockTime').toPromise())
-
       const vaultAddress = await app.call('vault').toPromise()
       const vaultBalance = await getTokenBalance(
         depositTokenAddress,
@@ -85,13 +81,14 @@ function initializeState(_tokenManagerContract, _settings) {
         ..._cachedState,
         miniMeToken,
         depositToken,
-        minLockTime,
+        minLockTime: parseInt(await app.call('minLockTime').toPromise()),
         vaultBalance,
         vaultAddress,
         _settings,
       }
     } catch (_err) {
-      console.log(_err)
+      console.error(`Failed to initialize state: ${_err.message}`)
+      return _cachedState
     }
   }
 }
@@ -110,25 +107,22 @@ const handleEvent = async (_nextState) => {
         _nextState.account
       )
 
-      const vaultBalance = await getTokenBalance(
-        _nextState.depositToken.address,
-        _nextState.depositToken.decimals,
-        _nextState.vaultAddress
-      )
-
-      const stakedLocks = await getStakedLocks(_nextState.account)
-
       return {
         ..._nextState,
         miniMeTokenBalance,
         depositTokenBalance,
-        stakedLocks,
-        vaultBalance,
+        stakedLocks: await getStakedLocks(_nextState.account),
+        vaultBalance: await getTokenBalance(
+          _nextState.depositToken.address,
+          _nextState.depositToken.decimals,
+          _nextState.vaultAddress
+        ),
       }
     }
 
     return _nextState
   } catch (_err) {
+    console.error(`Failed to handle event: ${_err.message}`)
     return _nextState
   }
 }
@@ -147,36 +141,27 @@ const handleAccountChange = async (_nextState, { account }) => {
         account
       )
 
-      const stakedLocks = await getStakedLocks(account)
-
       return {
         ..._nextState,
         miniMeTokenBalance,
         depositTokenBalance,
         account,
-        stakedLocks,
+        stakedLocks: await getStakedLocks(account),
       }
     }
 
     return _nextState
   } catch (_err) {
+    console.error(`Failed to handle account change: ${_err.message}`)
     return _nextState
   }
 }
 
-const getStakedLocks = async (_tokenAddress) => {
+const getStakedLocks = (_tokenAddress) => {
   try {
-    const stakedLocks = await app
-      .call('getStakedLocks', _tokenAddress)
-      .toPromise()
-    return stakedLocks.map((_lock) => {
-      return {
-        amount: parseInt(_lock.amount),
-        lockDate: parseInt(_lock.lockDate),
-        lockTime: parseInt(_lock.lockTime),
-      }
-    })
+    return app.call('getStakedLocks', _tokenAddress).toPromise()
   } catch (_err) {
+    console.error(`Failed to load staked locks: ${_err.message}`)
     return []
   }
 }
@@ -195,6 +180,7 @@ const getTokenData = async (_tokenAddress) => {
       address: _tokenAddress,
     }
   } catch (err) {
+    console.error(`Failed to load token data: ${_err.message}`)
     // TODO find a way to get a fallback
     throw new Error(_err.message)
   }
@@ -224,16 +210,17 @@ const getTokenBalances = async (
       depositTokenBalance,
     }
   } catch (_err) {
+    console.error(`Failed to load token balances: ${_err.message}`)
     throw new Error(_err.message)
   }
 }
 
-const getTokenBalance = async (_tokenAddress, _tokenDecimals, _address) => {
+const getTokenBalance = (_tokenAddress, _tokenDecimals, _address) => {
   try {
     const token = app.external(_tokenAddress, ERC20Abi)
-    const balance = await token.balanceOf(_address).toPromise()
-    return correctFormat(balance, _tokenDecimals, '/')
+    return token.balanceOf(_address).toPromise()
   } catch (_err) {
+    console.error(`Failed to load token balance: ${_err.message}`)
     throw new Error(_err.message)
   }
 }

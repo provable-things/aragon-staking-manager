@@ -1,10 +1,12 @@
-const getTotalAmountOUnlockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return 0
+import BigNumber from 'bignumber.js'
 
-  let unlocked = 0
+const getTotalAmountOfUnlockedTokens = (_locks) => {
+  if (!_locks || _locks.length === 0) return new BigNumber(0)
+
+  let unlocked = new BigNumber(0)
   _locks.forEach((_lock) => {
     if (isUnlocked(_lock)) {
-      unlocked += _lock.amount
+      unlocked = unlocked.plus(_lock.amount)
     }
   })
 
@@ -12,12 +14,12 @@ const getTotalAmountOUnlockedTokens = (_locks) => {
 }
 
 const getTotalAmountOfLockedTokens = (_locks) => {
-  if (!_locks || _locks.length === 0) return 0
+  if (!_locks || _locks.length === 0) return new BigNumber(0)
 
-  let locked = 0
+  let locked = new BigNumber(0)
   _locks.forEach((_lock) => {
     if (!isUnlocked(_lock)) {
-      locked += _lock.amount
+      locked = locked.plus(_lock.amount)
     }
   })
 
@@ -26,7 +28,7 @@ const getTotalAmountOfLockedTokens = (_locks) => {
 
 const isUnlocked = (_lock) => {
   const now = new Date().getTime() / 1000
-  return _lock.lockDate + _lock.lockTime < now
+  return _lock.lockDate + _lock.duration < now
 }
 
-export { getTotalAmountOUnlockedTokens, getTotalAmountOfLockedTokens }
+export { getTotalAmountOfUnlockedTokens, getTotalAmountOfLockedTokens }

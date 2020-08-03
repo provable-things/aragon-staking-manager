@@ -4,7 +4,7 @@ const MOCK_TOKEN_DECIMALS = 18
 const ONE_DAY = 86400
 const MAX_LOCKS = 20
 
-let vault, tokenManager, miniMeToken, voting, acl
+let vault, wrappedTokenManager, miniMeToken, voting, acl
 let appManager
 
 module.exports = {
@@ -44,12 +44,12 @@ module.exports = {
       skipInitialize: true,
     })
     vault = await _experimentalAppInstaller('vault')
-    tokenManager = await _experimentalAppInstaller('token-manager', {
+    wrappedTokenManager = await _experimentalAppInstaller('token-manager', {
       skipInitialize: true,
     })
 
-    await miniMeToken.changeController(tokenManager.address)
-    await tokenManager.initialize([miniMeToken.address, false, 0])
+    await miniMeToken.changeController(wrappedTokenManager.address)
+    await wrappedTokenManager.initialize([miniMeToken.address, false, 0])
     await voting.initialize([
       miniMeToken.address,
       '510000000000000000', // 51%
@@ -66,7 +66,7 @@ module.exports = {
 
     log(`Vault: ${vault.address}`)
     log(`MiniMeToken: ${miniMeToken.address}`)
-    log(`TokenManager: ${tokenManager.address}`)
+    log(`TokenManager: ${wrappedTokenManager.address}`)
     log(`ERC20: ${token.address}`)
     log(`${appManager} balance: ${await token.balanceOf(appManager)}`)
   },
@@ -77,13 +77,19 @@ module.exports = {
       'CREATE_VOTES_ROLE',
       '0xffffffffffffffffffffffffffffffffffffffff'
     )
-    await tokenManager.createPermission('MINT_ROLE', proxy.address)
-    await tokenManager.createPermission('BURN_ROLE', proxy.address)
+    await wrappedTokenManager.createPermission('MINT_ROLE', proxy.address)
+    await wrappedTokenManager.createPermission('BURN_ROLE', proxy.address)
     await vault.createPermission('TRANSFER_ROLE', proxy.address)
   },
 
   getInitParams: async ({ log }, { web3, artifacts }) => {
-    return [tokenManager.address, vault.address, token.address, 180, MAX_LOCKS]
+    return [
+      wrappedTokenManager.address,
+      vault.address,
+      token.address,
+      180,
+      MAX_LOCKS,
+    ]
   },
 
   postUpdate: async ({ proxy, log }, { web3, artifacts }) => {},

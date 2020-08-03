@@ -9,19 +9,16 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { correctFormat, strip } from '../utils/amount-utils'
 import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
+import { strip } from '../utils/amount-utils'
+import { useAppState } from '@aragon/api-react'
 
 const StakeHistory = (_props) => {
-  const {
-    depositToken,
-    stakedLocks,
-    onUnwrap,
-    onOpenSidebar,
-    miniMeToken,
-  } = _props
+  const { onUnwrap, onOpenSidebar } = _props
+
+  const { depositToken, stakedLocks, miniMeToken } = useAppState()
 
   const now = new Date().getTime() / 1000
 
@@ -35,43 +32,41 @@ const StakeHistory = (_props) => {
         </TableRow>
       }
     >
-      {stakedLocks.map(({ amount, lockDate, lockTime }, _index) => {
+      {stakedLocks.map(({ amount, lockDate, duration }, _index) => {
         return (
           <TableRow key={_index}>
             <TableCell>
-              <Text>
-                {`${strip(correctFormat(amount, depositToken.decimals, '/'))} ${
-                  depositToken.symbol
-                }`}
-              </Text>
+              <Text>{`${strip(amount.toString())} ${
+                depositToken.symbol
+              }`}</Text>
             </TableCell>
             <TableCell>
-              {lockDate + lockTime < now ? (
+              {lockDate + duration < now ? (
                 <Tag mode="new">Unlocked</Tag>
               ) : (
-                <Text
-                  css={`
-                    font-weight: bold;
-                  `}
-                >
-                  {parseSeconds(lockDate + lockTime - now)}
-                </Text>
+                <Tag mode="identifier">Locked</Tag>
               )}
             </TableCell>
             <TableCell>
-              {lockDate + lockTime < now ? (
+              {lockDate + duration < now ? (
                 <Button
                   onClick={() =>
                     onUnwrap({
                       action: 'Unstake',
-                      amount: correctFormat(amount, depositToken.decimals, '/'),
+                      amount,
                     })
                   }
                 >
                   <IconUnlock />
                 </Button>
               ) : (
-                <Tag mode="identifier">Locked</Tag>
+                <Text
+                  css={`
+                    font-weight: bold;
+                  `}
+                >
+                  {parseSeconds(lockDate + duration - now)}
+                </Text>
               )}
             </TableCell>
           </TableRow>
@@ -84,9 +79,7 @@ const StakeHistory = (_props) => {
 }
 
 StakeHistory.propTypes = {
-  depositToken: PropTypes.object,
-  miniMeToken: PropTypes.object,
-  stakedLocks: PropTypes.array,
+  onOpenSidebar: PropTypes.func,
   onUnwrap: PropTypes.func,
 }
 

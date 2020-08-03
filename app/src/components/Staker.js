@@ -17,6 +17,7 @@ import {
   LOCK_FORMAT_OPTIONS,
 } from '../utils/time-utils'
 import Web3 from 'web3'
+import BigNumber from 'bignumber.js'
 
 const web3 = new Web3()
 
@@ -30,7 +31,7 @@ class Staker extends Component {
 
     this.state = {
       lockFormat: LOCK_FORMAT_OPTIONS.indexOf(format),
-      lockTime: time,
+      duration: time,
       amount: defaultAmount ? defaultAmount : '',
       receiver: account ? account : '',
       error: '',
@@ -41,15 +42,24 @@ class Staker extends Component {
   handleAction = () => {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
+      if (
+        this.props.depositTokenBalance.isLessThan(
+          new BigNumber(this.state.amount)
+        )
+      ) {
+        this.setState({ error: 'Balance too low' })
+        return
+      }
+
       const secondsLockTime =
-        this.state.lockTime * formatSeconds[this.state.lockFormat]
+        this.state.duration * formatSeconds[this.state.lockFormat]
 
       if (secondsLockTime < this.props.minLockTime) {
-        setError(
-          `Lock Time too low. Please insert a lock of at least ${parseSeconds(
-            minLockTime
-          )}.`
-        )
+        this.setState({
+          error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(
+            this.props.minLockTime
+          )}.`,
+        })
         return
       }
 
@@ -62,10 +72,19 @@ class Staker extends Component {
         amount: this.state.amount,
         action: this.props.action,
         receiver: this.state.receiver,
-        lockTime: secondsLockTime,
+        duration: secondsLockTime,
       })
       return
     } else {
+      if (
+        this.props.miniMeTokenBalance.isLessThan(
+          new BigNumber(this.state.amount)
+        )
+      ) {
+        this.setState({ error: 'Balance too low' })
+        return
+      }
+
       this.props.onAction({
         amount: this.state.amount,
         action: this.props.action,
@@ -152,8 +171,8 @@ class Staker extends Component {
                 `}
               >
                 <TextInput
-                  value={this.state.lockTime}
-                  onChange={(e) => this.setState({ lockTime: e.target.value })}
+                  value={this.state.duration}
+                  onChange={(e) => this.setState({ duration: e.target.value })}
                   min={0}
                   type="number"
                   step="any"
@@ -176,12 +195,12 @@ class Staker extends Component {
             action === 'Stake'
               ? this.state.amount.length === 0 ||
                 this.state.receiver.length === 0 ||
-                this.state.lockTime === 0 ||
-                this.state.lockTime.length === 0
+                this.state.duration === 0 ||
+                this.state.duration.length === 0
               : this.state.amount.length === 0
           }
         />
-        {action === 'Stake' && this.state.error ? (
+        {this.state.error ? (
           <Info
             css={`
               margin-top: ${2 * GU}px;

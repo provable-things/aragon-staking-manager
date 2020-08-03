@@ -21,7 +21,7 @@ const parseSeconds = (_seconds) => {
   } else if (days === 7) {
     return `1 week`
   } else if (days > 7 && days <= 30) {
-    return `${Math.round(days / 4)} weeks`
+    return `${Math.round(days / 7)} weeks`
   } else if (days === 1) {
     return '1 day'
   } else if (days > 1) {

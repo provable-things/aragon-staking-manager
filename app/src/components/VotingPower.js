@@ -1,12 +1,15 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
 import { Box, ProgressBar, useTheme, GU } from '@aragon/ui'
+import { useAppState } from '@aragon/api-react'
 import styled from 'styled-components'
+import { useVotingPowerDetails } from '../hooks/voting-power'
 
 const VotingPower = (_props) => {
-  const { miniMeToken, vaultBalance, miniMeTokenBalance, depositToken } = _props
-  const votingPower = vaultBalance ? miniMeTokenBalance / vaultBalance : 0
+  const { depositToken } = useAppState()
+
+  const [
+    { votingPower, miniMeTokenBalance, vaultBalance },
+  ] = useVotingPowerDetails()
 
   const theme = useTheme()
 
@@ -17,7 +20,7 @@ const VotingPower = (_props) => {
         height: 100%;
       `}
     >
-      <Info>
+      <Detail>
         <DetailText>
           Total
           <TokenSymbol
@@ -27,13 +30,11 @@ const VotingPower = (_props) => {
           >
             {` ${depositToken.symbol}`}
           </TokenSymbol>{' '}
-          stacked in the DAO:{' '}
+          staked in the DAO:{' '}
         </DetailText>
-        <DetailValue>
-          {vaultBalance || vaultBalance === 0 ? strip(vaultBalance) : '-'}
-        </DetailValue>
-      </Info>
-      <Info>
+        <DetailValue>{vaultBalance}</DetailValue>
+      </Detail>
+      <Detail>
         <DetailText>
           Your
           <TokenSymbol
@@ -43,15 +44,11 @@ const VotingPower = (_props) => {
           >
             {` ${depositToken.symbol}`}
           </TokenSymbol>{' '}
-          stacked in the DAO:{' '}
+          staked in the DAO:{' '}
         </DetailText>
-        <DetailValue>
-          {miniMeTokenBalance || miniMeTokenBalance === 0
-            ? strip(miniMeTokenBalance)
-            : '-'}
-        </DetailValue>
-      </Info>
-      <Info
+        <DetailValue>{miniMeTokenBalance}</DetailValue>
+      </Detail>
+      <Detail
         css={`
           margin-top: ${3 * GU}px;
         `}
@@ -62,7 +59,7 @@ const VotingPower = (_props) => {
             ? `${votingPower >= 100 ? 100 : (votingPower * 100).toFixed(2)}%`
             : '0%'}{' '}
         </DetailValue>
-      </Info>
+      </Detail>
       <ProgressBar value={votingPower ? votingPower : 0} />
     </Box>
   )
@@ -81,18 +78,11 @@ const DetailValue = styled.span`
   font-weight: bold;
 `
 
-const Info = styled.div`
+const Detail = styled.div`
   margin-top: ${GU}px;
   margin-bottom: ${2 * GU}px;
   display: flex;
   justify-content: space-between;
 `
-
-VotingPower.propTypes = {
-  depositToken: PropTypes.object,
-  miniMeToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.number,
-  vaultBalance: PropTypes.number,
-}
 
 export default VotingPower

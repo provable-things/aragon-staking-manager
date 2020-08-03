@@ -1,14 +1,18 @@
-const correctFormat = (_amount, _decimals, _operation) =>
-  _operation === '/'
-    ? _amount / Math.pow(10, _decimals)
-    : (_amount * Math.pow(10, _decimals)).toLocaleString('fullwide', {
-        useGrouping: false,
-      })
+import BigNumber from 'bignumber.js'
 
-const parseAmount = (_decimals, _amount) =>
-  Math.trunc(_amount * Math.pow(10, _decimals)) /
-  Math.pow(10, _decimals).toFixed(_decimals)
+const onChainFormat = (_amount, _decimals) =>
+  _amount.multipliedBy(new BigNumber(Math.pow(10, _decimals)))
 
-const strip = (_number) => _number.toFixed(3)
+const offChainFormat = (_amount, _decimals) =>
+  _amount.dividedBy(new BigNumber(Math.pow(10, _decimals)))
 
-export { correctFormat, parseAmount, strip }
+const parseAmount = (_decimals, _amount) => {
+  const num = new BigNumber(Math.trunc(_amount * Math.pow(10, _decimals)))
+  const den = new BigNumber(Math.pow(10, _decimals).toFixed(_decimals))
+
+  return num.dividedBy(den)
+}
+
+const strip = (_number) => parseFloat(_number).toFixed(3)
+
+export { onChainFormat, offChainFormat, parseAmount, strip }

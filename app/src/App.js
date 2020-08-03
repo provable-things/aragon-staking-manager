@@ -6,47 +6,44 @@ import Staker from './components/Staker'
 import StakeHistory from './components/StakeHistory'
 import Wallet from './components/Wallet'
 import Info from './components/Info'
-import { correctFormat, parseAmount } from './utils/amount-utils'
+import { onChainFormat } from './utils/amount-utils'
 import { useGuiStyle } from '@aragon/api-react'
 import VotingPower from './components/VotingPower'
+import { useAppState } from '@aragon/api-react'
+import BigNumber from 'bignumber.js'
 
 const App = () => {
+  const { actions, panelState } = useAppLogic()
   const {
-    depositToken,
-    depositTokenBalance,
-    miniMeToken,
-    miniMeTokenBalance,
-    isSyncing,
-    actions,
-    panelState,
-    minLockTime,
-    stakedLocks,
     account,
-    vaultBalance,
-  } = useAppLogic()
+    minLockTime,
+    isSyncing,
+    depositToken,
+    miniMeToken,
+    depositTokenBalance,
+    miniMeTokenBalance,
+  } = useAppState()
+  const { appearance } = useGuiStyle()
 
   const [action, setAction] = useState(null)
   const [defaultAmount, setDefaultAmount] = useState(null)
-  const { appearance } = useGuiStyle()
 
-  const handleAction = ({ amount, action, lockTime, receiver }) => {
+  const handleAction = ({ amount, action, duration, receiver }) => {
     if (action === 'Stake') {
-      const formattedAmount = correctFormat(
-        parseAmount(depositToken.decimals, amount),
-        depositToken.decimals,
-        '*'
+      const onChainAmount = onChainFormat(
+        new BigNumber(amount),
+        depositToken.decimals
       )
 
-      actions.stake(formattedAmount, lockTime, receiver, {
-        token: { address: depositToken.address, value: formattedAmount },
+      actions.stake(onChainAmount.toFixed(), duration, receiver, {
+        token: {
+          address: depositToken.address,
+          value: onChainAmount.toFixed(),
+        },
       })
     } else if (action === 'Unstake') {
       actions.unstake(
-        correctFormat(
-          parseAmount(miniMeToken.decimals, amount),
-          miniMeToken.decimals,
-          '*'
-        )
+        onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed()
       )
     }
   }
@@ -96,38 +93,26 @@ const App = () => {
               account={account}
               defaultAmount={defaultAmount}
               minLockTime={minLockTime}
+              depositTokenBalance={depositTokenBalance}
+              miniMeTokenBalance={miniMeTokenBalance}
               onAction={handleAction}
             />
           </SidePanel>
 
           <Row>
             <Col xs={12} xl={4}>
-              <VotingPower
-                miniMeTokenBalance={miniMeTokenBalance}
-                miniMeToken={miniMeToken}
-                depositToken={depositToken}
-                vaultBalance={vaultBalance}
-              />
+              <VotingPower />
             </Col>
             <Col xs={12} xl={4} className="mt-3 mt-xl-0">
-              <Wallet
-                depositToken={depositToken}
-                depositTokenBalance={depositTokenBalance}
-                miniMeToken={miniMeToken}
-                miniMeTokenBalance={miniMeTokenBalance}
-                minLockTime={minLockTime}
-              />
+              <Wallet />
             </Col>
             <Col xs={12} xl={4} className="mt-3 mt-xl-0">
-              <Info depositToken={depositToken} stakedLocks={stakedLocks} />
+              <Info />
             </Col>
           </Row>
           <Row>
             <Col xs={12} className="mt-3">
               <StakeHistory
-                depositToken={depositToken}
-                miniMeToken={miniMeToken}
-                stakedLocks={stakedLocks}
                 onUnwrap={({ amount }) => {
                   setDefaultAmount(amount)
                   panelState.requestOpen()

@@ -1,18 +1,17 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { strip } from '../utils/amount-utils'
-import { parseSeconds } from '../utils/time-utils'
+import { useWalletDetails } from '../hooks/wallet'
 import { Box, useTheme, GU } from '@aragon/ui'
 import styled from 'styled-components'
+import { useAppState } from '@aragon/api-react'
 
 const Wallet = (_props) => {
+  const { depositToken, miniMeToken } = useAppState()
+
   const {
-    depositToken,
-    depositTokenBalance,
-    miniMeToken,
     miniMeTokenBalance,
+    depositTokenBalance,
     minLockTime,
-  } = _props
+  } = useWalletDetails()
 
   const theme = useTheme()
 
@@ -31,11 +30,7 @@ const Wallet = (_props) => {
         >
           {` ${depositToken.symbol} `}
         </TokenSymbol>
-        <TokenBalance>
-          {depositTokenBalance || depositTokenBalance === 0
-            ? strip(depositTokenBalance)
-            : '-'}
-        </TokenBalance>
+        <TokenBalance>{depositTokenBalance}</TokenBalance>
       </TokenDetails>
       <TokenDetails>
         <TokenSymbol
@@ -45,11 +40,7 @@ const Wallet = (_props) => {
         >
           {` ${miniMeToken.symbol} `}
         </TokenSymbol>
-        <TokenBalance>
-          {miniMeTokenBalance || miniMeTokenBalance === 0
-            ? strip(miniMeTokenBalance)
-            : '-'}
-        </TokenBalance>
+        <TokenBalance>{miniMeTokenBalance}</TokenBalance>
       </TokenDetails>
 
       <LockDetails>
@@ -76,7 +67,7 @@ const Wallet = (_props) => {
             color: ${theme.info};
           `}
         >
-          {` ${parseSeconds(minLockTime)}`}.
+          {` ${minLockTime}`}.
         </Days>
       </LockDetails>
     </Box>
@@ -108,13 +99,5 @@ const Days = styled.span`
   font-size: 18px;
   font-weight: bold;
 `
-
-Wallet.propTypes = {
-  depositToken: PropTypes.object,
-  depositTokenBalance: PropTypes.number,
-  miniMeToken: PropTypes.object,
-  miniMeTokenBalance: PropTypes.number,
-  minLockTime: PropTypes.number,
-}
 
 export default Wallet
