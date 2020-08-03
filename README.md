@@ -118,7 +118,7 @@ npx buidler publish "version or patch/minor/major" --network "rinkeby or mainnet
 
 ## :white_check_mark: How to verify
 
-Add the followinf field to __`.env`__ file
+Add the following field to __`.env`__ file
 
 ```
 ETHERSCAN_API_KEY=
