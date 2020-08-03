@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js'
 
+const MINIMUM_PERCENTAGE_THRESHOLD = 0.0001
+
 const onChainFormat = (_amount, _decimals) =>
   _amount.multipliedBy(new BigNumber(Math.pow(10, _decimals)))
 
@@ -19,4 +21,18 @@ const strip = (_number) =>
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
-export { onChainFormat, offChainFormat, parseAmount, strip }
+const parsePercentage = (_percentage) => {
+  if (_percentage === 0) {
+    return '0%'
+  }
+
+  if (_percentage < MINIMUM_PERCENTAGE_THRESHOLD) {
+    return `<${MINIMUM_PERCENTAGE_THRESHOLD}%`
+  }
+
+  return _percentage - Math.floor(_percentage)
+    ? `~${(_percentage * 100).toFixed(4)}%`
+    : `${(_percentage * 100).toFixed(0)}%`
+}
+
+export { onChainFormat, offChainFormat, parseAmount, strip, parsePercentage }

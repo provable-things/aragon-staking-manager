@@ -65,10 +65,10 @@ const Info = (_props) => {
           <Distribution
             heading="Distribution"
             items={[
-              { item: 'Locked', percentage: perLocked ? perLocked : 0 },
+              { item: 'Locked', percentage: perLocked },
               {
                 item: 'Unlocked',
-                percentage: perUnlocked ? perUnlocked : 0,
+                percentage: perUnlocked,
               },
             ]}
           />

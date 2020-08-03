@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useAppState } from '@aragon/api-react'
 import { strip } from '../utils/amount-utils'
-import { parseVotingPower } from '../utils/voting-power'
+import { parsePercentage } from '../utils/amount-utils'
 
 const useVotingPowerDetails = () => {
   const { vaultBalance, miniMeTokenBalance, account } = useAppState()
@@ -15,7 +15,7 @@ const useVotingPowerDetails = () => {
     return [
       {
         votingPower,
-        votingPowerText: parseVotingPower(votingPower),
+        votingPowerText: parsePercentage(votingPower),
         miniMeTokenBalance:
           miniMeTokenBalance && account
             ? strip(miniMeTokenBalance.toString())
