@@ -12,15 +12,10 @@ const useVotingPowerDetails = () => {
         ? parseFloat(miniMeTokenBalance.dividedBy(vaultBalance))
         : 0
 
-    const votingPowerText =
-      vaultBalance && !vaultBalance.isEqualTo(0)
-        ? parseVotingPower(votingPower)
-        : 0
-
     return [
       {
         votingPower,
-        votingPowerText,
+        votingPowerText: parseVotingPower(votingPower),
         miniMeTokenBalance:
           miniMeTokenBalance && account
             ? strip(miniMeTokenBalance.toString())
