@@ -8,7 +8,7 @@ const VotingPower = (_props) => {
   const { depositToken } = useAppState()
 
   const [
-    { votingPower, miniMeTokenBalance, vaultBalance },
+    { votingPower, votingPowerText, miniMeTokenBalance, vaultBalance },
   ] = useVotingPowerDetails()
 
   const theme = useTheme()
@@ -54,13 +54,9 @@ const VotingPower = (_props) => {
         `}
       >
         <DetailText>Your voting power: </DetailText>
-        <DetailValue>
-          {votingPower
-            ? `${votingPower >= 100 ? 100 : (votingPower * 100).toFixed(2)}%`
-            : '0%'}{' '}
-        </DetailValue>
+        <DetailValue>{votingPowerText}</DetailValue>
       </Detail>
-      <ProgressBar value={votingPower ? votingPower : 0} />
+      <ProgressBar value={votingPower} />
     </Box>
   )
 }

@@ -13,6 +13,10 @@ const parseAmount = (_decimals, _amount) => {
   return num.dividedBy(den)
 }
 
-const strip = (_number) => parseFloat(_number).toFixed(3)
+const strip = (_number) =>
+  parseFloat(_number)
+    .toFixed(3)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 export { onChainFormat, offChainFormat, parseAmount, strip }
