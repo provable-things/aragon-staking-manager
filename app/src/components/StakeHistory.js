@@ -79,9 +79,7 @@ const StakeHistory = (_props) => {
 }
 
 StakeHistory.propTypes = {
-  depositToken: PropTypes.object,
-  miniMeToken: PropTypes.object,
-  stakedLocks: PropTypes.array,
+  onOpenSidebar: PropTypes.func,
   onUnwrap: PropTypes.func,
 }
 
