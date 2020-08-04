@@ -13,14 +13,15 @@ import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
 import { strip } from '../utils/amount-utils'
+import { useStakeHistory } from '../hooks/stake-history'
 import { useAppState } from '@aragon/api-react'
 
 const StakeHistory = (_props) => {
   const { onUnwrap, onOpenSidebar } = _props
 
-  const { depositToken, stakedLocks, miniMeToken } = useAppState()
+  const { depositToken, miniMeToken } = useAppState()
 
-  const now = new Date().getTime() / 1000
+  const { stakedLocks } = useStakeHistory()
 
   return stakedLocks && stakedLocks.length > 0 ? (
     <Table
@@ -32,46 +33,46 @@ const StakeHistory = (_props) => {
         </TableRow>
       }
     >
-      {stakedLocks.map(({ amount, lockDate, duration }, _index) => {
-        return (
-          <TableRow key={_index}>
-            <TableCell>
-              <Text>{`${strip(amount.toString())} ${
-                depositToken.symbol
-              }`}</Text>
-            </TableCell>
-            <TableCell>
-              {lockDate + duration < now ? (
-                <Tag mode="new">Unlocked</Tag>
-              ) : (
-                <Tag mode="identifier">Locked</Tag>
-              )}
-            </TableCell>
-            <TableCell>
-              {lockDate + duration < now ? (
-                <Button
-                  onClick={() =>
-                    onUnwrap({
-                      action: 'Unstake',
-                      amount,
-                    })
-                  }
-                >
-                  <IconUnlock />
-                </Button>
-              ) : (
-                <Text
-                  css={`
-                    font-weight: bold;
-                  `}
-                >
-                  {parseSeconds(lockDate + duration - now)}
-                </Text>
-              )}
-            </TableCell>
-          </TableRow>
-        )
-      })}
+      {stakedLocks.map(
+        ({ amount, remainderSeconds, isUnlocked, textedAmount }, _index) => {
+          return (
+            <TableRow key={_index}>
+              <TableCell>
+                <Text>{textedAmount}</Text>
+              </TableCell>
+              <TableCell>
+                {isUnlocked ? (
+                  <Tag mode="new">Unlocked</Tag>
+                ) : (
+                  <Tag mode="identifier">Locked</Tag>
+                )}
+              </TableCell>
+              <TableCell>
+                {isUnlocked ? (
+                  <Button
+                    onClick={() =>
+                      onUnwrap({
+                        action: 'Unstake',
+                        amount,
+                      })
+                    }
+                  >
+                    <IconUnlock />
+                  </Button>
+                ) : (
+                  <Text
+                    css={`
+                      font-weight: bold;
+                    `}
+                  >
+                    {remainderSeconds}
+                  </Text>
+                )}
+              </TableCell>
+            </TableRow>
+          )
+        }
+      )}
     </Table>
   ) : (
     <NoTokenStaked onOpenSidebar={onOpenSidebar} />

@@ -4,14 +4,20 @@ import {
   getTotalAmountOfUnlockedTokens,
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
-import { strip, parsePercentage } from '../utils/amount-utils'
+import { strip, offChainFormat } from '../utils/amount-utils'
 
 const useInfoDetails = () => {
-  const { stakedLocks, account } = useAppState()
+  const { stakedLocks, account, depositToken } = useAppState()
 
   return useMemo(() => {
-    const lockedbn = getTotalAmountOfLockedTokens(stakedLocks)
-    const unlockedbn = getTotalAmountOfUnlockedTokens(stakedLocks)
+    const lockedbn = offChainFormat(
+      getTotalAmountOfLockedTokens(stakedLocks),
+      depositToken.decimals
+    )
+    const unlockedbn = offChainFormat(
+      getTotalAmountOfUnlockedTokens(stakedLocks),
+      depositToken.decimals
+    )
     const sumbn = unlockedbn.plus(lockedbn)
 
     return {
