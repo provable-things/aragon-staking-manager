@@ -1,4 +1,3 @@
-import { offChainFormat } from './utils/amount-utils'
 import BigNumber from 'bignumber.js'
 
 const reducer = (_state) => {

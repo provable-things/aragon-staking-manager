@@ -9,10 +9,8 @@ import {
   IconUnlock,
   Tag,
 } from '@aragon/ui'
-import { parseSeconds } from '../utils/time-utils'
 import PropTypes from 'prop-types'
 import NoTokenStaked from './NoTokenStaked'
-import { strip } from '../utils/amount-utils'
 import { useStakeHistory } from '../hooks/stake-history'
 import { useAppState } from '@aragon/api-react'
 
