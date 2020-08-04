@@ -4,7 +4,7 @@ import {
   getTotalAmountOfUnlockedTokens,
   getTotalAmountOfLockedTokens,
 } from '../utils/locks-utils'
-import { strip } from '../utils/amount-utils'
+import { strip, parsePercentage } from '../utils/amount-utils'
 
 const useInfoDetails = () => {
   const { stakedLocks, account } = useAppState()
@@ -19,10 +19,18 @@ const useInfoDetails = () => {
       unlocked: unlockedbn && account ? strip(unlockedbn.toString()) : '-',
       sum: sumbn && account ? strip(sumbn.toString()) : '-',
       perLocked: !sumbn.isEqualTo(0)
-        ? parseInt(lockedbn.dividedBy(sumbn).multipliedBy(100).toString())
+        ? parseFloat(
+            parseFloat(lockedbn.dividedBy(sumbn).multipliedBy(100).toString())
+              .toFixed(4)
+              .toString()
+          )
         : 0,
       perUnlocked: !sumbn.isEqualTo(0)
-        ? parseInt(unlockedbn.dividedBy(sumbn).multipliedBy(100).toString())
+        ? parseFloat(
+            parseFloat(unlockedbn.dividedBy(sumbn).multipliedBy(100).toString())
+              .toFixed(4)
+              .toString()
+          )
         : 0,
     }
   }, [stakedLocks])

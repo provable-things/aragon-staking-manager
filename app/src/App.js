@@ -100,13 +100,13 @@ const App = () => {
           </SidePanel>
 
           <Row>
-            <Col xs={12} xl={4}>
+            <Col xs={12} xl={6}>
               <VotingPower />
             </Col>
-            <Col xs={12} xl={4} className="mt-3 mt-xl-0">
+            <Col xs={12} xl={6} className="mt-3 mt-xl-0">
               <Wallet />
             </Col>
-            <Col xs={12} xl={4} className="mt-3 mt-xl-0">
+            <Col xs={12} xl={12} className="mt-3">
               <Info />
             </Col>
           </Row>
