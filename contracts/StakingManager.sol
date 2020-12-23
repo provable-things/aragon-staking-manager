@@ -160,8 +160,24 @@ contract StakingManager is AragonApp {
      * @notice Return all Locks for a given _address
      * @param _address address
      */
-    function getStakedLocks(address _address) external view returns (Lock[]) {
+    function getStakedLocks(address _address) public view returns (Lock[]) {
         return addressStakeLocks[_address];
+    }
+
+    /**
+     * @notice Return the number of locks for given an _address
+     * @param _address address
+     */
+    function getNumberOfStakedLocks(address _address) public view returns (uint256) {
+        return addressStakeLocks[_address].length;
+    }
+
+    /**
+     * @notice Check if a Lock is empty
+     * @param _lock lock
+     */
+    function isLockEmpty(Lock memory _lock) public pure returns (bool) {
+        return _lock.duration == 0 && _lock.lockDate == 0 && _lock.amount == 0;
     }
 
     /**
@@ -181,9 +197,7 @@ contract StakingManager is AragonApp {
         uint64 timestamp = getTimestamp64();
         uint64 i = 0;
         for (; i < stakedLocksLength; i++) {
-            if (
-                timestamp >= stakedLocks[i].lockDate.add(stakedLocks[i].duration) && !_isWrapLockEmpty(stakedLocks[i])
-            ) {
+            if (timestamp >= stakedLocks[i].lockDate.add(stakedLocks[i].duration) && !isLockEmpty(stakedLocks[i])) {
                 totalAmountUnstakedSoFar = totalAmountUnstakedSoFar.add(stakedLocks[i].amount);
 
                 if (_amountToUnstake == totalAmountUnstakedSoFar) {
@@ -221,20 +235,12 @@ contract StakingManager is AragonApp {
             return (maxLocks.add(1), numberOfStakeLocks);
         } else {
             for (uint256 i = 0; i < numberOfStakeLocks; i++) {
-                if (_isWrapLockEmpty(stakedLocks[i])) {
+                if (isLockEmpty(stakedLocks[i])) {
                     return (i, numberOfStakeLocks);
                 }
             }
 
             revert(ERROR_IMPOSSIBLE_TO_INSERT);
         }
-    }
-
-    /**
-     * @notice Check if a Lock is empty
-     * @param _lock lock
-     */
-    function _isWrapLockEmpty(Lock memory _lock) internal pure returns (bool) {
-        return _lock.duration == 0 && _lock.lockDate == 0 && _lock.amount == 0;
     }
 }

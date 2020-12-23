@@ -226,6 +226,19 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           'STAKING_MANAGER_LOCK_TIME_TOO_LOW'
         )
       })
+
+      it('Should return a correct value when getting number of staked locks', async () => {
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await stake(depositToken, stakingManager, 200 / MAX_LOCKS, LOCK_TIME, appManager, appManager)
+        }
+        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        assert.strictEqual(parseInt(numberOfLocks), MAX_LOCKS)
+      })
+
+      it('Should return a correct value when getting number of staked locks after having staked', async () => {
+        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        assert.strictEqual(parseInt(numberOfLocks), 0)
+      })
     })
 
     describe('unstake(uint256 _amount)', async () => {
@@ -447,6 +460,19 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
           stake(depositToken, stakingManager, 0, LOCK_TIME, appManager, appManager),
           'STAKING_MANAGER_AMOUNT_TOO_LOW'
         )
+      })
+
+      it('Should return a correct value when getting number of staked locks after havin staked and unstake', async () => {
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await stake(depositToken, stakingManager, 200, LOCK_TIME, appManager, appManager)
+        }
+        await timeTravel(LOCK_TIME)
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await unstake(stakingManager, 200, appManager)
+        }
+        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        // NOTE: will contain only empty locks
+        assert.strictEqual(parseInt(numberOfLocks), MAX_LOCKS)
       })
     })
   })
