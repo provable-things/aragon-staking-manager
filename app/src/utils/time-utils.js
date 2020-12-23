@@ -63,9 +63,4 @@ const calculateInitialDate = (_seconds) => {
   }
 }
 
-export {
-  parseSeconds,
-  calculateInitialDate,
-  formatSeconds,
-  LOCK_FORMAT_OPTIONS,
-}
+export { parseSeconds, calculateInitialDate, formatSeconds, LOCK_FORMAT_OPTIONS }

@@ -11,17 +11,12 @@ const app = new Aragon()
 app
   .call('wrappedTokenManager')
   .subscribe(initialize, (err) =>
-    console.error(
-      `Could not start background script execution due to the contract not loading token: ${err}`
-    )
+    console.error(`Could not start background script execution due to the contract not loading token: ${err}`)
   )
 
 async function initialize(_wrappedTokenManagerAddress) {
   const network = await app.network().pipe(first()).toPromise()
-  const wrappedTokenManagerContract = app.external(
-    _wrappedTokenManagerAddress,
-    TokenManagerAbi
-  )
+  const wrappedTokenManagerContract = app.external(_wrappedTokenManagerAddress, TokenManagerAbi)
 
   const settings = {
     network,
@@ -71,11 +66,7 @@ function initializeState(_tokenManagerContract, _settings) {
       const depositToken = await getTokenData(depositTokenAddress)
 
       const vaultAddress = await app.call('vault').toPromise()
-      const vaultBalance = await getTokenBalance(
-        depositTokenAddress,
-        depositToken.decimals,
-        vaultAddress
-      )
+      const vaultBalance = await getTokenBalance(depositTokenAddress, depositToken.decimals, vaultAddress)
 
       return {
         ..._cachedState,
@@ -96,10 +87,7 @@ function initializeState(_tokenManagerContract, _settings) {
 const handleEvent = async (_nextState) => {
   try {
     if (_nextState.account) {
-      const {
-        miniMeTokenBalance,
-        depositTokenBalance,
-      } = await getTokenBalances(
+      const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
         _nextState.miniMeToken.address,
         _nextState.miniMeToken.decimals,
         _nextState.depositToken.address,
@@ -130,10 +118,7 @@ const handleEvent = async (_nextState) => {
 const handleAccountChange = async (_nextState, { account }) => {
   try {
     if (account) {
-      const {
-        miniMeTokenBalance,
-        depositTokenBalance,
-      } = await getTokenBalances(
+      const { miniMeTokenBalance, depositTokenBalance } = await getTokenBalances(
         _nextState.miniMeToken.address,
         _nextState.miniMeToken.decimals,
         _nextState.depositToken.address,
@@ -194,16 +179,8 @@ const getTokenBalances = async (
   _account
 ) => {
   try {
-    const miniMeTokenBalance = await getTokenBalance(
-      _miniMeTokenAddress,
-      _miniMeTokenDecimals,
-      _account
-    )
-    const depositTokenBalance = await getTokenBalance(
-      _depositTokenAddress,
-      _depositTokenDecimals,
-      _account
-    )
+    const miniMeTokenBalance = await getTokenBalance(_miniMeTokenAddress, _miniMeTokenDecimals, _account)
+    const depositTokenBalance = await getTokenBalance(_depositTokenAddress, _depositTokenDecimals, _account)
 
     return {
       miniMeTokenBalance,
