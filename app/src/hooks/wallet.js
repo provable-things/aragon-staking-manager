@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useAppState } from '@aragon/api-react'
-import { strip } from '../utils/amount-utils'
+import { strip, offChainFormat } from '../utils/amount-utils'
 import { parseSeconds } from '../utils/time-utils'
 
 const useWalletDetails = () => {
@@ -9,17 +9,29 @@ const useWalletDetails = () => {
     depositTokenBalance,
     minLockTime,
     account,
+    miniMeToken,
+    depositToken,
   } = useAppState()
 
   return useMemo(() => {
     return {
       miniMeTokenBalance:
         miniMeTokenBalance && account
-          ? strip(miniMeTokenBalance.toString())
+          ? strip(
+              offChainFormat(
+                miniMeTokenBalance,
+                miniMeToken.decimals
+              ).toString()
+            )
           : '-',
       depositTokenBalance:
         depositTokenBalance && account
-          ? strip(depositTokenBalance.toString())
+          ? strip(
+              offChainFormat(
+                depositTokenBalance,
+                depositToken.decimals
+              ).toString()
+            )
           : '-',
       minLockTime: minLockTime ? parseSeconds(minLockTime) : '-',
     }

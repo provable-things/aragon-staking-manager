@@ -1,10 +1,16 @@
 import { useMemo } from 'react'
 import { useAppState } from '@aragon/api-react'
 import { strip } from '../utils/amount-utils'
-import { parsePercentage } from '../utils/amount-utils'
+import { parsePercentage, offChainFormat } from '../utils/amount-utils'
 
 const useVotingPowerDetails = () => {
-  const { vaultBalance, miniMeTokenBalance, account } = useAppState()
+  const {
+    vaultBalance,
+    miniMeTokenBalance,
+    account,
+    miniMeToken,
+    depositToken,
+  } = useAppState()
 
   return useMemo(() => {
     const votingPower =
@@ -15,12 +21,21 @@ const useVotingPowerDetails = () => {
     return [
       {
         votingPower,
-        votingPowerText: parsePercentage(votingPower),
+        votingPowerText: votingPower ? parsePercentage(votingPower) : '-',
         miniMeTokenBalance:
           miniMeTokenBalance && account
-            ? strip(miniMeTokenBalance.toString())
+            ? strip(
+                offChainFormat(
+                  miniMeTokenBalance,
+                  miniMeToken.decimals
+                ).toString()
+              )
             : '-',
-        vaultBalance: vaultBalance ? strip(vaultBalance.toString()) : '-',
+        vaultBalance: vaultBalance
+          ? strip(
+              offChainFormat(vaultBalance, depositToken.decimals).toString()
+            )
+          : '-',
       },
     ]
   }, [miniMeTokenBalance, vaultBalance])

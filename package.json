@@ -1,10 +1,10 @@
 {
-  "name": "staking-manager",
-  "version": "2.2.0",
+  "name": "@pnetwork/staking-manager",
+  "version": "2.2.2",
   "description": "An Aragon app that allows to lock for a customizable amount of time, a quantity of ERC20 tokens in exchange organization's tokens",
   "author": "allemanfredi@provable-things <alle.manfredi@gmail.com>",
   "scripts": {
-    "postinstall": "yarn compile && yarn build-app",
+    "postinstall": "yarn compile",
     "build-app": "cd app && yarn install && cd ..",
     "compile": "buidler compile --force",
     "test": "buidler test --network buidlerevm",
@@ -15,6 +15,14 @@
     "lint:contract": "prettier --config ./.prettierrc --write \"./contracts/**/*.+(sol)\" && solium --dir ./contracts --fix",
     "format": "prettier --config ./.prettierrc --write  \"./app/src/**/*.+(js|json)\" \"./(src|test|scripts)/**/*.+(js|json)\""
   },
+  "files": [
+    "/abi",
+    "/arapp.json",
+    "/artifacts",
+    "/contracts",
+    "/scripts",
+    "/test"
+  ],
   "devDependencies": {
     "@aragon/apps-token-manager": "^2.1.0",
     "@aragon/apps-vault": "^4.1.0",

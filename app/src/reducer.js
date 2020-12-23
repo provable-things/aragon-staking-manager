@@ -1,4 +1,3 @@
-import { offChainFormat } from './utils/amount-utils'
 import BigNumber from 'bignumber.js'
 
 const reducer = (_state) => {
@@ -20,37 +19,23 @@ const reducer = (_state) => {
 
   const {
     stakedLocks,
-    miniMeToken,
     miniMeTokenBalance,
-    depositToken,
     depositTokenBalance,
     vaultBalance,
   } = _state
 
   return {
     ..._state,
-    miniMeTokenBalance: miniMeTokenBalance
-      ? offChainFormat(new BigNumber(miniMeTokenBalance), miniMeToken.decimals)
-      : new BigNumber(0),
-    depositTokenBalance: depositTokenBalance
-      ? offChainFormat(
-          new BigNumber(depositTokenBalance),
-          depositToken.decimals
-        )
-      : new BigNumber(0),
-    vaultBalance: vaultBalance
-      ? offChainFormat(new BigNumber(vaultBalance), depositToken.decimals)
-      : new BigNumber(0),
+    miniMeTokenBalance: new BigNumber(miniMeTokenBalance),
+    depositTokenBalance: new BigNumber(depositTokenBalance),
+    vaultBalance: new BigNumber(vaultBalance),
     stakedLocks: stakedLocks
       ? stakedLocks
           .map((_stakedLock) => {
             return {
               lockDate: parseInt(_stakedLock.lockDate),
               duration: parseInt(_stakedLock.duration),
-              amount: offChainFormat(
-                new BigNumber(_stakedLock.amount),
-                depositToken.decimals
-              ),
+              amount: new BigNumber(_stakedLock.amount),
             }
           })
           .filter(
