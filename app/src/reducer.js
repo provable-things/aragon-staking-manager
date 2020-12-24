@@ -17,12 +17,7 @@ const reducer = (_state) => {
     }
   }
 
-  const {
-    stakedLocks,
-    miniMeTokenBalance,
-    depositTokenBalance,
-    vaultBalance,
-  } = _state
+  const { stakedLocks, miniMeTokenBalance, depositTokenBalance, vaultBalance } = _state
 
   return {
     ..._state,
@@ -38,10 +33,7 @@ const reducer = (_state) => {
               amount: new BigNumber(_stakedLock.amount),
             }
           })
-          .filter(
-            ({ amount, lockDate, duration }) =>
-              !amount.isEqualTo(0) && lockDate !== 0 && duration !== 0
-          )
+          .filter(({ amount, lockDate, duration }) => !amount.isEqualTo(0) && lockDate !== 0 && duration !== 0)
       : [],
   }
 }

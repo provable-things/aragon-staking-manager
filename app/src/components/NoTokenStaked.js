@@ -16,10 +16,7 @@ const NoTokenStaked = (_props) => {
         ${textStyle('title3')};
       `}
     >
-      <EmptyStateCard
-        text="There are no staked tokens."
-        action={<Button onClick={onOpenSidebar}>Start</Button>}
-      />
+      <EmptyStateCard text="There are no staked tokens." action={<Button onClick={onOpenSidebar}>Start</Button>} />
     </Box>
   )
 }

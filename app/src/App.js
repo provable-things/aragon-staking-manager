@@ -30,10 +30,7 @@ const App = () => {
 
   const handleAction = ({ amount, action, duration, receiver }) => {
     if (action === 'Stake') {
-      const onChainAmount = onChainFormat(
-        new BigNumber(amount),
-        depositToken.decimals
-      )
+      const onChainAmount = onChainFormat(new BigNumber(amount), depositToken.decimals)
 
       actions.stake(onChainAmount.toFixed(), duration, receiver, {
         token: {
@@ -42,9 +39,7 @@ const App = () => {
         },
       })
     } else if (action === 'Unstake') {
-      actions.unstake(
-        onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed()
-      )
+      actions.unstake(onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed())
     }
   }
 

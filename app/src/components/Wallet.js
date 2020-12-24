@@ -7,11 +7,7 @@ import { useAppState } from '@aragon/api-react'
 const Wallet = (_props) => {
   const { depositToken, miniMeToken } = useAppState()
 
-  const {
-    miniMeTokenBalance,
-    depositTokenBalance,
-    minLockTime,
-  } = useWalletDetails()
+  const { miniMeTokenBalance, depositTokenBalance, minLockTime } = useWalletDetails()
 
   const theme = useTheme()
 

@@ -7,9 +7,7 @@ import { useVotingPowerDetails } from '../hooks/voting-power'
 const VotingPower = (_props) => {
   const { depositToken } = useAppState()
 
-  const [
-    { votingPower, votingPowerText, miniMeTokenBalance, vaultBalance },
-  ] = useVotingPowerDetails()
+  const [{ votingPower, votingPowerText, miniMeTokenBalance, vaultBalance }] = useVotingPowerDetails()
 
   const theme = useTheme()
 

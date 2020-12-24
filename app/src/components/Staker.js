@@ -1,21 +1,8 @@
 import React, { Fragment, Component } from 'react'
 import styled from 'styled-components'
-import {
-  Button,
-  Field,
-  GU,
-  Info,
-  TextInput,
-  DropDown,
-  Checkbox,
-} from '@aragon/ui'
+import { Button, Field, GU, Info, TextInput, DropDown, Checkbox } from '@aragon/ui'
 import PropTypes from 'prop-types'
-import {
-  parseSeconds,
-  calculateInitialDate,
-  formatSeconds,
-  LOCK_FORMAT_OPTIONS,
-} from '../utils/time-utils'
+import { parseSeconds, calculateInitialDate, formatSeconds, LOCK_FORMAT_OPTIONS } from '../utils/time-utils'
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 
@@ -42,23 +29,16 @@ class Staker extends Component {
   handleAction = () => {
     this.setState({ error: null })
     if (this.props.action === 'Stake') {
-      if (
-        this.props.depositTokenBalance.isLessThan(
-          new BigNumber(this.state.amount)
-        )
-      ) {
+      if (this.props.depositTokenBalance.isLessThan(new BigNumber(this.state.amount))) {
         this.setState({ error: 'Balance too low' })
         return
       }
 
-      const secondsLockTime =
-        this.state.duration * formatSeconds[this.state.lockFormat]
+      const secondsLockTime = this.state.duration * formatSeconds[this.state.lockFormat]
 
       if (secondsLockTime < this.props.minLockTime) {
         this.setState({
-          error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(
-            this.props.minLockTime
-          )}.`,
+          error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(this.props.minLockTime)}.`,
         })
         return
       }
@@ -76,11 +56,7 @@ class Staker extends Component {
       })
       return
     } else {
-      if (
-        this.props.miniMeTokenBalance.isLessThan(
-          new BigNumber(this.state.amount)
-        )
-      ) {
+      if (this.props.miniMeTokenBalance.isLessThan(new BigNumber(this.state.amount))) {
         this.setState({ error: 'Balance too low' })
         return
       }
@@ -108,11 +84,7 @@ class Staker extends Component {
             action === 'Stake' ? 'create' : 'burn'
           } tokens and transfer them to the transaction sender.`}
           <br />
-          {action === 'Stake'
-            ? `Keep in mind that you cannot unstake them before ${parseSeconds(
-                minLockTime
-              )}.`
-            : ''}
+          {action === 'Stake' ? `Keep in mind that you cannot unstake them before ${parseSeconds(minLockTime)}.` : ''}
         </Info>
         <WrapperField>
           <Field
@@ -135,10 +107,7 @@ class Staker extends Component {
         </WrapperField>
         {action === 'Stake' ? (
           <LabelCheckBox>
-            <Checkbox
-              checked={this.state.advance}
-              onChange={(advance) => this.setState({ advance })}
-            />
+            <Checkbox checked={this.state.advance} onChange={(advance) => this.setState({ advance })} />
             Advanced
           </LabelCheckBox>
         ) : null}
