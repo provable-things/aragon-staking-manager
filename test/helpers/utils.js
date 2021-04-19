@@ -1,11 +1,4 @@
-const stake = async (
-  _depositToken,
-  _stakingManager,
-  _amountToWrap,
-  _lockTime,
-  _receiver,
-  _appManager
-) => {
+const stake = async (_depositToken, _stakingManager, _amountToWrap, _lockTime, _receiver, _appManager) => {
   await _depositToken.approve(_stakingManager.address, _amountToWrap, {
     from: _appManager,
   })

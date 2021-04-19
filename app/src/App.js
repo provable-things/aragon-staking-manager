@@ -27,14 +27,11 @@ const App = () => {
 
   const [action, setAction] = useState(null)
   const [defaultAmount, setDefaultAmount] = useState(null)
+  const [selectedLock, setSelectedLock] = useState(null)
 
-  const handleAction = ({ amount, action, duration, receiver }) => {
+  const handleAction = ({ amount, action, duration, receiver, index }) => {
     if (action === 'Stake') {
-      const onChainAmount = onChainFormat(
-        new BigNumber(amount),
-        depositToken.decimals
-      )
-
+      const onChainAmount = onChainFormat(new BigNumber(amount), depositToken.decimals)
       actions.stake(onChainAmount.toFixed(), duration, receiver, {
         token: {
           address: depositToken.address,
@@ -42,9 +39,9 @@ const App = () => {
         },
       })
     } else if (action === 'Unstake') {
-      actions.unstake(
-        onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed()
-      )
+      actions.unstake(onChainFormat(new BigNumber(amount), miniMeToken.decimals).toFixed())
+    } else if (action === 'Extend Timelock') {
+      actions.increaseLockDuration(selectedLock, duration)
     }
   }
 
@@ -79,7 +76,7 @@ const App = () => {
             }
           />
           <SidePanel
-            title={`${action} your tokens`}
+            title={action === 'Extend Timelock' ? action : `${action} your tokens`}
             opened={panelState.visible}
             onClose={(_e) => {
               setAction(null)
@@ -121,6 +118,11 @@ const App = () => {
                 onOpenSidebar={() => {
                   panelState.requestOpen()
                   setAction('Stake')
+                }}
+                onExtendTimelock={({ index }) => {
+                  setAction('Extend Timelock')
+                  setSelectedLock(index)
+                  panelState.requestOpen()
                 }}
               />
             </Col>

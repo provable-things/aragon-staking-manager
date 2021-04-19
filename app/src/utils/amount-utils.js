@@ -2,11 +2,9 @@ import BigNumber from 'bignumber.js'
 
 const MINIMUM_PERCENTAGE_THRESHOLD = 0.0001
 
-const onChainFormat = (_amount, _decimals) =>
-  _amount.multipliedBy(new BigNumber(Math.pow(10, _decimals)))
+const onChainFormat = (_amount, _decimals) => _amount.multipliedBy(new BigNumber(Math.pow(10, _decimals)))
 
-const offChainFormat = (_amount, _decimals) =>
-  _amount.dividedBy(new BigNumber(Math.pow(10, _decimals)))
+const offChainFormat = (_amount, _decimals) => _amount.dividedBy(new BigNumber(Math.pow(10, _decimals)))
 
 const parseAmount = (_decimals, _amount) => {
   const num = new BigNumber(Math.trunc(_amount * Math.pow(10, _decimals)))

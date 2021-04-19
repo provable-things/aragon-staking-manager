@@ -10,20 +10,17 @@ const useStakeHistory = () => {
 
   return useMemo(() => {
     return {
-      stakedLocks: stakedLocks.map(({ amount, lockDate, duration }) => {
+      stakedLocks: stakedLocks.map(({ amount, lockDate, duration, index }) => {
         const offchainAmount = offChainFormat(amount, depositToken.decimals)
         return {
           amount: offchainAmount,
-          textedAmount: `${strip(offchainAmount.toString())} ${
-            depositToken.symbol
-          }`,
-          wrappedTokenAmount: `(${strip(offchainAmount.toString())} ${
-            miniMeToken.symbol
-          })`,
+          textedAmount: `${strip(offchainAmount.toString())} ${depositToken.symbol}`,
+          wrappedTokenAmount: `(${strip(offchainAmount.toString())} ${miniMeToken.symbol})`,
           lockDate,
           duration,
           isUnlocked: lockDate + duration < now,
           remainderSeconds: parseSeconds(lockDate + duration - now),
+          index,
         }
       }),
     }

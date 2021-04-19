@@ -13,32 +13,18 @@ module.exports = {
     appManager = accounts[0]
   },
 
-  postDao: async (
-    { dao, _experimentalAppInstaller, log },
-    { web3, artifacts }
-  ) => {
+  postDao: async ({ dao, _experimentalAppInstaller, log }, { web3, artifacts }) => {
     const ACL = artifacts.require('@aragon/os/build/contracts/acl/ACL')
     acl = await ACL.at(await dao.acl())
   },
 
-  preInit: async (
-    { proxy, _experimentalAppInstaller, log },
-    { web3, artifacts }
-  ) => {
+  preInit: async ({ proxy, _experimentalAppInstaller, log }, { web3, artifacts }) => {
     const MiniMeToken = artifacts.require('MiniMeToken')
     const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
     const ERC20 = artifacts.require('StandardToken')
 
     const miniMeTokenFactory = await MiniMeTokenFactory.new()
-    miniMeToken = await MiniMeToken.new(
-      miniMeTokenFactory.address,
-      ETH_ADDRESS,
-      0,
-      'DaoToken',
-      18,
-      'DAOT',
-      true
-    )
+    miniMeToken = await MiniMeToken.new(miniMeTokenFactory.address, ETH_ADDRESS, 0, 'DaoToken', 18, 'DAOT', true)
 
     voting = await _experimentalAppInstaller('voting', {
       skipInitialize: true,
@@ -57,12 +43,7 @@ module.exports = {
       '604800', // 1 week
     ])
 
-    token = await ERC20.new(
-      'Deposit Token',
-      'DPT',
-      MOCK_TOKEN_DECIMALS,
-      MOCK_TOKEN_BALANCE
-    )
+    token = await ERC20.new('Deposit Token', 'DPT', MOCK_TOKEN_DECIMALS, MOCK_TOKEN_BALANCE)
 
     log(`Vault: ${vault.address}`)
     log(`MiniMeToken: ${miniMeToken.address}`)
@@ -73,23 +54,14 @@ module.exports = {
 
   postInit: async ({ proxy, log }, { web3, artifacts }) => {
     // NOTE: anyone can vote
-    await voting.createPermission(
-      'CREATE_VOTES_ROLE',
-      '0xffffffffffffffffffffffffffffffffffffffff'
-    )
+    await voting.createPermission('CREATE_VOTES_ROLE', '0xffffffffffffffffffffffffffffffffffffffff')
     await wrappedTokenManager.createPermission('MINT_ROLE', proxy.address)
     await wrappedTokenManager.createPermission('BURN_ROLE', proxy.address)
     await vault.createPermission('TRANSFER_ROLE', proxy.address)
   },
 
   getInitParams: async ({ log }, { web3, artifacts }) => {
-    return [
-      wrappedTokenManager.address,
-      vault.address,
-      token.address,
-      180,
-      MAX_LOCKS,
-    ]
+    return [wrappedTokenManager.address, vault.address, token.address, 180, MAX_LOCKS]
   },
 
   postUpdate: async ({ proxy, log }, { web3, artifacts }) => {},
