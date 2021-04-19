@@ -30,6 +30,8 @@ contract StakingManager is AragonApp {
     string private constant ERROR_IMPOSSIBLE_TO_INSERT = "STAKING_MANAGER_IMPOSSIBLE_TO_INSERT";
     string private constant ERROR_MAX_LOCKS_TOO_HIGH = "STAKING_MANAGER_MAX_LOCKS_TOO_HIGH";
     string private constant ERROR_AMOUNT_TOO_LOW = "STAKING_MANAGER_AMOUNT_TOO_LOW";
+    string private constant ERROR_LOCK_NOT_EXIST = "STAKING_MANAGER_LOCK_NOT_EXIST";
+    string private constant ERROR_LOCK_IS_EMPTY = "STAKING_MANAGER_LOCK_IS_EMPTY";
 
     struct Lock {
         uint64 lockDate;
@@ -51,6 +53,7 @@ contract StakingManager is AragonApp {
     event LockTimeChanged(uint256 duration);
     event MaxLocksChanged(uint64 maxLocks);
     event VaultChanged(address vault);
+    event LockDurationIncreased(address owner, uint64 index, uint64 duration);
 
     /**
      * @notice Initialize StakingManager app contract
@@ -125,6 +128,29 @@ contract StakingManager is AragonApp {
         vault.transfer(depositToken, msg.sender, _amount);
         emit Unstaked(msg.sender, _amount);
         return _amount;
+    }
+
+    /**
+     * @notice Increases the duration of a given lock selected via _index. If the lock is unlocked then
+     *         then lockDate will be set to now and duration will be equal to the new one
+     * @param _index position in the array of locks related to msg.sender
+     * @param _duration value that will be added to the current lock duration
+     */
+    function increaseLockDuration(uint64 _index, uint64 _duration) external {
+        Lock[] storage locks = addressStakeLocks[msg.sender];
+        require(locks.length > 0 && locks.length > _index, ERROR_LOCK_NOT_EXIST);
+        Lock lock = locks[_index];
+        require(!isLockEmpty(lock), ERROR_LOCK_IS_EMPTY);
+
+        uint64 timestamp = getTimestamp64();
+        if (lock.lockDate.add(lock.duration) <= timestamp) {
+            lock.duration = _duration;
+            lock.lockDate = timestamp;
+        } else {
+            lock.duration = lock.duration.add(_duration);
+        }
+
+        emit LockDurationIncreased(msg.sender, _index, _duration);
     }
 
     /**

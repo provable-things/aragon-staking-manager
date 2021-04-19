@@ -9,7 +9,6 @@ const useStakeAction = (_onDone) => {
     (_amount, _lockTime, _receiver, _intentParams) => {
       try {
         api.stake(_amount, _lockTime, _receiver, _intentParams).toPromise()
-
         _onDone()
       } catch (error) {
         console.error(error)
@@ -26,7 +25,22 @@ const useUnstakeAction = (_onDone) => {
     (_amount) => {
       try {
         api.unstake(_amount).toPromise()
+        _onDone()
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    [api, _onDone]
+  )
+}
 
+const increaseLockDuration = (_onDone) => {
+  const { api } = useAragonApi()
+
+  return useCallback(
+    (_index, _duration) => {
+      try {
+        api.increaseLockDuration(_index, _duration).toPromise()
         _onDone()
       } catch (error) {
         console.error(error)
@@ -42,6 +56,7 @@ const useAppLogic = () => {
   const actions = {
     stake: useStakeAction(panelState.requestClose),
     unstake: useUnstakeAction(panelState.requestClose),
+    increaseLockDuration: increaseLockDuration(panelState.requestClose),
     panelState,
   }
 

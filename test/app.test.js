@@ -231,13 +231,64 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         for (let i = 0; i < MAX_LOCKS; i++) {
           await stake(depositToken, stakingManager, 200 / MAX_LOCKS, LOCK_TIME, appManager, appManager)
         }
-        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        const numberOfLocks = await stakingManager.getNumberOfStakedLocks(appManager)
         assert.strictEqual(parseInt(numberOfLocks), MAX_LOCKS)
       })
 
       it('Should return a correct value when getting number of staked locks after having staked', async () => {
-        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        const numberOfLocks = await stakingManager.getNumberOfStakedLocks(appManager)
         assert.strictEqual(parseInt(numberOfLocks), 0)
+      })
+
+      it('Should be able to increase a lock duration', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stakingManager.increaseLockDuration(0, LOCK_TIME, { from: appManager })
+        const locks = await stakingManager.getStakedLocks(appManager)
+        assert.strictEqual(locks[0].duration.toString(), (LOCK_TIME * 2).toString())
+      })
+
+      it('Should not be able to increase a lock duration because lock does not exists (1)', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await assertRevert(
+          stakingManager.increaseLockDuration(1, LOCK_TIME, { from: appManager }),
+          'STAKING_MANAGER_LOCK_NOT_EXIST'
+        )
+      })
+
+      it('Should not be able to increase a lock duration because lock does not exists (2)', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await assertRevert(
+          stakingManager.increaseLockDuration(0, LOCK_TIME, { from: ACCOUNTS_1 }),
+          'STAKING_MANAGER_LOCK_NOT_EXIST'
+        )
+      })
+
+      it('Should be able to increase more than 1 lock duration (1)', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stakingManager.increaseLockDuration(0, 1, { from: appManager })
+        await stakingManager.increaseLockDuration(1, 2, { from: appManager })
+        const locks = await stakingManager.getStakedLocks(appManager)
+        assert.strictEqual(locks[0].duration.toString(), (LOCK_TIME + 1).toString())
+        assert.strictEqual(locks[1].duration.toString(), (LOCK_TIME + 2).toString())
+      })
+
+      it('Should be able to increase more than 1 lock duration (2)', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stakingManager.increaseLockDuration(0, 1, { from: appManager })
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stakingManager.increaseLockDuration(1, 2, { from: appManager })
+        const locks = await stakingManager.getStakedLocks(appManager)
+        assert.strictEqual(locks[0].duration.toString(), (LOCK_TIME + 1).toString())
+        assert.strictEqual(locks[1].duration.toString(), (LOCK_TIME + 2).toString())
+      })
+
+      it('Should be able to increase a lock duration of an unlocked lock', async () => {
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await timeTravel(LOCK_TIME)
+        await stakingManager.increaseLockDuration(0, LOCK_TIME + 1, { from: appManager })
+        const locks = await stakingManager.getStakedLocks(appManager)
+        assert.strictEqual(locks[0].duration.toString(), (LOCK_TIME + 1).toString())
       })
     })
 
@@ -470,9 +521,77 @@ contract('StakingManager', ([appManager, ACCOUNTS_1, ...accounts]) => {
         for (let i = 0; i < MAX_LOCKS; i++) {
           await unstake(stakingManager, 200, appManager)
         }
-        const numberOfLocks =  await stakingManager.getNumberOfStakedLocks(appManager)
+        const numberOfLocks = await stakingManager.getNumberOfStakedLocks(appManager)
         // NOTE: will contain only empty locks
         assert.strictEqual(parseInt(numberOfLocks), MAX_LOCKS)
+      })
+
+      it('Should be able to unstake correctly after an increasing af a lock duration (1)', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await stakingManager.increaseLockDuration(0, ONE_DAY * 2, { from: appManager })
+        await timeTravel(LOCK_TIME + ONE_DAY * 2)
+        await unstake(stakingManager, 100, appManager)
+        const actualBalances = await getBalances(depositToken, vault, appManager)
+        assert.strictEqual(actualBalances.balanceReceiver, initBalances.balanceReceiver)
+      })
+
+      it('Should be able to unstake correctly after an increasing af a lock duration (2)', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await timeTravel(LOCK_TIME + 10)
+        await stakingManager.increaseLockDuration(0, ONE_DAY * 7, { from: appManager })
+        await timeTravel(ONE_DAY * 7)
+        await unstake(stakingManager, 100, appManager)
+        const actualBalances = await getBalances(depositToken, vault, appManager)
+        assert.strictEqual(actualBalances.balanceReceiver, initBalances.balanceReceiver)
+      })
+
+      it('Should not be able to unstake the previous stake duration if it is changed (1)', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await timeTravel(LOCK_TIME)
+        await stakingManager.increaseLockDuration(0, ONE_DAY, { from: appManager })
+        await assertRevert(unstake(stakingManager, 100, appManager), 'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS')
+        await timeTravel(ONE_DAY)
+        await unstake(stakingManager, 100, appManager)
+        const actualBalances = await getBalances(depositToken, vault, appManager)
+        assert.strictEqual(actualBalances.balanceReceiver, initBalances.balanceReceiver)
+      })
+
+      it('Should not be able to unstake the previous stake duration if it is changed (2)', async () => {
+        await stake(depositToken, stakingManager, 100, ONE_DAY * 365, appManager, appManager)
+        await timeTravel(ONE_DAY * 400)
+        await stakingManager.increaseLockDuration(0, ONE_DAY * 7, { from: appManager })
+        await timeTravel(ONE_DAY * 4)
+        await assertRevert(unstake(stakingManager, 100, appManager), 'STAKING_MANAGER_NOT_ENOUGH_UNWRAPPABLE_TOKENS')
+      })
+
+      it('Should not be able to update the lock duration for all locks', async () => {
+        // prettier-ignore
+        for (let i = 0; i < MAX_LOCKS; i++) await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await timeTravel(LOCK_TIME + ONE_DAY * MAX_LOCKS)
+        for (let i = 0; i < MAX_LOCKS; i++) await unstake(stakingManager, 100, appManager)
+        for (let i = 0; i < MAX_LOCKS; i++) {
+          await assertRevert(
+            stakingManager.increaseLockDuration(i, LOCK_TIME + 1, { from: appManager }),
+            'STAKING_MANAGER_LOCK_IS_EMPTY'
+          )
+        }
+      })
+
+      it('Should be able to update the lock duration for all locks and unstake', async () => {
+        const initBalances = await getBalances(depositToken, vault, appManager)
+        // prettier-ignore
+        for (let i = 0; i < MAX_LOCKS; i++) await stake(depositToken, stakingManager, 100, LOCK_TIME, appManager, appManager)
+        await timeTravel(LOCK_TIME + ONE_DAY * MAX_LOCKS)
+        for (let i = 0; i < MAX_LOCKS; i++) await stakingManager.increaseLockDuration(i, i, { from: appManager })
+        const locks = await stakingManager.getStakedLocks(appManager)
+        for (let i = 0; i < MAX_LOCKS; i++) assert.strictEqual(locks[i].duration.toString(), i.toString())
+        await timeTravel(MAX_LOCKS)
+        for (let i = 0; i < MAX_LOCKS; i++) await unstake(stakingManager, 100, appManager)
+        const actualBalances = await getBalances(depositToken, vault, appManager)
+        assert.strictEqual(actualBalances.balanceReceiver, initBalances.balanceReceiver)
       })
     })
   })

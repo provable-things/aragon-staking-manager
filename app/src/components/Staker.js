@@ -13,7 +13,6 @@ class Staker extends Component {
     super(_props, _context)
 
     const { account, defaultAmount, minLockTime } = _props
-
     const { format, time } = calculateInitialDate(minLockTime)
 
     this.state = {
@@ -35,7 +34,6 @@ class Staker extends Component {
       }
 
       const secondsLockTime = this.state.duration * formatSeconds[this.state.lockFormat]
-
       if (secondsLockTime < this.props.minLockTime) {
         this.setState({
           error: `Lock Time too low. Please insert a lock of at least ${parseSeconds(this.props.minLockTime)}.`,
@@ -55,7 +53,7 @@ class Staker extends Component {
         duration: secondsLockTime,
       })
       return
-    } else {
+    } else if (this.props.action === 'Unstake') {
       if (this.props.miniMeTokenBalance.isLessThan(new BigNumber(this.state.amount))) {
         this.setState({ error: 'Balance too low' })
         return
@@ -63,6 +61,12 @@ class Staker extends Component {
 
       this.props.onAction({
         amount: this.state.amount,
+        action: this.props.action,
+      })
+    } else if (this.props.action === 'Extend Timelock') {
+      const secondsLockTime = this.state.duration * formatSeconds[this.state.lockFormat]
+      this.props.onAction({
+        duration: secondsLockTime,
         action: this.props.action,
       })
     }
@@ -80,62 +84,68 @@ class Staker extends Component {
             margin-top: ${2 * GU}px;
           `}
         >
-          {`This action will ${
-            action === 'Stake' ? 'create' : 'burn'
-          } tokens and transfer them to the transaction sender.`}
+          {action !== 'Extend Timelock'
+            ? `This action will ${
+                action === 'Stake' ? 'create' : 'burn'
+              } tokens and transfer them to the transaction sender.`
+            : 'This action will change the duration of the selected timelock by extending it for the selected duration.'}
           <br />
           {action === 'Stake' ? `Keep in mind that you cannot unstake them before ${parseSeconds(minLockTime)}.` : ''}
         </Info>
-        <WrapperField>
-          <Field
-            label="Enter the amount here:"
-            required
-            css={`
-              margin-top: ${3 * GU}px;
-            `}
-          >
-            <TextInput
-              value={this.state.amount}
-              onChange={(e) => this.setState({ amount: e.target.value })}
-              wide
-              min={0}
-              type="number"
-              step="any"
+        {action !== 'Extend Timelock' ? (
+          <WrapperField>
+            <Field
+              label="Enter the amount here:"
               required
-            />
-          </Field>
-        </WrapperField>
+              css={`
+                margin-top: ${3 * GU}px;
+              `}
+            >
+              <TextInput
+                value={this.state.amount}
+                onChange={(e) => this.setState({ amount: e.target.value })}
+                wide
+                min={0}
+                type="number"
+                step="any"
+                required
+              />
+            </Field>
+          </WrapperField>
+        ) : null}
         {action === 'Stake' ? (
           <LabelCheckBox>
             <Checkbox checked={this.state.advance} onChange={(advance) => this.setState({ advance })} />
             Advanced
           </LabelCheckBox>
         ) : null}
-        {action === 'Stake' && this.state.advance ? (
+        {(action === 'Stake' && this.state.advance) || action === 'Extend Timelock' ? (
           <Fragment>
-            <WrapperField>
-              <Field
-                label="Enter the receiver here:"
-                required
-                css={`
-                  margin-top: ${1 * GU}px;
-                `}
-              >
-                <TextInput
-                  value={this.state.receiver}
-                  onChange={(e) => this.setState({ receiver: e.target.value })}
-                  wide
-                  type="test"
+            {action !== 'Extend Timelock' ? (
+              <WrapperField>
+                <Field
+                  label="Enter the receiver here:"
                   required
-                />
-              </Field>
-            </WrapperField>
+                  css={`
+                    margin-top: ${1 * GU}px;
+                  `}
+                >
+                  <TextInput
+                    value={this.state.receiver}
+                    onChange={(e) => this.setState({ receiver: e.target.value })}
+                    wide
+                    type="test"
+                    required
+                  />
+                </Field>
+              </WrapperField>
+            ) : null}
             <WrapperLockTimeSelection>
               <Field
                 label="Select a lock time"
                 required
                 css={`
-                  margin-top: ${1 * GU}px;
+                  margin-top: ${action === 'Extend Timelock' ? 3 * GU : 1 * GU}px;
                   width: 50%;
                 `}
               >
@@ -166,7 +176,9 @@ class Staker extends Component {
                 this.state.receiver.length === 0 ||
                 this.state.duration === 0 ||
                 this.state.duration.length === 0
-              : this.state.amount.length === 0
+              : action === 'Unstake'
+              ? this.state.amount.length === 0
+              : this.state.duration === 0 || this.state.duration.length === 0
           }
         />
         {this.state.error ? (

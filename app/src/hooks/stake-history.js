@@ -10,7 +10,7 @@ const useStakeHistory = () => {
 
   return useMemo(() => {
     return {
-      stakedLocks: stakedLocks.map(({ amount, lockDate, duration }) => {
+      stakedLocks: stakedLocks.map(({ amount, lockDate, duration, index }) => {
         const offchainAmount = offChainFormat(amount, depositToken.decimals)
         return {
           amount: offchainAmount,
@@ -20,6 +20,7 @@ const useStakeHistory = () => {
           duration,
           isUnlocked: lockDate + duration < now,
           remainderSeconds: parseSeconds(lockDate + duration - now),
+          index,
         }
       }),
     }

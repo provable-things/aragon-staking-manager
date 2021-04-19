@@ -42,7 +42,9 @@ function createStore(_tokenManagerContract, _settings) {
           case 'Staked':
             return handleEvent(nextState)
           case 'Unstaked':
-            return handleEvent(nextState, returnValues)
+            return handleEvent(nextState)
+          case 'LockDurationIncreased':
+            return handleEvent(nextState)
           default:
             return state
         }
