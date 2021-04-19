@@ -120,7 +120,6 @@ const App = () => {
                   setAction('Stake')
                 }}
                 onExtendTimelock={({ index }) => {
-                  console.log(index)
                   setAction('Extend Timelock')
                   setSelectedLock(index)
                   panelState.requestOpen()
